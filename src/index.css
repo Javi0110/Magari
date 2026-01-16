@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cream text-neutral-700 font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif text-neutral-600;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply font-medium px-6 py-3 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md text-white;
+    background-color: #6B7C70;
+  }
+  
+  .btn-primary:hover {
+    background-color: #4A5A4E;
+  }
+  
+  .btn-secondary {
+    @apply font-medium px-6 py-3 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md text-white;
+    background-color: #A0927C;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #7D6F5C;
+  }
+  
+  .btn-outline {
+    @apply font-medium px-6 py-3 rounded-xl transition-all duration-300;
+    border: 2px solid #B8C5BA;
+    color: #6B7C70;
+  }
+  
+  .btn-outline:hover {
+    background-color: rgba(184, 197, 186, 0.1);
+  }
+  
+  .card {
+    @apply bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300;
+    border: 1px solid #EFE9E3;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl transition-all outline-none;
+    border: 1px solid #D6D3CA;
+  }
+  
+  .input-field:focus {
+    border-color: #6B7C70;
+    box-shadow: 0 0 0 3px rgba(107, 124, 112, 0.2);
+  }
+
+  .form-label {
+    @apply block text-sm font-semibold text-neutral-600 mb-2 tracking-wide;
+  }
+  
+  .badge {
+    @apply inline-block px-3 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .badge-handmade {
+    background-color: rgba(184, 197, 186, 0.3);
+    color: #4A5A4E;
+  }
+  
+  .badge-maker {
+    background-color: rgba(196, 184, 165, 0.3);
+    color: #7D6F5C;
+  }
+  
+  .badge-featured {
+    background-color: rgba(217, 207, 197, 0.4);
+    color: #A3958A;
+  }
+
+  .quantity-input {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  .quantity-input::-webkit-outer-spin-button,
+  .quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
