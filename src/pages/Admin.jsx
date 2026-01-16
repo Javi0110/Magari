@@ -15,7 +15,8 @@ import {
   Edit,
   Trash2,
   Search,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Upload
 } from 'lucide-react'
 import { sampleProducts, sampleVendors, sampleTestimonials } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
@@ -396,6 +397,20 @@ function ProductsView() {
 // Product Form Component
 function ProductForm({ product, onClose }) {
   const { addProduct, updateProduct } = useProductsStore()
+  const [uploadedImages, setUploadedImages] = useState(() => {
+    // Convert existing image URLs to preview format
+    if (product?.images) {
+      return product.images.map((url, index) => ({
+        id: `existing-${index}`,
+        url: url,
+        preview: url,
+        isExisting: true
+      }))
+    }
+    return []
+  })
+  const [isDragging, setIsDragging] = useState(false)
+  
   const [formData, setFormData] = useState({
     title: product?.title || '',
     price: product?.price || '',
@@ -410,13 +425,84 @@ function ProductForm({ product, onClose }) {
     returnPolicy: product?.returnPolicy || '30-day returns accepted',
   })
 
-  const handleSubmit = (e) => {
+  // Handle image file uploads
+  const handleImageUpload = (files) => {
+    const newImages = Array.from(files).map((file) => {
+      if (file.type.startsWith('image/')) {
+        const id = `img-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+        const preview = URL.createObjectURL(file)
+        return {
+          id,
+          file,
+          preview,
+          isExisting: false
+        }
+      }
+      return null
+    }).filter(Boolean)
+    
+    setUploadedImages(prev => [...prev, ...newImages])
+  }
+  
+  const handleDrop = (e) => {
     e.preventDefault()
+    setIsDragging(false)
+    const files = e.dataTransfer.files
+    if (files.length > 0) {
+      handleImageUpload(files)
+    }
+  }
+  
+  const handleFileInput = (e) => {
+    const files = e.target.files
+    if (files.length > 0) {
+      handleImageUpload(files)
+    }
+    // Reset input to allow selecting same file again
+    e.target.value = ''
+  }
+  
+  const removeImage = (id) => {
+    setUploadedImages(prev => {
+      const image = prev.find(img => img.id === id)
+      // Revoke object URL to prevent memory leak
+      if (image && !image.isExisting && image.preview) {
+        URL.revokeObjectURL(image.preview)
+      }
+      return prev.filter(img => img.id !== id)
+    })
+  }
+  
+  // Convert uploaded images to data URLs or keep existing URLs
+  const getImageUrls = async () => {
+    const urls = []
+    for (const img of uploadedImages) {
+      if (img.isExisting) {
+        urls.push(img.url)
+      } else if (img.file) {
+        // Convert file to base64 data URL
+        const reader = new FileReader()
+        const promise = new Promise((resolve) => {
+          reader.onloadend = () => resolve(reader.result)
+          reader.readAsDataURL(img.file)
+        })
+        const dataUrl = await promise
+        urls.push(dataUrl)
+      }
+    }
+    return urls
+  }
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    
+    // Get image URLs from uploaded files
+    const imageUrls = await getImageUrls()
     
     const productData = {
       ...formData,
       price: parseFloat(formData.price),
-      images: formData.images.split(',').map(img => img.trim()).filter(img => img),
+      images: imageUrls.length > 0 ? imageUrls : formData.images.split(',').map(img => img.trim()).filter(img => img),
       tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
     }
 
@@ -561,18 +647,73 @@ function ProductForm({ product, onClose }) {
 
             <div>
               <label className="block text-sage-dark font-medium mb-2">
-                Image URLs (comma separated)
+                Product Images *
               </label>
+              <div
+                className={`border-2 border-dashed rounded-2xl p-6 text-center transition-colors ${
+                  isDragging ? 'border-sage bg-sage/10' : 'border-greige-light'
+                }`}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  setIsDragging(true)
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+              >
+                <Upload className="mx-auto w-10 h-10 text-sage mb-3" />
+                <p className="text-sm text-neutral-600 mb-1">
+                  Arrastra y suelta imágenes aquí o haz clic para seleccionar
+                </p>
+                <p className="text-xs text-neutral-400 mb-4">
+                  Formatos: JPG, PNG, WEBP. Máx 10MB por imagen.
+                </p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileInput}
+                  className="hidden"
+                  id="admin-product-images-upload"
+                />
+                <label
+                  htmlFor="admin-product-images-upload"
+                  className="inline-flex px-4 py-2 rounded-full bg-sage text-white text-sm cursor-pointer hover:bg-sage/90 transition-colors"
+                >
+                  Seleccionar imágenes
+                </label>
+              </div>
+              
+              {uploadedImages.length > 0 && (
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {uploadedImages.map((img) => (
+                    <div key={img.id} className="relative rounded-xl overflow-hidden bg-neutral-100 group">
+                      <img
+                        src={img.preview}
+                        alt="Product preview"
+                        className="w-full h-32 object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(img.id)}
+                        className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <p className="text-xs text-stone-light mt-2">
+                También puedes usar URLs de imágenes separadas por comas en el campo alternativo
+              </p>
               <input
                 type="text"
                 value={formData.images}
                 onChange={(e) => setFormData({ ...formData, images: e.target.value })}
-                className="input-field"
-                placeholder="/products/tray-1.jpg, /products/tray-2.jpg"
+                className="input-field mt-2"
+                placeholder="/products/image.jpg, /products/image-2.jpg (alternativa a carga de archivos)"
               />
-              <p className="text-xs text-stone-light mt-1">
-                Paths relative to /public folder (e.g., /products/image.jpg)
-              </p>
             </div>
 
             <div>

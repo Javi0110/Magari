@@ -9,6 +9,7 @@ import {
   CreditCard,
   MailCheck
 } from 'lucide-react'
+import { sendServiceRequestEmail } from '../utils/emailService'
 
 const CONTACT_STORAGE_KEY = 'magari_saved_contact'
 
@@ -498,7 +499,7 @@ export const VirtualStylingForm = ({ onClose }) => {
     return true
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const reference = `VS-${Date.now().toString().slice(-6)}`
     const payload = {
       service: 'Virtual Styling',
@@ -532,6 +533,14 @@ export const VirtualStylingForm = ({ onClose }) => {
 
     const existing = JSON.parse(localStorage.getItem('magari_service_requests') || '[]')
     localStorage.setItem('magari_service_requests', JSON.stringify([...existing, payload]))
+
+    // Send confirmation emails
+    try {
+      await sendServiceRequestEmail(payload)
+    } catch (error) {
+      console.error('Error sending email:', error)
+      // Continue anyway - the request is still saved
+    }
 
     setSubmitted(reference)
   }
@@ -1052,7 +1061,7 @@ export const ShoppingStylingForm = ({ onClose }) => {
     return true
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const reference = `SS-${Date.now().toString().slice(-6)}`
     const payload = {
       service: 'Shopping & Styling',
@@ -1086,6 +1095,15 @@ export const ShoppingStylingForm = ({ onClose }) => {
 
     const existing = JSON.parse(localStorage.getItem('magari_service_requests') || '[]')
     localStorage.setItem('magari_service_requests', JSON.stringify([...existing, payload]))
+    
+    // Send confirmation emails
+    try {
+      await sendServiceRequestEmail(payload)
+    } catch (error) {
+      console.error('Error sending email:', error)
+      // Continue anyway - the request is still saved
+    }
+    
     setSubmitted(reference)
   }
 
@@ -1600,7 +1618,7 @@ export const DecoratingInstallationForm = ({ onClose }) => {
     return true
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!inPersonVisit) {
       const missingAssets = selectedAreas.some((area) => {
         const entries = areas[area.id].entries
@@ -1658,6 +1676,15 @@ export const DecoratingInstallationForm = ({ onClose }) => {
 
     const existing = JSON.parse(localStorage.getItem('magari_service_requests') || '[]')
     localStorage.setItem('magari_service_requests', JSON.stringify([...existing, payload]))
+    
+    // Send confirmation emails
+    try {
+      await sendServiceRequestEmail(payload)
+    } catch (error) {
+      console.error('Error sending email:', error)
+      // Continue anyway - the request is still saved
+    }
+    
     setSubmitted(reference)
   }
 

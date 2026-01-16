@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Instagram, MapPin, Send } from 'lucide-react'
+import { sendContactFormEmail } from '../utils/emailService'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -11,16 +12,17 @@ export default function ContactPage() {
   })
   const [submitted, setSubmitted] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
-    // 🔌 INTEGRATION: Send email via backend
-    // POST /api/contact with formData
-    // Use SendGrid, Postmark, or similar
-    // Send confirmation email to user
-    // Send notification to Magari team
+    // Send confirmation emails
+    try {
+      await sendContactFormEmail(formData)
+    } catch (error) {
+      console.error('Error sending email:', error)
+      // Continue anyway - show success message
+    }
     
-    console.log('Contact form submitted:', formData)
     setSubmitted(true)
     
     // Reset form after delay
