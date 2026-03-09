@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Heart, Store, TrendingUp, Upload, DollarSign, Package, BarChart3, LogIn, UserPlus, MapPin, Edit, Trash2, Plus, Search, X, Image as ImageIcon, Trash2 as DeleteIcon } from 'lucide-react'
+import { sendVendorApplicationEmail } from '../utils/emailService'
 import { sampleVendors } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
 import { useVendorProductsStore } from '../store/vendorProductsStore'
@@ -21,19 +22,94 @@ export default function MarketplacePage() {
     payoutMethod: 'paypal',
     payoutEmail: '',
   })
+  const [uploadedImages, setUploadedImages] = useState([])
+  const [isDraggingImages, setIsDraggingImages] = useState(false)
 
-  const handleApplicationSubmit = (e) => {
+  // Handle image file uploads for vendor application
+  const handleImageUpload = (files) => {
+    const newImages = Array.from(files).slice(0, 6).map((file) => {
+      if (file.type.startsWith('image/')) {
+        const id = `img-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+        const preview = URL.createObjectURL(file)
+        return {
+          id,
+          file,
+          preview,
+          name: file.name
+        }
+      }
+      return null
+    }).filter(Boolean)
+    
+    setUploadedImages(prev => [...prev, ...newImages].slice(0, 6))
+  }
+  
+  const handleDropImages = (e) => {
+    e.preventDefault()
+    setIsDraggingImages(false)
+    const files = e.dataTransfer.files
+    if (files.length > 0) {
+      handleImageUpload(files)
+    }
+  }
+  
+  const handleFileInput = (e) => {
+    const files = e.target.files
+    if (files.length > 0) {
+      handleImageUpload(files)
+    }
+    e.target.value = ''
+  }
+  
+  const removeImage = (id) => {
+    setUploadedImages(prev => {
+      const image = prev.find(img => img.id === id)
+      if (image && image.preview) {
+        URL.revokeObjectURL(image.preview)
+      }
+      return prev.filter(img => img.id !== id)
+    })
+  }
+
+  const handleApplicationSubmit = async (e) => {
     e.preventDefault()
     
-    // 🔌 INTEGRATION: Submit to backend
-    // POST /api/marketplace/apply
-    // Store in database with status: 'pending'
-    // Send confirmation email to applicant
-    // Send notification email to admin
+    const applicationPayload = {
+      ...applicationData,
+      sampleImages: uploadedImages,
+      submittedAt: new Date().toISOString()
+    }
     
-    console.log('Application submitted:', applicationData)
+    // Send confirmation emails
+    try {
+      await sendVendorApplicationEmail(applicationPayload)
+    } catch (error) {
+      console.error('Error sending email:', error)
+      // Continue anyway - the application is still processed
+    }
+    
+    // Store in localStorage for demo
+    const existing = JSON.parse(localStorage.getItem('magari_vendor_applications') || '[]')
+    localStorage.setItem('magari_vendor_applications', JSON.stringify([...existing, applicationPayload]))
+    
+    console.log('Application submitted:', applicationPayload)
     alert('✓ Application submitted! We will review and get back to you within 3-5 business days.')
     setView('landing')
+    
+    // Reset form
+    setApplicationData({
+      name: '',
+      businessName: '',
+      instagram: '',
+      email: '',
+      phone: '',
+      categories: [],
+      bio: '',
+      sampleImages: [],
+      payoutMethod: 'paypal',
+      payoutEmail: '',
+    })
+    setUploadedImages([])
   }
 
   const [loginData, setLoginData] = useState({
@@ -395,27 +471,64 @@ export default function MarketplacePage() {
                   <label className="block text-neutral-700 font-medium mb-2">
                     Sample Product Images * (3-6 images)
                   </label>
-                  <div className="border-2 border-dashed border-neutral-300 rounded-2xl p-8 text-center hover:border-sage transition-colors">
+                  <div
+                    className={`border-2 border-dashed rounded-2xl p-8 text-center transition-colors ${
+                      isDraggingImages ? 'border-sage bg-sage/10' : 'border-neutral-300 hover:border-sage'
+                    }`}
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      setIsDraggingImages(true)
+                    }}
+                    onDragLeave={() => setIsDraggingImages(false)}
+                    onDrop={handleDropImages}
+                  >
                     <Upload className="w-12 h-12 mx-auto text-neutral-400 mb-4" />
                     <p className="text-neutral-600 font-medium mb-2">
-                      Click to upload or drag and drop
+                      Arrastra y suelta imágenes aquí o haz clic para seleccionar
                     </p>
                     <p className="text-sm text-neutral-500">
-                      PNG, JPG up to 5MB each
+                      PNG, JPG up to 5MB each. Máx 6 imágenes.
                     </p>
                     <input
                       type="file"
                       multiple
                       accept="image/*"
+                      onChange={handleFileInput}
                       className="hidden"
                       id="sample-images"
                     />
                     <label htmlFor="sample-images" className="cursor-pointer">
                       <span className="btn-outline inline-block mt-4">
-                        Choose Files
+                        Seleccionar imágenes
                       </span>
                     </label>
                   </div>
+                  
+                  {uploadedImages.length > 0 && (
+                    <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {uploadedImages.map((img) => (
+                        <div key={img.id} className="relative rounded-xl overflow-hidden bg-neutral-100 group">
+                          <img
+                            src={img.preview}
+                            alt={img.name || 'Product preview'}
+                            className="w-full h-32 object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(img.id)}
+                            className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {uploadedImages.length > 0 && (
+                    <p className="text-xs text-neutral-500 mt-2">
+                      {uploadedImages.length} imagen{uploadedImages.length !== 1 ? 'es' : ''} seleccionada{uploadedImages.length !== 1 ? 's' : ''}
+                    </p>
+                  )}
                 </div>
 
                 <div>

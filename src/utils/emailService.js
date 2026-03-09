@@ -216,3 +216,113 @@ El equipo de Magari & Co.
   }
 }
 
+/**
+ * Send vendor application email to Magari team and confirmation to applicant
+ */
+export const sendVendorApplicationEmail = async (applicationData) => {
+  if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
+    console.warn('EmailJS not configured. Emails will not be sent.')
+    console.log('Vendor application data:', applicationData)
+    return { success: false, error: 'EmailJS not configured' }
+  }
+
+  try {
+    const imageCount = applicationData.sampleImages?.length || 0
+    const categoriesList = applicationData.categories?.join(', ') || 'N/A'
+    
+    const emailBody = `
+Nueva solicitud de vendor para el marketplace
+
+INFORMACIÓN DE CONTACTO:
+• Nombre: ${applicationData.name || 'N/A'}
+• Nombre del negocio: ${applicationData.businessName || 'N/A'}
+• Email: ${applicationData.email || 'N/A'}
+• Teléfono: ${applicationData.phone || 'N/A'}
+• Instagram: ${applicationData.instagram || 'N/A'}
+
+INFORMACIÓN DEL NEGOCIO:
+• Categorías: ${categoriesList}
+• Bio: ${applicationData.bio || 'N/A'}
+• Imágenes de muestra: ${imageCount} imagen${imageCount !== 1 ? 'es' : ''}
+
+INFORMACIÓN DE PAGO:
+• Método de pago: ${applicationData.payoutMethod || 'N/A'}
+• Email/cuenta de pago: ${applicationData.payoutEmail || 'N/A'}
+
+Fecha de solicitud: ${applicationData.submittedAt ? new Date(applicationData.submittedAt).toLocaleString('es-PR') : new Date().toLocaleString('es-PR')}
+
+Por favor, revisa la solicitud y contacta al solicitante lo antes posible.
+
+---
+Este es un email automático generado desde el formulario de aplicación de vendor de Magari & Co.
+    `.trim()
+
+    // Send email to Magari team
+    const magariEmailParams = {
+      to_email: MAGARI_EMAIL,
+      from_name: 'Magari & Co. Website',
+      subject: `Nueva Solicitud de Vendor - ${applicationData.businessName || applicationData.name}`,
+      message: emailBody,
+      applicant_name: applicationData.name || 'Solicitante',
+      applicant_email: applicationData.email || '',
+      business_name: applicationData.businessName || 'N/A'
+    }
+
+    // Send confirmation email to applicant
+    const applicantEmailParams = {
+      to_email: applicationData.email || '',
+      from_name: 'Magari & Co.',
+      subject: 'Confirmación de Solicitud de Vendor - Magari & Co.',
+      message: `
+Hola ${applicationData.name || 'Estimado/a solicitante'},
+
+¡Gracias por tu interés en unirte al marketplace de Magari & Co.!
+
+Hemos recibido tu solicitud para convertirte en vendor con la siguiente información:
+
+• Nombre del negocio: ${applicationData.businessName || 'N/A'}
+• Email: ${applicationData.email || 'N/A'}
+• Categorías: ${categoriesList}
+• Imágenes de muestra: ${imageCount} imagen${imageCount !== 1 ? 'es' : ''}
+
+Próximos pasos:
+1. Revisaremos tu solicitud y las imágenes que compartiste.
+2. Nos pondremos en contacto contigo dentro de 3-5 días hábiles.
+3. Si tu solicitud es aprobada, recibirás instrucciones para configurar tu cuenta de vendor.
+
+¿Qué sigue?
+- Si necesitas más información sobre el proceso, puedes visitar nuestra página de marketplace.
+- Para preguntas urgentes, contáctanos en: ${MAGARI_EMAIL}
+
+Esperamos trabajar contigo pronto.
+
+Con cariño,
+El equipo de Magari & Co.
+      `.trim()
+    }
+
+    // Send both emails
+    const [magariResult, applicantResult] = await Promise.all([
+      emailjs.send(SERVICE_ID, TEMPLATE_ID, magariEmailParams).catch(err => {
+        console.error('Error sending email to Magari team:', err)
+        return { success: false, error: err }
+      }),
+      applicationData.email 
+        ? emailjs.send(SERVICE_ID, TEMPLATE_ID, applicantEmailParams).catch(err => {
+            console.error('Error sending confirmation email to applicant:', err)
+            return { success: false, error: err }
+          })
+        : Promise.resolve({ success: true })
+    ])
+
+    return {
+      success: magariResult.success !== false && applicantResult.success !== false,
+      magariSent: magariResult.success !== false,
+      applicantSent: applicantResult.success !== false
+    }
+  } catch (error) {
+    console.error('Error sending vendor application email:', error)
+    return { success: false, error: error.message }
+  }
+}
+
