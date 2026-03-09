@@ -1,15 +1,18 @@
 import emailjs from '@emailjs/browser'
 
-// Initialize EmailJS with your public key
-// Get these values from https://www.emailjs.com/
-const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || ''
-const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || ''
-const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || ''
+// EmailJS: https://www.emailjs.com/ — Variables en .env: VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID, VITE_EMAILJS_PUBLIC_KEY
+const SERVICE_ID = (import.meta.env.VITE_EMAILJS_SERVICE_ID || '').trim()
+const TEMPLATE_ID = (import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '').trim()
+const PUBLIC_KEY = (import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '').trim()
 const MAGARI_EMAIL = 'magaribyelena@gmail.com'
 
-// Initialize EmailJS
+const isEmailJSConfigured = () => !!(SERVICE_ID && TEMPLATE_ID && PUBLIC_KEY)
+
 if (PUBLIC_KEY) {
   emailjs.init(PUBLIC_KEY)
+}
+if (import.meta.env.DEV && isEmailJSConfigured()) {
+  console.info('EmailJS configurado. Los correos se enviarán a', MAGARI_EMAIL, 'y a los destinatarios indicados.')
 }
 
 /**
@@ -17,8 +20,8 @@ if (PUBLIC_KEY) {
  */
 export const sendServiceRequestEmail = async (serviceData) => {
   // Skip if EmailJS is not configured
-  if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
-    console.warn('EmailJS not configured. Emails will not be sent.')
+  if (!isEmailJSConfigured()) {
+    console.warn('EmailJS no configurado. Añade VITE_EMAILJS_* en .env (ver EMAIL_SETUP.md)')
     console.log('Service request data:', serviceData)
     return { success: false, error: 'EmailJS not configured' }
   }
@@ -115,24 +118,24 @@ El equipo de Magari & Co.
       reference: serviceData.reference
     }
 
-    // Send both emails
+    const ok = (r) => r && r.status === 200
     const [magariResult, customerResult] = await Promise.all([
       emailjs.send(SERVICE_ID, TEMPLATE_ID, magariEmailParams).catch(err => {
         console.error('Error sending email to Magari team:', err)
-        return { success: false, error: err }
+        return null
       }),
-      serviceData.contact?.email 
+      serviceData.contact?.email
         ? emailjs.send(SERVICE_ID, TEMPLATE_ID, customerEmailParams).catch(err => {
             console.error('Error sending confirmation email to customer:', err)
-            return { success: false, error: err }
+            return null
           })
-        : Promise.resolve({ success: true })
+        : Promise.resolve({ status: 200 })
     ])
 
     return {
-      success: magariResult.success !== false && customerResult.success !== false,
-      magariSent: magariResult.success !== false,
-      customerSent: customerResult.success !== false
+      success: ok(magariResult) && ok(customerResult),
+      magariSent: ok(magariResult),
+      customerSent: ok(customerResult)
     }
   } catch (error) {
     console.error('Error sending service request email:', error)
@@ -144,9 +147,8 @@ El equipo de Magari & Co.
  * Send contact form email
  */
 export const sendContactFormEmail = async (formData) => {
-  if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
-    console.warn('EmailJS not configured. Emails will not be sent.')
-    console.log('Contact form data:', formData)
+  if (!isEmailJSConfigured()) {
+    console.warn('EmailJS no configurado. Ver EMAIL_SETUP.md')
     return { success: false, error: 'EmailJS not configured' }
   }
 
@@ -200,15 +202,22 @@ El equipo de Magari & Co.
       `.trim()
     }
 
+    const ok = (r) => r && r.status === 200
     const [magariResult, customerResult] = await Promise.all([
-      emailjs.send(SERVICE_ID, TEMPLATE_ID, magariParams),
-      emailjs.send(SERVICE_ID, TEMPLATE_ID, customerParams)
+      emailjs.send(SERVICE_ID, TEMPLATE_ID, magariParams).catch(err => {
+        console.error('Error sending contact email to Magari:', err)
+        return null
+      }),
+      emailjs.send(SERVICE_ID, TEMPLATE_ID, customerParams).catch(err => {
+        console.error('Error sending confirmation to customer:', err)
+        return null
+      })
     ])
 
     return {
-      success: true,
-      magariSent: magariResult.status === 200,
-      customerSent: customerResult.status === 200
+      success: ok(magariResult) && ok(customerResult),
+      magariSent: ok(magariResult),
+      customerSent: ok(customerResult)
     }
   } catch (error) {
     console.error('Error sending contact form email:', error)
@@ -220,8 +229,8 @@ El equipo de Magari & Co.
  * Send vendor application email to Magari team and confirmation to applicant
  */
 export const sendVendorApplicationEmail = async (applicationData) => {
-  if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
-    console.warn('EmailJS not configured. Emails will not be sent.')
+  if (!isEmailJSConfigured()) {
+    console.warn('EmailJS no configurado. No llegará email a magaribyelena@gmail.com. Ver EMAIL_SETUP.md')
     console.log('Vendor application data:', applicationData)
     return { success: false, error: 'EmailJS not configured' }
   }
@@ -301,28 +310,115 @@ El equipo de Magari & Co.
       `.trim()
     }
 
-    // Send both emails
+    const ok = (r) => r && r.status === 200
     const [magariResult, applicantResult] = await Promise.all([
       emailjs.send(SERVICE_ID, TEMPLATE_ID, magariEmailParams).catch(err => {
-        console.error('Error sending email to Magari team:', err)
-        return { success: false, error: err }
+        console.error('Error sending vendor application email to Magari:', err)
+        return null
       }),
-      applicationData.email 
+      applicationData.email
         ? emailjs.send(SERVICE_ID, TEMPLATE_ID, applicantEmailParams).catch(err => {
-            console.error('Error sending confirmation email to applicant:', err)
-            return { success: false, error: err }
+            console.error('Error sending confirmation to applicant:', err)
+            return null
           })
-        : Promise.resolve({ success: true })
+        : Promise.resolve({ status: 200 })
     ])
 
     return {
-      success: magariResult.success !== false && applicantResult.success !== false,
-      magariSent: magariResult.success !== false,
-      applicantSent: applicantResult.success !== false
+      success: ok(magariResult) && ok(applicantResult),
+      magariSent: ok(magariResult),
+      applicantSent: ok(applicantResult)
     }
   } catch (error) {
     console.error('Error sending vendor application email:', error)
     return { success: false, error: error.message }
   }
 }
+
+/**
+ * Send approval email to applicant with login credentials
+ */
+export const sendVendorApprovalEmail = async ({ email, name, businessName, accessCode, loginUrl = 'https://casamagari.com/marketplace' }) => {
+  if (!isEmailJSConfigured()) {
+    console.warn('EmailJS no configurado.')
+    return { success: false, error: 'EmailJS not configured' }
+  }
+  try {
+    const message = `
+¡Felicidades, ${name}!
+
+Tu solicitud para vender en el MOMade Marketplace de Magari & Co. ha sido aprobada.
+
+Ya puedes acceder a tu tienda y comenzar a añadir productos, logo e información.
+
+TUS CREDENCIALES DE ACCESO:
+• Email: ${email}
+• Código de acceso: ${accessCode}
+• Enlace para entrar: ${loginUrl}
+
+INSTRUCCIONES:
+1. Ve a ${loginUrl}
+2. Haz clic en "Vendor Login" o "Iniciar sesión"
+3. Introduce tu email y el código de acceso de arriba
+4. Desde tu panel podrás: añadir productos, subir tu logo y completar la información de tu tienda
+
+Guarda este email en un lugar seguro. Si pierdes tu código de acceso, contáctanos en ${MAGARI_EMAIL}.
+
+¡Bienvenida al marketplace!
+
+Con cariño,
+El equipo de Magari & Co.
+    `.trim()
+    const params = {
+      to_email: email,
+      from_name: 'Magari & Co.',
+      subject: '¡Aprobada! Tu cuenta de vendor MOMade está lista',
+      message
+    }
+    const res = await emailjs.send(SERVICE_ID, TEMPLATE_ID, params)
+    return { success: res && res.status === 200 }
+  } catch (error) {
+    console.error('Error sending vendor approval email:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Send rejection email to applicant
+ */
+export const sendVendorRejectionEmail = async ({ email, name, businessName }) => {
+  if (!isEmailJSConfigured()) {
+    console.warn('EmailJS no configurado.')
+    return { success: false, error: 'EmailJS not configured' }
+  }
+  try {
+    const message = `
+Hola ${name},
+
+Gracias por tu interés en unirte al MOMade Marketplace de Magari & Co.
+
+Después de revisar tu solicitud para ${businessName || 'tu negocio'}, en este momento no podemos aprobar tu cuenta. Esto puede deberse a criterios de selección o capacidad del marketplace.
+
+Si tienes preguntas o quieres más información, no dudes en contactarnos en ${MAGARI_EMAIL}.
+
+Te deseamos mucho éxito con tu emprendimiento.
+
+Con cariño,
+El equipo de Magari & Co.
+    `.trim()
+    const params = {
+      to_email: email,
+      from_name: 'Magari & Co.',
+      subject: 'Actualización de tu solicitud MOMade Marketplace',
+      message
+    }
+    const res = await emailjs.send(SERVICE_ID, TEMPLATE_ID, params)
+    return { success: res && res.status === 200 }
+  } catch (error) {
+    console.error('Error sending vendor rejection email:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export { isEmailJSConfigured }
 

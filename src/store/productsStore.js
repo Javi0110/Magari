@@ -1,82 +1,180 @@
 import { create } from 'zustand'
-import { sampleProducts } from '../data/sampleData'
+import { supabase } from '../utils/supabase'
 
-// Helper to save to localStorage
-const saveToStorage = (products) => {
-  localStorage.setItem('magari-products-storage', JSON.stringify(products))
+// Mapear fila de Supabase (snake_case) a objeto app (camelCase)
+function fromDb(row) {
+  if (!row) return null
+  const { return_policy, created_at, ...rest } = row
+  return {
+    ...rest,
+    returnPolicy: return_policy ?? rest.returnPolicy,
+    createdAt: created_at ?? rest.createdAt,
+    images: Array.isArray(row.images) ? row.images : (row.images ? (typeof row.images === 'string' ? JSON.parse(row.images || '[]') : []) : []),
+    tags: Array.isArray(row.tags) ? row.tags : (row.tags ? (typeof row.tags === 'string' ? JSON.parse(row.tags || '[]') : []) : ['magari']),
+  }
 }
 
-// Helper to load from localStorage
+// Mapear objeto app a payload para Supabase (snake_case)
+function toDb(product) {
+  const p = { ...product }
+  if (p.returnPolicy !== undefined) {
+    p.return_policy = p.returnPolicy
+    delete p.returnPolicy
+  }
+  delete p.createdAt
+  delete p.id // let DB generate on insert
+  return p
+}
+
+const saveToStorage = (products) => {
+  try {
+    localStorage.setItem('magari-products-storage', JSON.stringify(products))
+  } catch {
+  }
+}
+
 const loadFromStorage = () => {
   try {
     const stored = localStorage.getItem('magari-products-storage')
     if (stored) {
       const parsed = JSON.parse(stored)
-      // Only return if it's a non-empty array
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
         return parsed
       }
     }
-    // Initialize with empty array if no stored data
-    const empty = []
-    saveToStorage(empty)
-    return empty
   } catch {
-    const empty = []
-    saveToStorage(empty)
-    return empty
   }
+  const empty = []
+  saveToStorage(empty)
+  return empty
 }
 
-// Products store with localStorage persistence
 export const useProductsStore = create((set, get) => ({
   products: loadFromStorage(),
+  loading: false,
+  error: null,
+  initialized: false,
   
-  // Get all products (only Magari products)
-  getAllProducts: () => {
-    return get().products.filter(p => p.vendor === 'magari')
+  initProducts: async () => {
+    if (get().initialized) return
+    if (!supabase) {
+      set({ initialized: true })
+      return
+    }
+    set({ loading: true, error: null })
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (error) {
+      set({ loading: false, error: error.message, initialized: true })
+      return
+    }
+    
+    const products = (Array.isArray(data) ? data : []).map(fromDb)
+    set({ products, loading: false, initialized: true })
+    saveToStorage(products)
   },
   
-  // Get product by ID
+  getAllProducts: () => {
+    return get().products.filter(p => p.vendor === 'magari' || !p.vendor)
+  },
+  
   getProductById: (id) => {
     return get().products.find(p => p.id === id)
   },
   
-  // Add new product
-  addProduct: (product) => {
-    const products = get().products
-    const newId = Math.max(...products.map(p => p.id), 0) + 1
-    const newProduct = {
-      ...product,
-      id: newId,
-      vendor: 'magari', // Always magari for shop products
-      tags: product.tags || ['magari'],
+  addProduct: async (product) => {
+    if (!supabase) {
+      const products = get().products
+      const newId = Math.max(...products.map(p => p.id || 0), 0) + 1
+      const newProduct = {
+        ...product,
+        id: newId,
+        vendor: 'magari',
+        tags: product.tags || ['magari'],
+      }
+      const updatedProducts = [...products, newProduct]
+      set({ products: updatedProducts })
+      saveToStorage(updatedProducts)
+      return newProduct
     }
+    
+    const tags = product.tags && Array.isArray(product.tags) ? product.tags : (product.tags ? (typeof product.tags === 'string' ? product.tags.split(',').map(t => t.trim()).filter(Boolean) : []) : ['magari'])
+    const payload = toDb({
+      ...product,
+      vendor: 'magari',
+      tags,
+      images: product.images && Array.isArray(product.images) ? product.images : (product.images ? [product.images] : []),
+    })
+    
+    const { data, error } = await supabase
+      .from('products')
+      .insert(payload)
+      .select('*')
+      .single()
+    
+    if (error) {
+      throw error
+    }
+    
+    const newProduct = fromDb(data)
+    const products = get().products
     const updatedProducts = [...products, newProduct]
     set({ products: updatedProducts })
     saveToStorage(updatedProducts)
     return newProduct
   },
   
-  // Update existing product
-  updateProduct: (id, updates) => {
+  updateProduct: async (id, updates) => {
+    if (!supabase) {
+      const products = get().products
+      const updatedProducts = products.map(product =>
+        product.id === id ? { ...product, ...updates } : product
+      )
+      set({ products: updatedProducts })
+      saveToStorage(updatedProducts)
+      return updatedProducts.find(p => p.id === id)
+    }
+    
+    const payload = toDb(updates)
+    const { data, error } = await supabase
+      .from('products')
+      .update(payload)
+      .eq('id', id)
+      .select('*')
+      .single()
+    
+    if (error) {
+      throw error
+    }
+    
+    const updatedProduct = fromDb(data)
     const products = get().products
     const updatedProducts = products.map(product =>
-      product.id === id ? { ...product, ...updates } : product
+      product.id === id ? updatedProduct : product
     )
     set({ products: updatedProducts })
     saveToStorage(updatedProducts)
-    return updatedProducts.find(p => p.id === id)
+    return updatedProduct
   },
   
-  // Delete product
-  deleteProduct: (id) => {
+  deleteProduct: async (id) => {
+    if (supabase) {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id)
+      if (error) {
+        throw error
+      }
+    }
     const products = get().products.filter(p => p.id !== id)
     set({ products })
     saveToStorage(products)
   },
   
-  // Get inventory stats
   getInventoryStats: () => {
     const products = get().getAllProducts()
     return {

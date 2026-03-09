@@ -1,0 +1,51 @@
+# Lo que debes hacer tú (no se puede automatizar)
+
+Solo estos pasos requieren tu cuenta y tu teclado. El resto del código ya está listo.
+
+---
+
+## 1. EmailJS (para que lleguen los correos)
+
+**Objetivo:** Que los formularios envíen email a magaribyelena@gmail.com y a clientes/solicitantes.
+
+1. Entra en **https://www.emailjs.com/** e inicia sesión (o crea cuenta gratis).
+2. **Email Services** → **Add New Service** → elige **Gmail** y conecta la cuenta desde la que quieres enviar (ej. magaribyelena@gmail.com). **Copia el SERVICE_ID** (ej. `service_xxxxx`).
+3. **Email Templates** → **Create New Template**. Configura:
+   - **To:** `{{to_email}}`
+   - **Subject:** `{{subject}}`
+   - **Content / Body:** `{{message}}`
+   Guarda y **copia el TEMPLATE_ID** (ej. `template_xxxxx`).
+4. **Account** → **General** → en API Keys **copia la Public Key**.
+5. Abre el archivo **`.env`** en la raíz del proyecto. Verás tres líneas vacías al final. Rellena así (pega tus valores):
+   ```env
+   VITE_EMAILJS_SERVICE_ID=service_xxxxx
+   VITE_EMAILJS_TEMPLATE_ID=template_xxxxx
+   VITE_EMAILJS_PUBLIC_KEY=xxxxxxxxxxxx
+   ```
+6. Guarda `.env` y **reinicia el servidor** (parar con Ctrl+C y volver a ejecutar `npm run dev`).
+
+**Comprobar:** En la consola del navegador (F12) deberías ver: *"EmailJS configurado. Los correos se enviarán a magaribyelena@gmail.com..."*
+
+---
+
+## 2. Supabase – ejecutar las migraciones (tablas en la base de datos)
+
+**Objetivo:** Que productos y solicitudes de vendors se guarden en tu proyecto de Supabase.
+
+1. Entra en **https://supabase.com/dashboard** y abre tu proyecto.
+2. Menú **SQL Editor** → **New query**.
+3. Abre en tu ordenador el archivo **`supabase/migrations/20260128000000_create_products.sql`**, copia **todo** el contenido y pégalo en el editor de Supabase. Pulsa **Run**. Debe terminar sin errores.
+4. **New query** de nuevo. Abre **`supabase/migrations/20260128100000_create_vendor_applications_and_vendors.sql`**, copia todo, pega en el editor y **Run**. Debe terminar sin errores.
+
+Con eso ya existen las tablas `products`, `vendor_applications` y `vendors`. No hace falta repetir estos pasos.
+
+---
+
+## Resumen
+
+| Qué | Dónde | Acción |
+|-----|--------|--------|
+| **EmailJS** | .env + cuenta emailjs.com | Rellenar SERVICE_ID, TEMPLATE_ID, PUBLIC_KEY y reiniciar `npm run dev`. |
+| **Supabase** | Dashboard → SQL Editor | Ejecutar los dos archivos `.sql` de `supabase/migrations/` (una vez cada uno). |
+
+Cuando hayas hecho 1 y 2, los correos llegarán a magaribyelena@gmail.com y los datos se guardarán en Supabase. Si algo falla, revisa la consola del navegador y el panel de EmailJS/Supabase.

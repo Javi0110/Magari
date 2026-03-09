@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -25,7 +25,7 @@ export default function ShopPage() {
   const [showNewsletter, setShowNewsletter] = useState(true)
   const [newsletterEmail, setNewsletterEmail] = useState('')
   
-  const { getAllProducts } = useProductsStore()
+  const { getAllProducts, initProducts, loading, error } = useProductsStore()
   const { addItem, openCart } = useCartStore()
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore()
 
@@ -34,6 +34,10 @@ export default function ShopPage() {
   const materials = ['all', 'Clay', 'Paper', 'Fabric', 'Wood']
   const collections = ['all', 'Elemento', 'Casa Magari', 'Limited Edition']
   const shippingOptions = ['all', 'PR only', 'USA', 'Both']
+
+  useEffect(() => {
+    initProducts().catch(() => {})
+  }, [initProducts])
 
   const allProducts = getAllProducts()
 

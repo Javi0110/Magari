@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { 
   LogIn, 
@@ -20,6 +20,8 @@ import {
 } from 'lucide-react'
 import { sampleProducts, sampleVendors, sampleTestimonials } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
+import { supabase } from '../utils/supabase'
+import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailService'
 
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -214,11 +216,15 @@ function DashboardView() {
 
 // Products View
 function ProductsView() {
-  const { products, getAllProducts, deleteProduct, getInventoryStats } = useProductsStore()
+  const { products, getAllProducts, deleteProduct, getInventoryStats, initProducts, loading, error } = useProductsStore()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
+  
+  useEffect(() => {
+    initProducts().catch(() => {})
+  }, [initProducts])
   
   const magariProducts = getAllProducts()
   const stats = getInventoryStats()
@@ -794,85 +800,197 @@ function OrdersView() {
   )
 }
 
-// Vendors View
-function VendorsView() {
-  const [vendors, setVendors] = useState([
-    ...sampleVendors.map(v => ({ ...v, status: 'approved' })),
-    {
-      id: 2,
-      name: 'Ana',
-      businessName: 'Ana\'s Textiles',
-      email: 'ana@example.com',
-      status: 'pending',
-      appliedDate: '2025-10-28'
-    }
-  ])
+// Generate a random access code for approved vendors (e.g. 8 alphanumeric)
+function generateAccessCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  let code = ''
+  for (let i = 0; i < 8; i++) code += chars.charAt(Math.floor(Math.random() * chars.length))
+  return code
+}
 
-  const handleApprove = (vendorId) => {
-    setVendors(vendors.map(v => 
-      v.id === vendorId ? { ...v, status: 'approved' } : v
-    ))
-    // 🔌 INTEGRATION: POST /api/vendors/:id/approve
-    console.log('Approved vendor:', vendorId)
+// Vendors View – MOMade applications from Supabase
+function VendorsView() {
+  const [applications, setApplications] = useState([])
+  const [approvedVendors, setApprovedVendors] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(null)
+
+  const loadApplications = async () => {
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    try {
+      const { data: apps, error: appsErr } = await supabase
+        .from('vendor_applications')
+        .select('*')
+        .order('submitted_at', { ascending: false })
+      if (!appsErr) setApplications(apps || [])
+      const { data: vendors, error: vendorsErr } = await supabase
+        .from('vendors')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (!vendorsErr) setApprovedVendors(vendors || [])
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleReject = (vendorId) => {
-    setVendors(vendors.filter(v => v.id !== vendorId))
-    // 🔌 INTEGRATION: POST /api/vendors/:id/reject
-    console.log('Rejected vendor:', vendorId)
+  useEffect(() => {
+    loadApplications()
+  }, [])
+
+  const handleApprove = async (app) => {
+    if (!supabase || !app?.id) return
+    setActionLoading(app.id)
+    const accessCode = generateAccessCode()
+    try {
+      const { error: insertErr } = await supabase
+        .from('vendors')
+        .insert({
+          application_id: app.id,
+          email: app.email,
+          name: app.name,
+          business_name: app.business_name,
+          access_code: accessCode,
+          status: 'active'
+        })
+      if (insertErr) throw insertErr
+      await supabase
+        .from('vendor_applications')
+        .update({ status: 'approved', reviewed_at: new Date().toISOString() })
+        .eq('id', app.id)
+      await sendVendorApprovalEmail({
+        email: app.email,
+        name: app.name,
+        businessName: app.business_name,
+        accessCode,
+        loginUrl: `${window.location.origin}/marketplace`
+      })
+      await loadApplications()
+    } catch (err) {
+      console.error(err)
+      alert('Error al aprobar: ' + (err.message || 'intenta de nuevo'))
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleReject = async (app) => {
+    if (!supabase || !app?.id) return
+    setActionLoading(app.id)
+    try {
+      await supabase
+        .from('vendor_applications')
+        .update({ status: 'rejected', reviewed_at: new Date().toISOString() })
+        .eq('id', app.id)
+      await sendVendorRejectionEmail({
+        email: app.email,
+        name: app.name,
+        businessName: app.business_name
+      })
+      await loadApplications()
+    } catch (err) {
+      console.error(err)
+      alert('Error al rechazar: ' + (err.message || 'intenta de nuevo'))
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const pending = applications.filter(a => a.status === 'pending')
+  const approved = applications.filter(a => a.status === 'approved')
+  const rejected = applications.filter(a => a.status === 'rejected')
+
+  if (loading) {
+    return (
+      <div>
+        <h2 className="font-serif text-2xl text-neutral-700 mb-6">Vendor Applications (MOMade)</h2>
+        <p className="text-neutral-600">Loading…</p>
+      </div>
+    )
   }
 
   return (
     <div>
-      <h2 className="font-serif text-2xl text-neutral-700 mb-6">Vendors</h2>
+      <h2 className="font-serif text-2xl text-neutral-700 mb-6">Vendor Applications (MOMade)</h2>
+      <p className="text-neutral-600 mb-6">Solicitudes del formulario del marketplace. Aprueba o rechaza y se enviará un email al solicitante.</p>
 
-      {/* Pending Applications */}
-      <div className="mb-6">
-        <h3 className="font-semibold text-neutral-700 mb-3">Pending Applications</h3>
-        <div className="space-y-3">
-          {vendors.filter(v => v.status === 'pending').map(vendor => (
-            <div key={vendor.id} className="card flex items-center justify-between">
-              <div>
-                <p className="font-medium text-neutral-700">{vendor.businessName}</p>
-                <p className="text-sm text-neutral-500">by {vendor.name} · Applied {vendor.appliedDate}</p>
+      {/* Pending */}
+      <div className="mb-8">
+        <h3 className="font-semibold text-neutral-700 mb-3">Pending ({pending.length})</h3>
+        <div className="space-y-4">
+          {pending.length === 0 && <p className="text-neutral-500 text-sm">No pending applications.</p>}
+          {pending.map(app => (
+            <div key={app.id} className="card border border-neutral-200">
+              <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+                <div>
+                  <p className="font-medium text-neutral-800">{app.business_name}</p>
+                  <p className="text-sm text-neutral-500">{app.name} · {app.email}</p>
+                  {app.phone && <p className="text-sm text-neutral-500">Tel: {app.phone}</p>}
+                  {app.instagram && <p className="text-sm text-neutral-500">Instagram: {app.instagram}</p>}
+                  <p className="text-xs text-neutral-400 mt-1">
+                    Enviado: {app.submitted_at ? new Date(app.submitted_at).toLocaleString('es-PR') : '—'}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleApprove(app)}
+                    disabled={!!actionLoading}
+                    className="btn-primary py-2 px-4 flex items-center text-sm"
+                  >
+                    {actionLoading === app.id ? '…' : <><Check className="w-4 h-4 mr-1" /> Approve</>}
+                  </button>
+                  <button
+                    onClick={() => handleReject(app)}
+                    disabled={!!actionLoading}
+                    className="btn-outline py-2 px-4 flex items-center text-sm"
+                  >
+                    {actionLoading === app.id ? '…' : <><X className="w-4 h-4 mr-1" /> Reject</>}
+                  </button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleApprove(vendor.id)}
-                  className="btn-primary py-2 px-4 flex items-center text-sm"
-                >
-                  <Check className="w-4 h-4 mr-1" />
-                  Approve
-                </button>
-                <button
-                  onClick={() => handleReject(vendor.id)}
-                  className="btn-outline py-2 px-4 flex items-center text-sm"
-                >
-                  <X className="w-4 h-4 mr-1" />
-                  Reject
-                </button>
+              <div className="text-sm text-neutral-600 border-t border-neutral-100 pt-3 mt-3 space-y-1">
+                {app.categories?.length > 0 && <p><strong>Categorías:</strong> {app.categories.join(', ')}</p>}
+                {app.bio && <p><strong>Bio:</strong> {app.bio}</p>}
+                <p><strong>Pago:</strong> {app.payout_method} – {app.payout_email}</p>
+                {app.form_data?.sampleImageCount != null && (
+                  <p><strong>Imágenes de muestra:</strong> {app.form_data.sampleImageCount}</p>
+                )}
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Active Vendors */}
+      {/* Approved */}
+      <div className="mb-8">
+        <h3 className="font-semibold text-neutral-700 mb-3">Approved ({approved.length})</h3>
+        <div className="grid md:grid-cols-2 gap-3">
+          {approved.length === 0 && <p className="text-neutral-500 text-sm">None yet.</p>}
+          {approved.map(app => (
+            <div key={app.id} className="card">
+              <p className="font-medium text-neutral-700">{app.business_name}</p>
+              <p className="text-sm text-neutral-500">by {app.name} · {app.email}</p>
+              <span className="badge badge-handmade mt-2">Approved</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Rejected */}
       <div>
-        <h3 className="font-semibold text-neutral-700 mb-3">Active Vendors</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          {vendors.filter(v => v.status === 'approved').map(vendor => (
-            <div key={vendor.id} className="card">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium text-neutral-700">{vendor.businessName}</h4>
-                <span className="badge badge-handmade">Active</span>
-              </div>
-              <p className="text-sm text-neutral-600 mb-2">by {vendor.name}</p>
-              {vendor.products && (
-                <p className="text-xs text-neutral-500">
-                  {vendor.products.length} products listed
-                </p>
-              )}
+        <h3 className="font-semibold text-neutral-700 mb-3">Rejected ({rejected.length})</h3>
+        <div className="grid md:grid-cols-2 gap-3">
+          {rejected.length === 0 && <p className="text-neutral-500 text-sm">None.</p>}
+          {rejected.map(app => (
+            <div key={app.id} className="card opacity-75">
+              <p className="font-medium text-neutral-700">{app.business_name}</p>
+              <p className="text-sm text-neutral-500">by {app.name}</p>
+              <span className="badge bg-neutral-400 text-white mt-2">Rejected</span>
             </div>
           ))}
         </div>

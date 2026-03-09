@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Heart, Store, TrendingUp, Upload, DollarSign, Package, BarChart3, LogIn, UserPlus, MapPin, Edit, Trash2, Plus, Search, X, Image as ImageIcon, Trash2 as DeleteIcon } from 'lucide-react'
 import { sendVendorApplicationEmail } from '../utils/emailService'
+import { supabase } from '../utils/supabase'
 import { sampleVendors } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
 import { useVendorProductsStore } from '../store/vendorProductsStore'
@@ -74,29 +75,50 @@ export default function MarketplacePage() {
   const handleApplicationSubmit = async (e) => {
     e.preventDefault()
     
+    const submittedAt = new Date().toISOString()
     const applicationPayload = {
       ...applicationData,
       sampleImages: uploadedImages,
-      submittedAt: new Date().toISOString()
+      submittedAt
     }
     
-    // Send confirmation emails
+    if (supabase) {
+      try {
+        await supabase.from('vendor_applications').insert({
+          name: applicationData.name,
+          business_name: applicationData.businessName,
+          email: applicationData.email,
+          phone: applicationData.phone || '',
+          instagram: applicationData.instagram || '',
+          categories: applicationData.categories?.length ? applicationData.categories : [],
+          bio: applicationData.bio || '',
+          payout_method: applicationData.payoutMethod || 'paypal',
+          payout_email: applicationData.payoutEmail,
+          form_data: {
+            ...applicationData,
+            sampleImageCount: uploadedImages.length,
+            submittedAt
+          }
+        })
+      } catch (err) {
+        console.error('Error saving application to Supabase:', err)
+        alert('Error al enviar la solicitud. Intenta de nuevo.')
+        return
+      }
+    } else {
+      const existing = JSON.parse(localStorage.getItem('magari_vendor_applications') || '[]')
+      localStorage.setItem('magari_vendor_applications', JSON.stringify([...existing, applicationPayload]))
+    }
+    
     try {
       await sendVendorApplicationEmail(applicationPayload)
     } catch (error) {
       console.error('Error sending email:', error)
-      // Continue anyway - the application is still processed
     }
     
-    // Store in localStorage for demo
-    const existing = JSON.parse(localStorage.getItem('magari_vendor_applications') || '[]')
-    localStorage.setItem('magari_vendor_applications', JSON.stringify([...existing, applicationPayload]))
-    
-    console.log('Application submitted:', applicationPayload)
     alert('✓ Application submitted! We will review and get back to you within 3-5 business days.')
     setView('landing')
     
-    // Reset form
     setApplicationData({
       name: '',
       businessName: '',
@@ -116,26 +138,49 @@ export default function MarketplacePage() {
     email: '',
     password: ''
   })
+  const [loginError, setLoginError] = useState('')
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
-    
-    // 🔌 INTEGRATION: Authentication
-    // Use Clerk, Supabase Auth, or custom JWT auth
-    // POST /api/auth/login
-    
-    // For demo: check if email contains "magari" or "@magari" to determine account type
-    const isMagariAccount = loginData.email.includes('magari') || loginData.email === 'magari@magariandco.com'
-    
-    console.log('Login attempt', { email: loginData.email, isMagariAccount })
+    setLoginError('')
+    const email = (loginData.email || '').trim()
+    const code = (loginData.password || '').trim()
+    if (!email || !code) {
+      setLoginError('Introduce tu email y tu código de acceso.')
+      return
+    }
+    if (supabase) {
+      const { data: vendors, error } = await supabase
+        .from('vendors')
+        .select('id, email, name, business_name, status')
+        .eq('email', email)
+        .eq('access_code', code)
+        .eq('status', 'active')
+        .limit(1)
+      if (error || !vendors?.length) {
+        setLoginError('Email o código de acceso incorrectos.')
+        return
+      }
+      const vendor = vendors[0]
+      setIsLoggedIn(true)
+      setView('dashboard')
+      localStorage.setItem('magari-current-user', JSON.stringify({
+        email: vendor.email,
+        vendorId: vendor.id,
+        name: vendor.name,
+        businessName: vendor.business_name,
+        isMagariAccount: false,
+        vendorSlug: (vendor.business_name || vendor.email).toLowerCase().replace(/[^a-z0-9]/g, '-')
+      }))
+      return
+    }
+    const isMagariAccount = email.includes('magari') || email === 'magari@magariandco.com'
     setIsLoggedIn(true)
     setView('dashboard')
-    
-    // Store user info in localStorage for demo
     localStorage.setItem('magari-current-user', JSON.stringify({
-      email: loginData.email,
+      email,
       isMagariAccount,
-      vendorSlug: isMagariAccount ? 'magari' : loginData.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-')
+      vendorSlug: isMagariAccount ? 'magari' : email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-')
     }))
   }
 
@@ -602,9 +647,12 @@ export default function MarketplacePage() {
               </p>
 
               <form onSubmit={handleLogin} className="space-y-6">
+                {loginError && (
+                  <p className="text-red-600 text-sm bg-red-50 p-3 rounded">{loginError}</p>
+                )}
                 <div>
                   <label className="block text-neutral-700 font-medium mb-2">
-                    Email Address
+                    Email
                   </label>
                   <input
                     type="email"
@@ -612,29 +660,27 @@ export default function MarketplacePage() {
                     value={loginData.email}
                     onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                     className="input-field"
-                    placeholder="maria@example.com"
+                    placeholder="tu@email.com"
                   />
-                  <p className="text-xs text-stone-light mt-1">
-                    Use email with "magari" for official Magari account
-                  </p>
                 </div>
 
                 <div>
                   <label className="block text-neutral-700 font-medium mb-2">
-                    Password
+                    Código de acceso
                   </label>
                   <input
-                    type="password"
+                    type="text"
+                    autoComplete="one-time-code"
                     required
                     value={loginData.password}
                     onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                     className="input-field"
-                    placeholder="••••••••"
+                    placeholder="El código que recibiste por email"
                   />
                 </div>
 
                 <button type="submit" className="w-full btn-primary py-3">
-                  Sign In
+                  Entrar
                 </button>
 
                 <p className="text-center text-sm text-neutral-500">
