@@ -15,20 +15,17 @@ function fromDb(row) {
   }
 }
 
-// Mapear objeto app a payload para Supabase (snake_case)
+// Payload for shop_products: only columns that exist in the table
+const SHOP_PRODUCT_KEYS = [
+  'slug', 'title', 'description', 'price', 'category', 'room', 'materials',
+  'dimensions', 'images', 'tags', 'badge', 'stock', 'is_active'
+]
 function toDb(product) {
-  const p = { ...product }
-  if (p.returnPolicy !== undefined) {
-    p.return_policy = p.returnPolicy
-    delete p.returnPolicy
+  const out = {}
+  for (const key of SHOP_PRODUCT_KEYS) {
+    if (product[key] !== undefined) out[key] = product[key]
   }
-  if (p.vendorId !== undefined) {
-    p.vendor_id = p.vendorId
-    delete p.vendorId
-  }
-  delete p.createdAt
-  delete p.id // let DB generate on insert
-  return p
+  return out
 }
 
 const saveToStorage = (products) => {
@@ -127,7 +124,7 @@ export const useProductsStore = create((set, get) => ({
     const newProduct = fromDb(data)
     const products = get().products
     const updatedProducts = [...products, newProduct]
-    set({ products: updatedProducts })
+    set({ products: updatedProducts, initialized: false })
     saveToStorage(updatedProducts)
     return newProduct
   },
