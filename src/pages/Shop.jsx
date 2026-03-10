@@ -8,6 +8,7 @@ import {
 import { useProductsStore } from '../store/productsStore'
 import { useCartStore } from '../store/cartStore'
 import { useWishlistStore } from '../store/wishlistStore'
+import { supabase } from '../utils/supabase'
 
 export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -24,12 +25,15 @@ export default function ShopPage() {
   const [displayCount, setDisplayCount] = useState(12)
   const [showNewsletter, setShowNewsletter] = useState(true)
   const [newsletterEmail, setNewsletterEmail] = useState('')
+  const [newsletterStatus, setNewsletterStatus] = useState(null)
+  const [abandonedEmail, setAbandonedEmail] = useState('')
+  const [abandonedStatus, setAbandonedStatus] = useState(null)
   
   const { getAllProducts, initProducts, loading, error } = useProductsStore()
   const { addItem, openCart } = useCartStore()
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore()
 
-  const categories = ['all', 'Ceramics', 'Stationery', 'Decor', 'Art Prints', 'Seasonal', 'Gift Sets']
+  const categories = ['all', 'Home Decor', 'Handmade Ceramics', 'Stationery', 'Gifts']
   const colors = ['all', 'Neutral', 'Terracotta', 'Green', 'Blue', 'Mixed']
   const materials = ['all', 'Clay', 'Paper', 'Fabric', 'Wood']
   const collections = ['all', 'Elemento', 'Casa Magari', 'Limited Edition']
@@ -184,17 +188,23 @@ export default function ShopPage() {
     setDisplayCount(prev => prev + 12)
   }
 
-  const handleNewsletterSubmit = (e) => {
+  const handleNewsletterSubmit = async (e) => {
     e.preventDefault()
-    // 🔌 INTEGRATION: Newsletter signup
-    // await fetch('/api/newsletter', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ email: newsletterEmail })
-    // })
-    alert('Thank you for joining the Magari family!')
-    setNewsletterEmail('')
-    setShowNewsletter(false)
+    if (!newsletterEmail) return
+    try {
+      setNewsletterStatus('saving')
+      if (supabase) {
+        await supabase
+          .from('shop_newsletter_signups')
+          .insert({ email: newsletterEmail, source: 'shop' })
+      }
+      setNewsletterStatus('success')
+      setNewsletterEmail('')
+      setShowNewsletter(false)
+    } catch (err) {
+      console.error('Error saving newsletter signup:', err)
+      setNewsletterStatus('error')
+    }
   }
 
   const getBadge = (product) => {
@@ -220,15 +230,59 @@ export default function ShopPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-12 text-center">
-          <h1 className="font-serif text-5xl md:text-6xl text-neutral-700 mb-4">
-            Shop Magari & Co.
+        {/* Header + hero for Shop Magari */}
+        <div className="mb-10 text-center">
+          <h1 className="font-serif text-4xl md:text-5xl text-neutral-700 mb-3">
+            Shop Magari &amp; Co.
           </h1>
-          <p className="text-xl text-neutral-600 max-w-2xl mx-auto">
-            Handpicked pieces for cozy, artful homes.
+          <p className="text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto mb-5">
+            Curated decor and home goods selected to bring warmth, texture, and story into your everyday spaces.
           </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCategory('all')
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              className="btn-primary"
+            >
+              Shop All Products
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedCategory('Gifts')}
+              className="btn-secondary"
+            >
+              Shop Gifts
+            </button>
+          </div>
         </div>
+
+        {/* Featured collections */}
+        <section className="mb-10">
+          <h2 className="font-serif text-2xl text-neutral-700 mb-4 text-center md:text-left">
+            Featured collections
+          </h2>
+          <div className="grid md:grid-cols-4 gap-4">
+            {[
+              { label: 'Handmade Ceramics', value: 'Handmade Ceramics', blurb: 'Mugs, bowls, and vessels with character.' },
+              { label: 'Home Decor', value: 'Home Decor', blurb: 'Textiles, vases, and artful accents.' },
+              { label: 'Stationery', value: 'Stationery', blurb: 'Notecards and paper goods for slow moments.' },
+              { label: 'Gifts', value: 'Gifts', blurb: 'Thoughtful pieces ready to gift.' },
+            ].map((col) => (
+              <button
+                key={col.label}
+                type="button"
+                onClick={() => setSelectedCategory(col.value)}
+                className="card text-left px-4 py-5 hover:shadow-soft-lg transition-shadow"
+              >
+                <p className="font-serif text-lg text-neutral-800 mb-1">{col.label}</p>
+                <p className="text-xs text-neutral-600">{col.blurb}</p>
+              </button>
+            ))}
+          </div>
+        </section>
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters - Left Column */}
@@ -374,12 +428,17 @@ export default function ShopPage() {
 
           {/* Main Content - Right Side */}
           <div className="flex-1">
-            {/* Sort Options */}
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-neutral-600">
-                {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
-              </p>
-              <div className="flex items-center gap-2">
+            {/* Best sellers / New arrivals summary + Sort Options */}
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+              <div>
+                <p className="text-sm text-neutral-600">
+                  {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
+                </p>
+                <p className="text-xs text-neutral-500">
+                  Use filters or featured collections above to find the right piece faster.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 justify-end">
                 <label className="text-sm text-neutral-600">Sort by:</label>
                 <select
                   value={sortBy}
