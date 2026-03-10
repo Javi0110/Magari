@@ -22,19 +22,19 @@ function buildApprovalHtml({ name, email, accessCode, loginUrl }) {
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"></head>
 <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
-  <h2 style="color: #4a7c59;">¡Felicidades, ${escapeHtml(name)}!</h2>
-  <p>Tu solicitud para vender en el MOMade Marketplace de Magari &amp; Co. ha sido aprobada.</p>
-  <p>Ya puedes acceder a tu tienda y comenzar a añadir productos, logo e información.</p>
-  <p><strong>TUS CREDENCIALES DE ACCESO:</strong></p>
+  <h2 style="color: #4a7c59;">Congratulations, ${escapeHtml(name)}!</h2>
+  <p>Your application to sell on the MOMade Marketplace by Magari &amp; Co. has been approved.</p>
+  <p>You can now access your shop and start adding products, your logo, and store information.</p>
+  <p><strong>YOUR LOGIN DETAILS:</strong></p>
   <ul>
     <li>Email: ${escapeHtml(email)}</li>
-    <li>Código de acceso: <strong>${escapeHtml(accessCode)}</strong></li>
-    <li>Enlace: <a href="${escapeHtml(url)}">${escapeHtml(url)}</a></li>
+    <li>Access code: <strong>${escapeHtml(accessCode)}</strong></li>
+    <li>Link: <a href="${escapeHtml(url)}">${escapeHtml(url)}</a></li>
   </ul>
-  <p>Ve a ese enlace, haz clic en "Vendor Login" e introduce tu email y el código de acceso. Guarda este correo en un lugar seguro.</p>
-  <p>Si pierdes tu código, contáctanos en ${MAGARI_EMAIL}.</p>
-  <p>¡Bienvenida al marketplace!</p>
-  <p>— El equipo de Magari &amp; Co.</p>
+  <p>Go to this link, click on \"Vendor Login\", and enter your email and access code. Please keep this email in a safe place.</p>
+  <p>If you lose your access code, contact us at ${MAGARI_EMAIL}.</p>
+  <p>Welcome to the marketplace!</p>
+  <p>— The Magari &amp; Co. team</p>
 </body></html>`.trim()
 }
 
@@ -44,11 +44,12 @@ function buildRejectionHtml({ name, businessName }) {
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"></head>
 <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
-  <p>Hola ${escapeHtml(name)},</p>
-  <p>Gracias por tu interés en unirte al MOMade Marketplace de Magari &amp; Co.</p>
-  <p>Después de revisar tu solicitud para ${escapeHtml(business)}, en este momento no podemos aprobar tu cuenta. Si tienes preguntas, contáctanos en ${MAGARI_EMAIL}.</p>
-  <p>Te deseamos mucho éxito con tu emprendimiento.</p>
-  <p>— El equipo de Magari &amp; Co.</p>
+  <p>Hi ${escapeHtml(name)},</p>
+  <p>Thank you for your interest in joining the MOMade Marketplace by Magari &amp; Co.</p>
+  <p>After reviewing your application for ${escapeHtml(business)}, we are not able to approve your account at this time.</p>
+  <p>If you have any questions or would like more information, feel free to contact us at ${MAGARI_EMAIL}.</p>
+  <p>We wish you all the best with your business.</p>
+  <p>— The Magari &amp; Co. team</p>
 </body></html>`.trim()
 }
 
