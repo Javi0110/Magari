@@ -1023,42 +1023,22 @@ function VendorsView() {
     if (!supabase || !app?.id) return
     setActionLoading(app.id)
     try {
-      // ¿Ya existe un vendor con este email? (evita el error de clave duplicada)
-      const { data: existing, error: fetchErr } = await supabase
+      // Usa upsert para evitar el error de clave duplicada en email
+      const accessCode = generateAccessCode()
+      const { error: upsertErr } = await supabase
         .from('vendors')
-        .select('*')
-        .eq('email', app.email)
-
-      if (fetchErr) throw fetchErr
-
-      let accessCode
-
-      if (existing && existing.length > 0) {
-        const vendor = existing[0]
-        accessCode = vendor.access_code
-        // Asegura que quede ligada a esta application y activa
-        const { error: updateVendorErr } = await supabase
-          .from('vendors')
-          .update({
-            application_id: app.id,
-            status: 'active'
-          })
-          .eq('id', vendor.id)
-        if (updateVendorErr) throw updateVendorErr
-      } else {
-        accessCode = generateAccessCode()
-        const { error: insertErr } = await supabase
-          .from('vendors')
-          .insert({
+        .upsert(
+          {
             application_id: app.id,
             email: app.email,
             name: app.name,
             business_name: app.business_name,
             access_code: accessCode,
             status: 'active'
-          })
-        if (insertErr) throw insertErr
-      }
+          },
+          { onConflict: 'email' }
+        )
+      if (upsertErr) throw upsertErr
 
       await supabase
         .from('vendor_applications')
