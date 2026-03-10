@@ -1583,17 +1583,47 @@ function VendorProfileSettings({ vendorId, currentUser }) {
       }
       const { data, error } = await supabase
         .from('vendors')
-        .select('profile_bio, profile_location, profile_website, profile_instagram, profile_avatar_url, published')
+        .select('application_id, profile_bio, profile_location, profile_website, profile_instagram, profile_avatar_url, published')
         .eq('id', vendorId)
         .single()
       if (error) {
         console.error('Error loading vendor profile:', error)
         setError('Could not load your profile. Please try again later.')
       } else if (data) {
-        setBio(data.profile_bio || '')
-        setLocation(data.profile_location || '')
-        setWebsite(data.profile_website || '')
-        setInstagram(data.profile_instagram || '')
+        // Start with profile fields from vendors table
+        let initialBio = data.profile_bio || ''
+        let initialInstagram = data.profile_instagram || ''
+        let initialWebsite = data.profile_website || ''
+        const initialLocation = data.profile_location || ''
+
+        // If some fields are empty, try to backfill from the original application
+        if (data.application_id && (!initialBio || !initialInstagram || !initialWebsite)) {
+          try {
+            const { data: app, error: appErr } = await supabase
+              .from('vendor_applications')
+              .select('bio, instagram, form_data')
+              .eq('id', data.application_id)
+              .single()
+            if (!appErr && app) {
+              if (!initialBio) {
+                initialBio = app.bio || app.form_data?.bio || ''
+              }
+              if (!initialInstagram) {
+                initialInstagram = app.instagram || app.form_data?.instagram || ''
+              }
+              if (!initialWebsite) {
+                initialWebsite = app.form_data?.website || ''
+              }
+            }
+          } catch (e) {
+            console.error('Error loading vendor application for profile defaults:', e)
+          }
+        }
+
+        setBio(initialBio)
+        setLocation(initialLocation)
+        setWebsite(initialWebsite)
+        setInstagram(initialInstagram)
         setAvatarDataUrl(data.profile_avatar_url || '')
         setPublished(!!data.published)
       }
