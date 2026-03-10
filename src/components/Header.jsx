@@ -102,7 +102,7 @@ export default function Header() {
                     Admin
                   </Link>
                   <Link
-                    to="/marketplace"
+                    to="/marketplace?view=login"
                     onClick={() => setLoginDropdownOpen(false)}
                     className="block px-4 py-2 text-neutral-700 hover:bg-cream text-sm"
                   >
@@ -184,7 +184,7 @@ export default function Header() {
                 <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium">
                   <LogIn className="w-4 h-4" /> Admin
                 </Link>
-                <Link to="/marketplace" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium">
+                <Link to="/marketplace?view=login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium">
                   <LogIn className="w-4 h-4" /> Vendor (Marketplace)
                 </Link>
               </div>

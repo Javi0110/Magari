@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Heart, Store, TrendingUp, Upload, DollarSign, Package, BarChart3, LogIn, UserPlus, MapPin, Edit, Trash2, Plus, Search, X, Image as ImageIcon, Trash2 as DeleteIcon, Bell } from 'lucide-react'
 import { sendVendorApplicationEmail } from '../utils/emailService'
@@ -10,7 +10,10 @@ import { useVendorProductsStore } from '../store/vendorProductsStore'
 import { useNotificationsStore } from '../store/notificationsStore'
 
 export default function MarketplacePage() {
-  const [view, setView] = useState('landing') // landing, apply, dashboard, login
+  const location = useLocation()
+  const searchParams = new URLSearchParams(location.search)
+  const initialView = searchParams.get('view') === 'login' ? 'login' : 'landing'
+  const [view, setView] = useState(initialView) // landing, apply, dashboard, login
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [applicationData, setApplicationData] = useState({
     name: '',
