@@ -25,7 +25,7 @@ import { supabase } from '../utils/supabase'
 import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailRelay'
 import { useNotificationsStore } from '../store/notificationsStore'
 
-function AdminNotificationsDropdown({ notifications, error, onMarkAsRead, onMarkAllAsRead, onClose }) {
+function AdminNotificationsDropdown({ notifications, error, onMarkAsRead, onMarkAllAsRead, onClose, onNotificationClick }) {
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} aria-hidden="true" />
@@ -56,7 +56,10 @@ function AdminNotificationsDropdown({ notifications, error, onMarkAsRead, onMark
             <div
               key={n.id}
               className={`p-3 text-left hover:bg-neutral-50 cursor-pointer ${!n.read ? 'bg-sage/5' : ''}`}
-              onClick={() => { if (!n.read) onMarkAsRead(n.id) }}
+              onClick={() => {
+                if (!n.read) onMarkAsRead(n.id)
+                if (onNotificationClick) onNotificationClick(n)
+              }}
             >
               <p className="font-medium text-neutral-800 text-sm">{n.title}</p>
               <p className="text-neutral-600 text-xs mt-0.5">{n.body}</p>
@@ -77,6 +80,7 @@ const ADMIN_PASSWORD = 'isabella!4'
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [highlightedApplicationId, setHighlightedApplicationId] = useState(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
@@ -86,6 +90,18 @@ export default function AdminPage() {
   useEffect(() => {
     if (isLoggedIn) fetchForAdmin()
   }, [isLoggedIn, fetchForAdmin])
+
+  const handleNotificationClick = (notification) => {
+    const payload = notification?.payload || {}
+    if (notification.type === 'vendor_application' && payload.application_id) {
+      setActiveTab('vendors')
+      setHighlightedApplicationId(payload.application_id)
+      setShowNotifications(false)
+    } else if (notification.type && notification.type.toLowerCase().includes('order')) {
+      setActiveTab('orders')
+      setShowNotifications(false)
+    }
+  }
 
   const handleLogin = (e) => {
     e.preventDefault()
@@ -193,6 +209,7 @@ export default function AdminPage() {
                   onMarkAsRead={markAsRead}
                   onMarkAllAsRead={() => markAllAsRead('admin', null)}
                   onClose={() => setShowNotifications(false)}
+                  onNotificationClick={handleNotificationClick}
                 />
               )}
             </div>
@@ -234,7 +251,12 @@ export default function AdminPage() {
         {activeTab === 'dashboard' && <DashboardView />}
         {activeTab === 'products' && <ProductsView />}
         {activeTab === 'orders' && <OrdersView />}
-        {activeTab === 'vendors' && <VendorsView />}
+        {activeTab === 'vendors' && (
+          <VendorsView
+            highlightedApplicationId={highlightedApplicationId}
+            onClearHighlight={() => setHighlightedApplicationId(null)}
+          />
+        )}
         {activeTab === 'reviews' && <ReviewsView />}
         {activeTab === 'settings' && <SettingsView />}
       </div>
@@ -976,7 +998,7 @@ function generateAccessCode() {
 }
 
 // Vendors View – MOMade applications from Supabase
-function VendorsView() {
+function VendorsView({ highlightedApplicationId = null, onClearHighlight }) {
   const [applications, setApplications] = useState([])
   const [approvedVendors, setApprovedVendors] = useState([])
   const [loading, setLoading] = useState(true)
@@ -1129,6 +1151,20 @@ function VendorsView() {
   const approved = applications.filter(a => a.status === 'approved')
   const rejected = applications.filter(a => a.status === 'rejected')
 
+  // Si venimos desde una notificación, desplaza y resalta la solicitud correspondiente
+  useEffect(() => {
+    if (!highlightedApplicationId || !applications.length) return
+    const el = document.querySelector(`[data-application-id="${highlightedApplicationId}"]`)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      el.classList.add('ring-2', 'ring-sage', 'ring-offset-2')
+      setTimeout(() => {
+        el.classList.remove('ring-2', 'ring-sage', 'ring-offset-2')
+      }, 2500)
+    }
+    if (onClearHighlight) onClearHighlight()
+  }, [highlightedApplicationId, applications, onClearHighlight])
+
   if (loading) {
     return (
       <div>
@@ -1167,7 +1203,11 @@ function VendorsView() {
         <div className="space-y-4">
           {!loadError && pending.length === 0 && <p className="text-neutral-500 text-sm">No hay solicitudes pendientes. Cuando alguien envíe el formulario en Marketplace aparecerán aquí.</p>}
           {pending.map(app => (
-            <div key={app.id} className="card border border-neutral-200">
+            <div
+              key={app.id}
+              data-application-id={app.id}
+              className="card border border-neutral-200"
+            >
               <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                 <div>
                   <p className="font-medium text-neutral-800">{app.business_name}</p>
@@ -1231,7 +1271,11 @@ function VendorsView() {
         <div className="grid md:grid-cols-2 gap-3">
           {approved.length === 0 && <p className="text-neutral-500 text-sm">None yet.</p>}
           {approved.map(app => (
-            <div key={app.id} className="card flex flex-wrap items-start justify-between gap-2">
+            <div
+              key={app.id}
+              data-application-id={app.id}
+              className="card flex flex-wrap items-start justify-between gap-2"
+            >
               <div>
                 <p className="font-medium text-neutral-700">{app.business_name}</p>
                 <p className="text-sm text-neutral-500">by {app.name} · {app.email}</p>
@@ -1257,7 +1301,11 @@ function VendorsView() {
         <div className="grid md:grid-cols-2 gap-3">
           {rejected.length === 0 && <p className="text-neutral-500 text-sm">None.</p>}
           {rejected.map(app => (
-            <div key={app.id} className="card opacity-75 flex flex-wrap items-start justify-between gap-2">
+            <div
+              key={app.id}
+              data-application-id={app.id}
+              className="card opacity-75 flex flex-wrap items-start justify-between gap-2"
+            >
               <div>
                 <p className="font-medium text-neutral-700">{app.business_name}</p>
                 <p className="text-sm text-neutral-500">by {app.name}</p>

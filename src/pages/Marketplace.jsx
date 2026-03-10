@@ -578,7 +578,7 @@ export default function MarketplacePage() {
                           <img
                             src={img.preview}
                             alt={img.name || 'Product preview'}
-                            className="w-full h-32 object-cover"
+                            className="w-full h-32 object-contain object-center"
                           />
                           <button
                             type="button"
