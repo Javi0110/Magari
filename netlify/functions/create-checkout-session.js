@@ -1,7 +1,8 @@
 // Netlify Function: create Stripe Checkout Session
 // Requires: npm install stripe
+// En Netlify: Environment variables → STRIPE_SECRET_KEY (sk_test_... o sk_live_...)
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '')
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const FROM_EMAIL = 'Magari & Co. <hello@casamagari.com>'
@@ -87,6 +88,16 @@ exports.handler = async (event) => {
   }
 
   try {
+    if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_SECRET_KEY.startsWith('sk_')) {
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({
+          error: 'Stripe is not configured. Add STRIPE_SECRET_KEY in Netlify → Site settings → Environment variables, then redeploy.',
+        }),
+      }
+    }
+
     const body = JSON.parse(event.body || '{}')
     const items = Array.isArray(body.items) ? body.items : []
     const customerEmail = (body.customerEmail || '').trim()
@@ -100,20 +111,26 @@ exports.handler = async (event) => {
       }
     }
 
-    const line_items = items.map((item) => ({
-      quantity: item.quantity || 1,
-      price_data: {
-        currency: 'usd',
-        unit_amount: Math.round((item.price || 0) * 100),
-        product_data: {
-          name: item.title || 'Product',
-          metadata: {
-            product_id: String(item.id || ''),
-            vendor_id: item.vendorId ? String(item.vendorId) : '',
+    const line_items = items.map((item) => {
+      const unitAmount = Math.round((item.price || 0) * 100)
+      if (unitAmount < 50) {
+        throw new Error('El monto mínimo por artículo es $0.50 USD. Revisa el depósito del servicio.')
+      }
+      return {
+        quantity: item.quantity || 1,
+        price_data: {
+          currency: 'usd',
+          unit_amount: unitAmount,
+          product_data: {
+            name: item.title || 'Product',
+            metadata: {
+              product_id: String(item.id || ''),
+              vendor_id: item.vendorId ? String(item.vendorId) : '',
+            },
           },
         },
-      },
-    }))
+      }
+    })
 
     const baseUrl = process.env.URL || 'https://casamagari.com'
 

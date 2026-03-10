@@ -589,7 +589,8 @@ export const VirtualStylingForm = ({ onClose }) => {
       window.location.href = url
     } catch (err) {
       console.error('Error creating Stripe checkout for Virtual Styling deposit:', err)
-      alert('Tu solicitud se guardó, pero hubo un error al crear el pago del depósito. Por favor, intenta más tarde o contáctanos directamente.')
+      const msg = err?.message || 'Error al crear el pago del depósito.'
+      alert(`Tu solicitud se guardó, pero no se pudo abrir el pago.\n\n${msg}\n\nSi el mensaje habla de "STRIPE_SECRET_KEY", añade esa variable en Netlify → Environment variables y vuelve a desplegar.`)
       setSubmitted(reference)
     }
   }
@@ -1156,7 +1157,8 @@ export const ShoppingStylingForm = ({ onClose }) => {
       window.location.href = url
     } catch (err) {
       console.error('Error creating Stripe checkout for Shopping & Styling deposit:', err)
-      alert('Tu solicitud se guardó, pero hubo un error al crear el pago del depósito. Por favor, intenta más tarde o contáctanos directamente.')
+      const msg = err?.message || 'Error al crear el pago del depósito.'
+      alert(`Tu solicitud se guardó, pero no se pudo abrir el pago.\n\n${msg}\n\nSi el mensaje habla de "STRIPE_SECRET_KEY", añade esa variable en Netlify → Environment variables y vuelve a desplegar.`)
       setSubmitted(reference)
     }
   }
@@ -1742,7 +1744,8 @@ export const DecoratingInstallationForm = ({ onClose }) => {
       window.location.href = url
     } catch (err) {
       console.error('Error creating Stripe checkout for Decorating + Installation deposit:', err)
-      alert('Tu solicitud se guardó, pero hubo un error al crear el pago del depósito. Por favor, intenta más tarde o contáctanos directamente.')
+      const msg = err?.message || 'Error al crear el pago del depósito.'
+      alert(`Tu solicitud se guardó, pero no se pudo abrir el pago.\n\n${msg}\n\nSi el mensaje habla de "STRIPE_SECRET_KEY", añade esa variable en Netlify → Environment variables y vuelve a desplegar.`)
       setSubmitted(reference)
     }
   }

@@ -48,7 +48,10 @@ export async function createServiceDepositCheckout({ service, reference, amount,
 
   const data = await res.json().catch(() => ({}))
 
-  if (!res.ok || !data.url) {
+  if (!res.ok) {
+    throw new Error(data.error || `Checkout error (${res.status})`)
+  }
+  if (!data.url) {
     throw new Error(data.error || 'Could not create checkout session for deposit')
   }
 
