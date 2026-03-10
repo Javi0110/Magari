@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Palette, Home, Store } from 'lucide-react'
+import { ArrowRight, Palette, Home, Store, LayoutDashboard, ShoppingBag } from 'lucide-react'
 
 export default function HomePage() {
 
@@ -15,26 +15,26 @@ export default function HomePage() {
 
   const features = [
     {
-      icon: <Palette className="w-8 h-8" />,
-      title: 'Curated Decor',
-      description: 'Thoughtfully selected pieces to elevate every space with character.',
-      link: '/shop?category=handmade',
-      bgColor: 'bg-sage/10',
-      textColor: 'text-sage'
-    },
-    {
       icon: <Home className="w-8 h-8" />,
-      title: 'Design Services',
-      description: 'Virtual styling, shopping support, and in-person installation tailored to your home.',
+      title: 'Interior Design Services',
+      description: 'Virtual styling, shopping support, and full-service decorating tailored to your home.',
       link: '/design-services',
       bgColor: 'bg-earth/10',
       textColor: 'text-earth'
     },
     {
+      icon: <ShoppingBag className="w-8 h-8" />,
+      title: 'Shop Magari',
+      description: 'Curated decor and home goods selected by Magari & Co. to bring warmth into your space.',
+      link: '/shop',
+      bgColor: 'bg-sage/10',
+      textColor: 'text-sage'
+    },
+    {
       icon: <Store className="w-8 h-8" />,
-      title: 'MOMade Marketplace',
-      description: 'Support mom-made businesses. Curated with care and purpose.',
-      link: '/marketplace',
+      title: 'MOMade Market',
+      description: 'A curated marketplace featuring products from mom-owned creative businesses.',
+      link: '/momade',
       bgColor: 'bg-taupe/10',
       textColor: 'text-taupe-dark'
     }
@@ -44,7 +44,7 @@ export default function HomePage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-cream-light via-cream to-neutral-100 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Hero Content */}
             <motion.div
@@ -52,20 +52,26 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl text-neutral-600 leading-tight mb-6">
-                From a dream to your reality
+              <p className="text-sm uppercase tracking-[0.25em] text-neutral-500 mb-4">
+                Magari &amp; Co.
+              </p>
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-neutral-700 leading-tight mb-4">
+                Design. Curated Goods. A Marketplace for Makers.
               </h1>
-              <p className="text-xl md:text-2xl text-neutral-500 mb-8 leading-relaxed">
-                Handcrafted decor, personalized styling, and a marketplace celebrating mom makers.
+              <p className="text-lg md:text-xl text-neutral-600 mb-8 leading-relaxed max-w-xl">
+                Magari &amp; Co. is a design studio and curated marketplace supporting handmade goods and creative entrepreneurs.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/shop" className="btn-primary text-center">
-                  Shop Collection
+                <Link to="/design-services/virtual-styling" className="btn-primary text-center">
+                  Book Design Consultation
                   <ArrowRight className="inline-block ml-2 w-5 h-5" />
                 </Link>
-                <Link to="/marketplace" className="btn-secondary text-center">
-                  MOMade Marketplace
+                <Link to="/shop" className="btn-secondary text-center">
+                  Shop Magari
+                </Link>
+                <Link to="/momade" className="btn-secondary text-center">
+                  Explore MOMade Market
                   <ArrowRight className="inline-block ml-2 w-5 h-5" />
                 </Link>
               </div>
@@ -105,16 +111,16 @@ export default function HomePage() {
         <div className="absolute bottom-20 left-10 w-40 h-40 bg-earth/10 rounded-full blur-3xl" />
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-white">
+      {/* Three Pillars Section */}
+      <section className="py-14 md:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="font-serif text-4xl md:text-5xl text-center text-neutral-600 mb-16"
+            className="font-serif text-3xl md:text-4xl text-center text-neutral-600 mb-10"
           >
-            What We Offer
+            Three ways to work with Magari &amp; Co.
           </motion.h2>
 
           <div className="grid md:grid-cols-3 gap-8">
