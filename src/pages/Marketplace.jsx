@@ -237,7 +237,7 @@ export default function MarketplacePage() {
       setMakersLoading(true)
       const { data, error } = await supabase
         .from('vendors')
-        .select('id, business_name, name, profile_bio, profile_location, profile_instagram, published')
+        .select('id, business_name, name, profile_bio, profile_location, profile_instagram, profile_avatar_url, published')
         .eq('status', 'active')
         .eq('published', true)
         .order('created_at', { ascending: false })
@@ -250,6 +250,7 @@ export default function MarketplacePage() {
             bio: v.profile_bio || '',
             location: v.profile_location || 'Puerto Rico',
             instagram: v.profile_instagram || '',
+            avatarUrl: v.profile_avatar_url || '',
           }))
         )
       }
@@ -327,8 +328,18 @@ export default function MarketplacePage() {
                       transition={{ delay: index * 0.1 }}
                       className="card hover:scale-105 transition-transform duration-300"
                     >
-                      {/* Vendor Avatar Placeholder */}
-                      <div className="w-20 h-20 rounded-full bg-sage-muted/20 mb-4" />
+                      {/* Vendor Avatar */}
+                      {vendor.avatarUrl ? (
+                        <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border border-greige-light">
+                          <img
+                            src={vendor.avatarUrl}
+                            alt={vendor.businessName}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-20 h-20 rounded-full bg-sage-muted/20 mb-4" />
+                      )}
                       
                       <h3 className="font-serif text-2xl text-sage-dark mb-1">
                         {vendor.businessName}
@@ -904,7 +915,7 @@ function VendorNotificationsDropdown({ notifications, onMarkAsRead, onMarkAllAsR
 
 // Vendor Dashboard Component
 function VendorDashboard({ onLogout }) {
-  const [activeTab, setActiveTab] = useState('products')
+  const [activeTab, setActiveTab] = useState('settings')
   const [activeSection, setActiveSection] = useState('marketplace')
   const [currentUser, setCurrentUser] = useState(null)
   const [showProductForm, setShowProductForm] = useState(false)
@@ -991,7 +1002,7 @@ function VendorDashboard({ onLogout }) {
 
       {/* Dashboard Tabs */}
       <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
-        {['products', 'orders', 'analytics', 'settings'].map(tab => (
+        {['settings', 'products', 'orders', 'analytics'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -1002,7 +1013,9 @@ function VendorDashboard({ onLogout }) {
             }`}
             style={activeTab === tab ? { backgroundColor: '#2D3A2E' } : {}}
           >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab === 'settings'
+              ? 'Profile'
+              : tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
         ))}
       </div>
@@ -1241,6 +1254,7 @@ function VendorProfileSettings({ vendorId, currentUser }) {
   const [location, setLocation] = useState('')
   const [website, setWebsite] = useState('')
   const [instagram, setInstagram] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
   const [published, setPublished] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -1255,7 +1269,7 @@ function VendorProfileSettings({ vendorId, currentUser }) {
       }
       const { data, error } = await supabase
         .from('vendors')
-        .select('profile_bio, profile_location, profile_website, profile_instagram, published')
+        .select('profile_bio, profile_location, profile_website, profile_instagram, profile_avatar_url, published')
         .eq('id', vendorId)
         .single()
       if (error) {
@@ -1266,6 +1280,7 @@ function VendorProfileSettings({ vendorId, currentUser }) {
         setLocation(data.profile_location || '')
         setWebsite(data.profile_website || '')
         setInstagram(data.profile_instagram || '')
+        setAvatarUrl(data.profile_avatar_url || '')
         setPublished(!!data.published)
       }
       setLoading(false)
@@ -1288,6 +1303,7 @@ function VendorProfileSettings({ vendorId, currentUser }) {
           profile_location: location,
           profile_website: website,
           profile_instagram: instagram,
+          profile_avatar_url: avatarUrl,
           published
         })
         .eq('id', vendorId)
@@ -1381,6 +1397,20 @@ function VendorProfileSettings({ vendorId, currentUser }) {
               placeholder="https://yourshop.com"
             />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-neutral-700 font-medium mb-2">Logo image URL</label>
+          <input
+            type="url"
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(e.target.value)}
+            className="input-field"
+            placeholder="Paste a direct link to your logo image (PNG or JPG)."
+          />
+          <p className="text-xs text-neutral-500 mt-1">
+            This logo will show as your profile photo in the “Meet Our Makers” grid.
+          </p>
         </div>
 
         <div>
