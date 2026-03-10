@@ -50,7 +50,7 @@ export default function Header() {
                 key={item.name}
                 to={item.href}
                 className={item.isIcon 
-                  ? "flex items-start justify-center transition-opacity hover:opacity-80 pt-4" 
+                  ? "flex items-center justify-center h-24 cursor-pointer transition-opacity hover:opacity-80"
                   : "text-stone hover:text-sage transition-colors font-medium tracking-wide flex items-center"
                 }
                 aria-label={item.isIcon ? "Marketplace" : item.name}
@@ -60,7 +60,7 @@ export default function Header() {
                     <img 
                       src="/momade-logo.png" 
                       alt="MOMade Marketplace" 
-                      className="h-16 md:h-20 w-auto object-contain"
+                      className="h-14 md:h-16 w-auto object-contain"
                       onError={(e) => {
                         e.target.style.display = 'none'
                         if (e.target.nextSibling) {
@@ -68,7 +68,7 @@ export default function Header() {
                         }
                       }}
                     />
-                    <span className="hidden text-stone hover:text-sage transition-colors font-medium tracking-wide">
+                    <span className="hidden text-stone hover:text-sage transition-colors font-medium tracking-wide ml-2">
                       Marketplace
                     </span>
                   </>
