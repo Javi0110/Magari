@@ -1334,14 +1334,39 @@ function VendorsView({ highlightedApplicationId = null, onClearHighlight }) {
       </div>
       {previewImage && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
           onClick={() => setPreviewImage(null)}
         >
           <div
-            className="max-w-3xl max-h-[90vh] bg-white rounded-lg overflow-hidden"
+            className="w-[92vw] h-[92vh] max-w-5xl bg-white rounded-lg overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <img src={previewImage} alt="Vista previa" className="w-full h-full object-contain" />
+            <div className="flex items-center justify-between px-4 py-2 border-b border-neutral-200">
+              <p className="text-sm text-neutral-600">Vendor image preview</p>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => window.open(previewImage, '_blank')}
+                  className="text-xs text-sage hover:text-sage-dark underline underline-offset-2"
+                >
+                  Open full size
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewImage(null)}
+                  className="p-1.5 rounded-full hover:bg-neutral-100"
+                >
+                  <X className="w-4 h-4 text-neutral-600" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 bg-neutral-50 flex items-center justify-center">
+              <img
+                src={previewImage}
+                alt="Vista previa"
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
           </div>
         </div>
       )}
