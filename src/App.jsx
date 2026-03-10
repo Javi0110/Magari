@@ -15,6 +15,7 @@ import HomeStagingAustinPage from './pages/HomeStagingAustin'
 import InteriorDesignAustinPage from './pages/InteriorDesignAustin'
 import VirtualStylingPage from './pages/VirtualStylingPage'
 import AirbnbDesignPage from './pages/AirbnbDesign'
+import StagingForRealtorsPage from './pages/StagingForRealtors'
 import ContactPage from './pages/Contact'
 import MarketplacePage from './pages/Marketplace'
 import VendorProfilePage from './pages/VendorProfile'
@@ -50,6 +51,10 @@ const pageMeta = {
   '/airbnb-design': {
     title: 'Airbnb Interior Design & Styling — Magari & Co.',
     description: 'Airbnb interior design and short-term rental styling to help your listing stand out and earn 5-star reviews.'
+  },
+  '/staging-for-realtors': {
+    title: 'Home Staging for Realtors in Austin TX — Magari & Co.',
+    description: 'Dedicated home staging services and partnership program for realtors in Austin, TX who want listings that show and sell better.'
   },
   '/marketplace': {
     title: 'MOMade Marketplace — Supporting Mom Makers',
@@ -148,6 +153,7 @@ function App() {
           <Route path="/interior-design-austin" element={<InteriorDesignAustinPage />} />
           <Route path="/virtual-styling" element={<VirtualStylingPage />} />
           <Route path="/airbnb-design" element={<AirbnbDesignPage />} />
+          <Route path="/staging-for-realtors" element={<StagingForRealtorsPage />} />
 
           {/* MOMade market routes */}
           <Route path="/marketplace" element={<MarketplacePage />} />
