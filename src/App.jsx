@@ -18,6 +18,7 @@ import AirbnbDesignPage from './pages/AirbnbDesign'
 import StagingForRealtorsPage from './pages/StagingForRealtors'
 import ContactPage from './pages/Contact'
 import MarketplacePage from './pages/Marketplace'
+import BecomeVendorPage from './pages/BecomeVendor'
 import VendorProfilePage from './pages/VendorProfile'
 import AboutPage from './pages/About'
 import AdminPage from './pages/Admin'
@@ -75,6 +76,10 @@ const pageMeta = {
   '/momade/vendor-login': {
     title: 'Vendor Login — MOMade Market',
     description: 'Access your MOMade vendor dashboard to manage products, view sales, and update your profile.'
+  },
+  '/become-a-vendor': {
+    title: 'Become a Vendor — MOMade Market',
+    description: 'Apply to become a vendor on the MOMade Market, a curated marketplace for mom-made products and creative businesses.'
   },
   '/about': {
     title: 'About — Magari & Co.',
@@ -161,6 +166,7 @@ function App() {
           <Route path="/momade/shop" element={<MarketplacePage />} />
           <Route path="/momade/become-a-vendor" element={<MarketplacePage />} />
           <Route path="/momade/vendor-login" element={<MarketplacePage />} />
+          <Route path="/become-a-vendor" element={<BecomeVendorPage />} />
           <Route path="/maker/:slug" element={<VendorProfilePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />

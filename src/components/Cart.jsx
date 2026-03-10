@@ -75,12 +75,12 @@ export default function Cart() {
       return
     }
     if (!supabase) {
-      alert('Cart saved locally. We will remember these items on this device.')
+      alert('Cart saved locally on this device only. Connect Supabase to save it to your account.')
       return
     }
     try {
       setAbandonedStatus('saving')
-      await supabase
+      const { error } = await supabase
         .from('abandoned_carts')
         .insert({
           email,
@@ -92,6 +92,12 @@ export default function Cart() {
             vendorId: i.vendorId ?? i.vendor_id
           }))
         })
+      if (error) {
+        console.error('Error saving abandoned cart:', error)
+        setAbandonedStatus('error')
+        alert('We could not save your cart right now. Please try again later.')
+        return
+      }
       setAbandonedStatus('saved')
       alert('We saved your cart. You can come back to it later.')
     } catch (err) {
