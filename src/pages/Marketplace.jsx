@@ -971,7 +971,7 @@ export default function MarketplacePage() {
 
                 <div>
                   <label className="block text-neutral-700 font-medium mb-2">
-                    Payout Email/Account *
+                    Payout details *
                   </label>
                   <input
                     type="text"
@@ -979,10 +979,20 @@ export default function MarketplacePage() {
                     value={applicationData.payoutEmail}
                     onChange={(e) => setApplicationData({ ...applicationData, payoutEmail: e.target.value })}
                     className="input-field"
-                    placeholder="paypal@example.com"
+                    placeholder={
+                      applicationData.payoutMethod === 'paypal'
+                        ? 'PayPal email'
+                        : applicationData.payoutMethod === 'bank'
+                        ? 'Bank name + account number or IBAN'
+                        : applicationData.payoutMethod === 'zelle'
+                        ? 'Zelle email or phone'
+                        : applicationData.payoutMethod === 'venmo'
+                        ? '@yourvenmousername'
+                        : 'Describe how you prefer to be paid'
+                    }
                   />
                   <p className="text-xs text-neutral-500 mt-1">
-                    Payouts are processed every 2 weeks. You keep 88% of each sale.
+                    We currently process payouts manually every 2 weeks. You keep 88% of each sale; 12% goes to platform fees.
                   </p>
                 </div>
 
