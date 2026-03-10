@@ -3,15 +3,18 @@ import { useCartStore } from '../store/cartStore'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { createOrderAndNotifications } from '../utils/orders'
 
 export default function Cart() {
-  const { items, isOpen, closeCart, updateQuantity, removeItem, getTotal } = useCartStore()
+  const { items, isOpen, closeCart, updateQuantity, removeItem, getTotal, clearCart } = useCartStore()
   const [checkingOut, setCheckingOut] = useState(false)
   const [promoCode, setPromoCode] = useState('')
   const [appliedPromo, setAppliedPromo] = useState(null)
   const [showShipping, setShowShipping] = useState(false)
   const [shippingZip, setShippingZip] = useState('')
   const [estimatedShipping, setEstimatedShipping] = useState(null)
+  const [customerName, setCustomerName] = useState('')
+  const [customerEmail, setCustomerEmail] = useState('')
 
   const handleApplyPromo = () => {
     // 🔌 INTEGRATION: Validate promo code
@@ -63,36 +66,39 @@ export default function Cart() {
     return getSubtotal() - getDiscount() + getShipping()
   }
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
+    const name = (customerName || '').trim()
+    const email = (customerEmail || '').trim()
+    if (!name || !email) {
+      alert('Introduce tu nombre y email para continuar.')
+      return
+    }
     setCheckingOut(true)
-    
-    // 🔌 INTEGRATION: Stripe/PayPal/Apple Pay Checkout
-    // Payment options: Stripe, PayPal, or Apple Pay
-    // 1. Create checkout session on your backend:
-    //    POST /api/checkout with items array, promo code, shipping
-    // 2. Backend creates Stripe Checkout Session
-    // 3. Redirect to Stripe Checkout
-    
-    // Example implementation:
-    /*
-    const response = await fetch('/api/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        items,
-        promoCode: appliedPromo?.code,
-        shipping: estimatedShipping,
-        total: getFinalTotal()
+    try {
+      await createOrderAndNotifications({
+        items: items.map(i => ({
+          id: i.id,
+          title: i.title,
+          price: i.price,
+          quantity: i.quantity,
+          vendorId: i.vendorId ?? i.vendor_id
+        })),
+        total: getFinalTotal(),
+        customerName: name,
+        customerEmail: email,
+        shippingAddress: shippingZip ? `ZIP: ${shippingZip}` : ''
       })
-    })
-    const { sessionId } = await response.json()
-    const stripe = await loadStripe('pk_YOUR_PUBLISHABLE_KEY')
-    await stripe.redirectToCheckout({ sessionId })
-    */
-    
-    console.log('Checkout with items:', items)
-    alert('🔌 Stripe/PayPal/Apple Pay Checkout integration needed. See Cart.jsx for implementation.')
-    setCheckingOut(false)
+      clearCart()
+      closeCart()
+      setCustomerName('')
+      setCustomerEmail('')
+      alert('Pedido registrado. Te contactaremos para coordinar el pago y envío.')
+    } catch (err) {
+      console.error(err)
+      alert(err.message || 'Error al registrar el pedido.')
+    } finally {
+      setCheckingOut(false)
+    }
   }
 
   return (
@@ -287,17 +293,35 @@ export default function Cart() {
                   </div>
                 </div>
 
+                <div className="space-y-2 pt-2 border-t border-neutral-200">
+                  <label className="block text-sm font-medium text-neutral-700">Nombre *</label>
+                  <input
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Tu nombre"
+                    className="input-field text-sm"
+                  />
+                  <label className="block text-sm font-medium text-neutral-700">Email *</label>
+                  <input
+                    type="email"
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    placeholder="tu@email.com"
+                    className="input-field text-sm"
+                  />
+                </div>
+
                 <p className="text-xs text-neutral-500 text-center">
-                  Ships to USA & PR. Payment options: Stripe, PayPal, Apple Pay
+                  Ships to USA & PR. Te contactaremos para coordinar pago y envío.
                 </p>
 
-                {/* Checkout Button */}
                 <button
                   onClick={handleCheckout}
                   disabled={checkingOut}
                   className="w-full btn-primary py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {checkingOut ? 'Processing...' : 'Checkout'}
+                  {checkingOut ? 'Procesando…' : 'Confirmar pedido'}
                 </button>
 
                 {/* Continue Shopping */}

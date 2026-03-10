@@ -4,7 +4,14 @@ Solo estos pasos requieren tu cuenta y tu teclado. El resto del código ya está
 
 ---
 
-## 1. EmailJS (para que lleguen los correos)
+## 1. Notificaciones por email (elegir una opción)
+
+**Objetivo:** Recibir un email en magaribyelena@gmail.com cuando alguien solicite ser vendor (y, en el futuro, cuando haya una compra).
+
+- **Si no puedes usar más plantillas de EmailJS:** usa la opción sin EmailJS. Todo está explicado en **`NOTIFICACIONES_SIN_EMAILJS.md`** (Zapier/Make o Resend + Edge Function). No hace falta tocar EmailJS.
+- **Si quieres seguir con EmailJS** (y tienes una plantilla disponible), sigue los pasos de abajo.
+
+### 1a. EmailJS (opcional)
 
 **Objetivo:** Que los formularios envíen email a magaribyelena@gmail.com y a clientes/solicitantes.
 
@@ -25,6 +32,13 @@ Solo estos pasos requieren tu cuenta y tu teclado. El resto del código ya está
 6. Guarda `.env` y **reinicia el servidor** (parar con Ctrl+C y volver a ejecutar `npm run dev`).
 
 **Comprobar:** En la consola del navegador (F12) deberías ver: *"EmailJS configurado. Los correos se enviarán a magaribyelena@gmail.com..."*
+
+### 1b. Alternativa sin EmailJS (vendor applications y compras)
+
+Si no puedes crear o editar plantillas en EmailJS, en **`NOTIFICACIONES_SIN_EMAILJS.md`** tienes dos alternativas para que te llegue un email cada vez que haya una solicitud de vendor (y luego compras):
+
+- **Zapier o Make.com:** webhook de Supabase → ellos te envían el email. Sin código.
+- **Resend + Edge Function:** webhook llama a una función que envía el email con Resend. Código ya está en `supabase/functions/notify-magari/`.
 
 ---
 

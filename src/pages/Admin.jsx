@@ -16,12 +16,50 @@ import {
   Trash2,
   Search,
   Image as ImageIcon,
-  Upload
+  Upload,
+  Bell
 } from 'lucide-react'
 import { sampleProducts, sampleVendors, sampleTestimonials } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
 import { supabase } from '../utils/supabase'
 import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailService'
+import { useNotificationsStore } from '../store/notificationsStore'
+
+function AdminNotificationsDropdown({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }) {
+  return (
+    <>
+      <div className="fixed inset-0 z-40" onClick={onClose} aria-hidden="true" />
+      <div className="absolute right-0 top-full mt-2 w-[380px] max-h-[400px] overflow-y-auto bg-white border border-neutral-200 rounded-xl shadow-lg z-50">
+        <div className="p-3 border-b border-neutral-100 flex items-center justify-between sticky top-0 bg-white">
+          <span className="font-semibold text-neutral-700">Notificaciones</span>
+          {notifications.some(n => !n.read) && (
+            <button type="button" onClick={onMarkAllAsRead} className="text-sm text-sage hover:underline">
+              Marcar todas leídas
+            </button>
+          )}
+        </div>
+        <div className="divide-y divide-neutral-100">
+          {notifications.length === 0 && (
+            <p className="p-4 text-neutral-500 text-sm">No hay notificaciones.</p>
+          )}
+          {notifications.map(n => (
+            <div
+              key={n.id}
+              className={`p-3 text-left hover:bg-neutral-50 cursor-pointer ${!n.read ? 'bg-sage/5' : ''}`}
+              onClick={() => { if (!n.read) onMarkAsRead(n.id) }}
+            >
+              <p className="font-medium text-neutral-800 text-sm">{n.title}</p>
+              <p className="text-neutral-600 text-xs mt-0.5">{n.body}</p>
+              <p className="text-neutral-400 text-xs mt-1">
+                {n.created_at ? new Date(n.created_at).toLocaleString('es-PR') : ''}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  )
+}
 
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -91,6 +129,13 @@ export default function AdminPage() {
     )
   }
 
+  const { items: notifications, unreadCount, fetchForAdmin, markAsRead, markAllAsRead } = useNotificationsStore()
+  const [showNotifications, setShowNotifications] = useState(false)
+
+  useEffect(() => {
+    fetchForAdmin()
+  }, [fetchForAdmin])
+
   return (
     <div className="min-h-screen bg-cream py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -104,12 +149,36 @@ export default function AdminPage() {
               Manage your store, vendors, and content
             </p>
           </div>
-          <button
-            onClick={() => setIsLoggedIn(false)}
-            className="btn-outline"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="p-2 rounded-full hover:bg-neutral-100 relative"
+                aria-label="Notificaciones"
+              >
+                <Bell className="w-6 h-6 text-neutral-600" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-sage text-white text-xs flex items-center justify-center">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+              {showNotifications && (
+                <AdminNotificationsDropdown
+                  notifications={notifications}
+                  onMarkAsRead={markAsRead}
+                  onMarkAllAsRead={() => markAllAsRead('admin', null)}
+                  onClose={() => setShowNotifications(false)}
+                />
+              )}
+            </div>
+            <button
+              onClick={() => setIsLoggedIn(false)}
+              className="btn-outline"
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
@@ -787,15 +856,63 @@ function ProductForm({ product, onClose }) {
 
 // Orders View
 function OrdersView() {
+  const [orders, setOrders] = useState([])
+  const [orderItems, setOrderItems] = useState({})
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
+    const load = async () => {
+      const { data: ordersData } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
+      setOrders(ordersData || [])
+      const { data: itemsData } = await supabase.from('order_items').select('*')
+      const byOrder = {}
+      ;(itemsData || []).forEach(item => {
+        if (!byOrder[item.order_id]) byOrder[item.order_id] = []
+        byOrder[item.order_id].push(item)
+      })
+      setOrderItems(byOrder)
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  if (loading) return <div className="card p-6"><p className="text-neutral-600">Cargando pedidos…</p></div>
+
   return (
-    <div className="card p-6">
-      <h2 className="font-serif text-2xl text-neutral-700 mb-6">Orders</h2>
-      <p className="text-neutral-600">
-        Order management coming soon. Integrate with your payment processor.
-      </p>
-      <p className="text-sm text-neutral-500 mt-2">
-        🔌 Connect Stripe webhooks to /api/webhooks/stripe for real-time order updates
-      </p>
+    <div>
+      <h2 className="font-serif text-2xl text-neutral-700 mb-6">Pedidos</h2>
+      {orders.length === 0 && (
+        <p className="text-neutral-600">Aún no hay pedidos.</p>
+      )}
+      <div className="space-y-4">
+        {orders.map(order => (
+          <div key={order.id} className="card p-4 border border-neutral-200">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <p className="font-medium text-neutral-800">Pedido #{order.id}</p>
+                <p className="text-sm text-neutral-500">{order.customer_name} · {order.customer_email}</p>
+                {order.shipping_address && <p className="text-xs text-neutral-500">{order.shipping_address}</p>}
+              </div>
+              <div className="text-right">
+                <p className="font-semibold text-neutral-700">${Number(order.total).toFixed(2)}</p>
+                <span className="badge bg-neutral-200 text-neutral-700">{order.status}</span>
+              </div>
+            </div>
+            <ul className="text-sm text-neutral-600 border-t border-neutral-100 pt-2 mt-2">
+              {(orderItems[order.id] || []).map(item => (
+                <li key={item.id}>· {item.product_title} × {item.quantity} — ${Number(item.price).toFixed(2)}</li>
+              ))}
+            </ul>
+            <p className="text-xs text-neutral-400 mt-2">
+              {order.created_at ? new Date(order.created_at).toLocaleString('es-PR') : ''}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -1066,12 +1183,59 @@ function ReviewsView() {
 // Settings View
 function SettingsView() {
   const [commission, setCommission] = useState(12)
+  const [zapierUrl, setZapierUrl] = useState('')
+  const [zapierSaving, setZapierSaving] = useState(false)
+  const [zapierSaved, setZapierSaved] = useState(false)
+
+  useEffect(() => {
+    if (!supabase) return
+    supabase.from('app_settings').select('value').eq('key', 'zapier_webhook_url').maybeSingle()
+      .then(({ data }) => { if (data?.value) setZapierUrl(data.value) })
+  }, [])
+
+  const saveZapierUrl = async () => {
+    if (!supabase) return
+    setZapierSaving(true)
+    setZapierSaved(false)
+    const { error } = await supabase.from('app_settings').upsert(
+      { key: 'zapier_webhook_url', value: zapierUrl.trim() },
+      { onConflict: 'key' }
+    )
+    setZapierSaving(false)
+    if (!error) setZapierSaved(true)
+  }
 
   return (
     <div className="max-w-3xl">
       <h2 className="font-serif text-2xl text-neutral-700 mb-6">Settings</h2>
 
       <div className="space-y-6">
+        {/* Notificaciones Zapier */}
+        <div className="card p-6">
+          <h3 className="font-semibold text-neutral-700 mb-2">Notificaciones (Zapier / Make)</h3>
+          <p className="text-neutral-600 text-sm mb-4">
+            Cada vez que alguien solicite ser vendor, se enviará un POST a esta URL. Crea un Zap en Zapier con trigger &quot;Catch Hook&quot; y pega aquí la URL que te den. Así recibirás un email en magaribyelena@gmail.com.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <input
+              type="url"
+              value={zapierUrl}
+              onChange={(e) => setZapierUrl(e.target.value)}
+              placeholder="https://hooks.zapier.com/hooks/catch/..."
+              className="input-field flex-1 min-w-[200px] font-mono text-sm"
+            />
+            <button
+              type="button"
+              onClick={saveZapierUrl}
+              disabled={zapierSaving}
+              className="btn-primary"
+            >
+              {zapierSaving ? 'Guardando…' : 'Guardar URL'}
+            </button>
+          </div>
+          {zapierSaved && <p className="text-green-600 text-sm mt-2">URL guardada. Las próximas solicitudes de vendor enviarán el aviso a Zapier.</p>}
+        </div>
+
         {/* Marketplace Commission */}
         <div className="card p-6">
           <h3 className="font-semibold text-neutral-700 mb-4">

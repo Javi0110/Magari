@@ -1,0 +1,5 @@
+-- Notificación por email sin usar EmailJS
+-- Este archivo solo documenta. El webhook se configura desde el Dashboard (ver NOTIFICACIONES_SIN_EMAILJS.md).
+-- Database → Webhooks → Create: table vendor_applications, event Insert,
+-- URL: https://lvzmbghugqnetkosbbpr.supabase.co/functions/v1/notify-magari
+-- Header: Authorization = Bearer <tu Service Role Key>

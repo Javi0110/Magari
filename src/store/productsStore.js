@@ -4,11 +4,12 @@ import { supabase } from '../utils/supabase'
 // Mapear fila de Supabase (snake_case) a objeto app (camelCase)
 function fromDb(row) {
   if (!row) return null
-  const { return_policy, created_at, ...rest } = row
+  const { return_policy, created_at, vendor_id, ...rest } = row
   return {
     ...rest,
     returnPolicy: return_policy ?? rest.returnPolicy,
     createdAt: created_at ?? rest.createdAt,
+    vendorId: vendor_id ?? rest.vendorId,
     images: Array.isArray(row.images) ? row.images : (row.images ? (typeof row.images === 'string' ? JSON.parse(row.images || '[]') : []) : []),
     tags: Array.isArray(row.tags) ? row.tags : (row.tags ? (typeof row.tags === 'string' ? JSON.parse(row.tags || '[]') : []) : ['magari']),
   }
@@ -20,6 +21,10 @@ function toDb(product) {
   if (p.returnPolicy !== undefined) {
     p.return_policy = p.returnPolicy
     delete p.returnPolicy
+  }
+  if (p.vendorId !== undefined) {
+    p.vendor_id = p.vendorId
+    delete p.vendorId
   }
   delete p.createdAt
   delete p.id // let DB generate on insert

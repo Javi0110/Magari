@@ -13,4 +13,10 @@
 2. Copia y pega el contenido de `migrations/20260128100000_create_vendor_applications_and_vendors.sql`.
 3. Pulsa **Run**.
 
-Después de eso, la web podrá usar productos y las solicitudes de vendors del marketplace.
+### 3. Notificaciones in-app y pedidos
+1. **SQL Editor** → **New query** → pega el contenido de `migrations/20260128400000_notifications_and_orders.sql` → **Run**.
+
+Con eso tendrás: notificaciones en el perfil de Admin y en el perfil de cada vendor (solicitudes de vendor y compras), y la tabla de pedidos para el checkout.
+
+### 4. Notificaciones por email con Zapier (opcional)
+Si además quieres recibir un email cuando alguien solicite ser vendor: en **Database** → **Extensions** activa **pg_net**, ejecuta `migrations/20260128300000_zapier_webhook_trigger.sql`, y en **Admin** → **Settings** guarda la URL de tu Zap.

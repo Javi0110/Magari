@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Heart, Store, TrendingUp, Upload, DollarSign, Package, BarChart3, LogIn, UserPlus, MapPin, Edit, Trash2, Plus, Search, X, Image as ImageIcon, Trash2 as DeleteIcon } from 'lucide-react'
+import { Heart, Store, TrendingUp, Upload, DollarSign, Package, BarChart3, LogIn, UserPlus, MapPin, Edit, Trash2, Plus, Search, X, Image as ImageIcon, Trash2 as DeleteIcon, Bell } from 'lucide-react'
 import { sendVendorApplicationEmail } from '../utils/emailService'
 import { supabase } from '../utils/supabase'
 import { sampleVendors } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
 import { useVendorProductsStore } from '../store/vendorProductsStore'
+import { useNotificationsStore } from '../store/notificationsStore'
 
 export default function MarketplacePage() {
   const [view, setView] = useState('landing') // landing, apply, dashboard, login
@@ -712,16 +713,53 @@ export default function MarketplacePage() {
   )
 }
 
+function VendorNotificationsDropdown({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }) {
+  return (
+    <>
+      <div className="fixed inset-0 z-40" onClick={onClose} aria-hidden="true" />
+      <div className="absolute right-0 top-full mt-2 w-[380px] max-h-[400px] overflow-y-auto bg-white border border-greige-light rounded-xl shadow-lg z-50">
+        <div className="p-3 border-b border-neutral-100 flex items-center justify-between sticky top-0 bg-white">
+          <span className="font-semibold text-neutral-700">Notificaciones</span>
+          {notifications.some(n => !n.read) && (
+            <button type="button" onClick={onMarkAllAsRead} className="text-sm text-sage hover:underline">
+              Marcar todas leídas
+            </button>
+          )}
+        </div>
+        <div className="divide-y divide-neutral-100">
+          {notifications.length === 0 && (
+            <p className="p-4 text-neutral-500 text-sm">No hay notificaciones.</p>
+          )}
+          {notifications.map(n => (
+            <div
+              key={n.id}
+              className={`p-3 text-left hover:bg-neutral-50 cursor-pointer ${!n.read ? 'bg-sage/5' : ''}`}
+              onClick={() => { if (!n.read) onMarkAsRead(n.id) }}
+            >
+              <p className="font-medium text-neutral-800 text-sm">{n.title}</p>
+              <p className="text-neutral-600 text-xs mt-0.5">{n.body}</p>
+              <p className="text-neutral-400 text-xs mt-1">
+                {n.created_at ? new Date(n.created_at).toLocaleString('es-PR') : ''}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  )
+}
+
 // Vendor Dashboard Component
 function VendorDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('products')
-  const [activeSection, setActiveSection] = useState('marketplace') // 'magari-shop' or 'marketplace'
+  const [activeSection, setActiveSection] = useState('marketplace')
   const [currentUser, setCurrentUser] = useState(null)
   const [showProductForm, setShowProductForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
-  const [formType, setFormType] = useState('marketplace') // 'magari-shop' or 'marketplace'
+  const [formType, setFormType] = useState('marketplace')
+  const [showNotifications, setShowNotifications] = useState(false)
+  const { items: notifications, unreadCount, fetchForVendor, markAsRead, markAllAsRead } = useNotificationsStore()
 
-  // Load user from localStorage
   useEffect(() => {
     const stored = localStorage.getItem('magari-current-user')
     if (stored) {
@@ -729,8 +767,13 @@ function VendorDashboard({ onLogout }) {
     }
   }, [])
 
+  useEffect(() => {
+    if (currentUser?.vendorId) fetchForVendor(currentUser.vendorId)
+  }, [currentUser?.vendorId, fetchForVendor])
+
   const isMagariAccount = currentUser?.isMagariAccount
   const vendorSlug = currentUser?.vendorSlug || 'default'
+  const isVendor = !!currentUser?.vendorId
 
   return (
     <div>
@@ -741,9 +784,35 @@ function VendorDashboard({ onLogout }) {
           </h1>
           <p className="text-stone mt-1">{currentUser?.email}</p>
         </div>
-        <button onClick={onLogout} className="btn-outline">
-          Logout
-        </button>
+        <div className="flex items-center gap-3">
+          {isVendor && (
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="p-2 rounded-full hover:bg-neutral-100 relative"
+                aria-label="Notificaciones"
+              >
+                <Bell className="w-6 h-6 text-stone" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-sage text-white text-xs flex items-center justify-center">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+              {showNotifications && (
+                <VendorNotificationsDropdown
+                  notifications={notifications}
+                  onMarkAsRead={markAsRead}
+                  onMarkAllAsRead={() => markAllAsRead('vendor', currentUser.vendorId)}
+                  onClose={() => setShowNotifications(false)}
+                />
+              )}
+            </div>
+          )}
+          <button onClick={onLogout} className="btn-outline">
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Section Tabs (only for Magari account) */}
