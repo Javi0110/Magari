@@ -1076,7 +1076,11 @@ function VendorsView({ highlightedApplicationId = null, onClearHighlight }) {
       })
       if (!emailResult?.success) {
         console.error('Error enviando email de aprobación al vendor:', emailResult?.error)
-        alert('La solicitud se aprobó, pero el email al vendor NO se pudo enviar. Revisa la configuración de Resend/Netlify.')
+        alert(
+          'La solicitud se aprobó, pero el email al vendor NO se pudo enviar.\n\n' +
+          'Detalle técnico: ' + (emailResult?.error || 'sin mensaje de error') +
+          '\n\nHaz una captura de este mensaje y envíamela para que te diga exactamente qué tocar en Resend/Netlify.'
+        )
       }
       await loadApplications()
     } catch (err) {
@@ -1106,7 +1110,11 @@ function VendorsView({ highlightedApplicationId = null, onClearHighlight }) {
       })
       if (!emailResult?.success) {
         console.error('Error enviando email de rechazo al vendor:', emailResult?.error)
-        alert('La solicitud se marcó como RECHAZADA, pero el email al vendor NO se pudo enviar. Revisa la configuración de Resend/Netlify.')
+        alert(
+          'La solicitud se marcó como RECHAZADA, pero el email al vendor NO se pudo enviar.\n\n' +
+          'Detalle técnico: ' + (emailResult?.error || 'sin mensaje de error') +
+          '\n\nHaz una captura de este mensaje y envíamela para que te diga exactamente qué tocar en Resend/Netlify.'
+        )
       }
       await loadApplications()
     } catch (err) {
