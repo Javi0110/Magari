@@ -9,9 +9,8 @@ import {
   CreditCard,
   MailCheck
 } from 'lucide-react'
-import { sendServiceRequestEmail } from '../utils/emailService'
 import { supabase } from '../utils/supabase'
-import { createServiceDepositCheckout } from '../utils/serviceCheckout'
+import { createServiceDepositCheckout, sendServiceConfirmation } from '../utils/serviceCheckout'
 
 const CONTACT_STORAGE_KEY = 'magari_saved_contact'
 
@@ -575,9 +574,9 @@ export const VirtualStylingForm = ({ onClose }) => {
     }
 
     try {
-      await sendServiceRequestEmail(payload)
+      await sendServiceConfirmation(payload)
     } catch (error) {
-      console.error('Error sending email:', error)
+      console.error('Error sending confirmation email:', error)
     }
 
     try {
@@ -1142,9 +1141,9 @@ export const ShoppingStylingForm = ({ onClose }) => {
     }
     
     try {
-      await sendServiceRequestEmail(payload)
+      await sendServiceConfirmation(payload)
     } catch (error) {
-      console.error('Error sending email:', error)
+      console.error('Error sending confirmation email:', error)
     }
     
     try {
@@ -1728,9 +1727,9 @@ export const DecoratingInstallationForm = ({ onClose }) => {
     }
     
     try {
-      await sendServiceRequestEmail(payload)
+      await sendServiceConfirmation(payload)
     } catch (error) {
-      console.error('Error sending email:', error)
+      console.error('Error sending confirmation email:', error)
     }
     
     try {

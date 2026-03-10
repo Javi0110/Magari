@@ -1,4 +1,19 @@
 const CHECKOUT_FUNCTION_URL = '/.netlify/functions/create-checkout-session'
+const SERVICE_CONFIRMATION_URL = '/.netlify/functions/send-service-confirmation'
+
+/**
+ * Send service request confirmation emails (customer + admin) via Resend
+ */
+export async function sendServiceConfirmation(payload) {
+  const res = await fetch(SERVICE_CONFIRMATION_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.error || 'Failed to send confirmation email')
+  return data
+}
 
 /**
  * Create a Stripe Checkout session for a design service deposit

@@ -3,6 +3,70 @@
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
+const RESEND_API_KEY = process.env.RESEND_API_KEY
+const FROM_EMAIL = 'Magari & Co. <hello@casamagari.com>'
+
+async function sendOrderEmail({ customerEmail, customerName, items }) {
+  if (!RESEND_API_KEY) {
+    console.warn('Missing RESEND_API_KEY, skipping order confirmation email')
+    return
+  }
+  try {
+    const total = items.reduce(
+      (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
+      0
+    )
+
+    const lines = items
+      .map(
+        (item) =>
+          `• ${item.title || 'Product'} × ${item.quantity || 1} — $${(
+            (item.price || 0) * (item.quantity || 1)
+          ).toFixed(2)}`
+      )
+      .join('<br/>')
+
+    const html = `
+      <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #222;">
+        <p>Hi${customerName ? ` ${customerName}` : ''},</p>
+        <p>Thank you for your order at <strong>Magari &amp; Co.</strong>.</p>
+        <p>Here is a summary of the items in your cart:</p>
+        <p style="margin-top:12px; line-height:1.6;">
+          ${lines}
+        </p>
+        <p style="margin-top:12px;"><strong>Estimated total:</strong> $${total.toFixed(2)}</p>
+        <p style="margin-top:24px; font-size:14px; color:#555;">
+          Your payment will be processed securely via Stripe. If you close the window before completing payment,
+          your order will not be charged.
+        </p>
+        <p style="margin-top:24px;">
+          With care,<br/>
+          Elena<br/>
+          Magari &amp; Co.
+        </p>
+      </div>
+    `
+
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: [customerEmail, 'magaribyelena@gmail.com'],
+        subject: 'Your Magari & Co. order (checkout started)',
+        html,
+      }),
+    }).catch((err) => {
+      console.error('Error sending order email via Resend:', err)
+    })
+  } catch (err) {
+    console.error('Error building/sending order email:', err)
+  }
+}
+
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -65,6 +129,9 @@ exports.handler = async (event) => {
       success_url: `${baseUrl}/checkout/success`,
       cancel_url: `${baseUrl}/checkout/cancel`,
     })
+
+    // Fire-and-forget confirmation email (order intent)
+    sendOrderEmail({ customerEmail, customerName, items }).catch(() => {})
 
     return {
       statusCode: 200,
