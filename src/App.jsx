@@ -96,12 +96,9 @@ function App() {
     }
   }, [location])
 
-  // Don't show Header/Footer on admin page
-  const isAdminPage = location.pathname.startsWith('/admin')
-
   return (
     <div className="App">
-      {!isAdminPage && <Header />}
+      <Header />
       
       <Cart />
 
@@ -121,7 +118,7 @@ function App() {
         </Routes>
       </AnimatePresence>
 
-      {!isAdminPage && <Footer />}
+      <Footer />
     </div>
   )
 }
