@@ -393,7 +393,7 @@ export default function MarketplacePage() {
             </div>
 
             {/* Marketplace Shop Section */}
-            <div ref={shopRef} className="mt-10 md:mt-16 mb-16">
+            <div ref={shopRef} className="mt-6 md:mt-8 mb-12">
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
                 <div>
                   <h2 className="font-serif text-3xl md:text-4xl text-neutral-700">
@@ -544,8 +544,8 @@ export default function MarketplacePage() {
             </div>
 
             {/* Featured Vendors */}
-            <div className="mt-10 md:mt-16 mb-20">
-              <h2 className="font-serif text-4xl text-center text-neutral-600 mb-12">
+            <div className="mt-8 md:mt-10 mb-14">
+              <h2 className="font-serif text-3xl md:text-4xl text-center text-neutral-600 mb-6 md:mb-8">
                 Meet Our Makers
               </h2>
 
@@ -617,12 +617,12 @@ export default function MarketplacePage() {
             </div>
 
             {/* How It Works */}
-            <div className="mb-20">
-              <h2 className="font-serif text-4xl text-center text-neutral-600 mb-12">
+            <div className="mb-14">
+              <h2 className="font-serif text-3xl md:text-4xl text-center text-neutral-600 mb-6 md:mb-8">
                 How It Works
               </h2>
               
-              <div className="grid md:grid-cols-3 gap-8">
+              <div className="grid md:grid-cols-3 gap-6 md:gap-8">
                 {[
                   {
                     icon: <UserPlus className="w-8 h-8" />,
@@ -663,12 +663,12 @@ export default function MarketplacePage() {
             </div>
 
             {/* Benefits Section */}
-            <div className="card bg-gradient-to-br from-sage/10 to-taupe/10 p-12 text-center">
-              <h2 className="font-serif text-4xl text-neutral-600 mb-8">
+            <div className="card bg-gradient-to-br from-sage/10 to-taupe/10 p-8 md:p-10 text-center mb-10">
+              <h2 className="font-serif text-3xl md:text-4xl text-neutral-600 mb-6 md:mb-8">
                 Why Join MOMade?
               </h2>
               
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
                 {[
                   { icon: <DollarSign />, text: 'Keep 88% of sales' },
                   { icon: <Store />, text: 'No setup fees' },
