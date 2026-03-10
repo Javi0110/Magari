@@ -3,4 +3,5 @@ export const SHOP_MAGARI_CATEGORIES = [
   'Kitchen & Tabletop',
   'Throw Pillows and Blankets',
   'Candles and Holders',
+  'Nativities',
 ]
