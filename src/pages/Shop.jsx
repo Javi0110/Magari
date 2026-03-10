@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Filter, X, ShoppingCart, Heart, Eye, ChevronDown, ChevronUp, 
-  Search, Star, Share2, Mail, Instagram, Loader2
+  ChevronLeft, ChevronRight, Search, Star, Share2, Mail, Instagram, Loader2
 } from 'lucide-react'
 import { useProductsStore } from '../store/productsStore'
 import { useCartStore } from '../store/cartStore'
@@ -22,6 +22,7 @@ export default function ShopPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState('featured')
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [detailImageIndex, setDetailImageIndex] = useState(0)
   const [displayCount, setDisplayCount] = useState(12)
   const [showNewsletter, setShowNewsletter] = useState(true)
   const [newsletterEmail, setNewsletterEmail] = useState('')
@@ -185,8 +186,13 @@ export default function ShopPage() {
   }
 
   const handleQuickView = (product, e) => {
-    e.stopPropagation()
+    if (e) e.stopPropagation()
     setSelectedProduct(product)
+    setDetailImageIndex(0)
+  }
+  const openProductDetail = (product) => {
+    setSelectedProduct(product)
+    setDetailImageIndex(0)
   }
 
   const handleLoadMore = () => {
@@ -516,7 +522,8 @@ export default function ShopPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="card group relative hover:shadow-soft-lg transition-all duration-300"
+                    className="card group relative hover:shadow-soft-lg transition-all duration-300 cursor-pointer"
+                    onClick={() => openProductDetail(product)}
                   >
                     {/* Product Image */}
                     <div className="relative aspect-square bg-neutral-200 rounded-2xl mb-4 overflow-hidden">
@@ -586,7 +593,7 @@ export default function ShopPage() {
 
                     {/* Add to Cart Button */}
                     <button
-                      onClick={() => handleAddToCart(product)}
+                      onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
                       disabled={(product.stock || 0) === 0}
                       className="w-full btn-primary py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -597,7 +604,8 @@ export default function ShopPage() {
                     {/* Back-in-stock Alert */}
                     {(product.stock || 0) === 0 && (
                       <button
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
                           const email = prompt('Enter your email for back-in-stock alerts:')
                           if (email) {
                             // 🔌 INTEGRATION: Back-in-stock alert
@@ -698,7 +706,7 @@ export default function ShopPage() {
         </div>
       </div>
 
-      {/* Quick View Modal */}
+      {/* Product detail modal – gallery + full details */}
       <AnimatePresence>
         {selectedProduct && (
           <>
@@ -714,86 +722,127 @@ export default function ShopPage() {
               animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
               exit={{ opacity: 0, scale: 0.9, x: '-50%', y: '-50%' }}
               onClick={(e) => e.stopPropagation()}
-              className="fixed left-1/2 top-1/2 w-[90%] max-w-lg max-h-[90vh] bg-white rounded-2xl shadow-2xl z-[60] overflow-y-auto"
+              className="fixed left-1/2 top-1/2 w-[90%] max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl z-[60] overflow-hidden flex flex-col"
             >
-              <div className="p-6 md:p-8">
-                <button
-                  onClick={() => setSelectedProduct(null)}
-                  className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 transition-colors z-10"
-                  aria-label="Close"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+              <button
+                onClick={() => setSelectedProduct(null)}
+                className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/90 text-neutral-500 hover:text-neutral-700 transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
 
-                {/* Tags */}
-                <div className="flex gap-2 mb-4">
-                  {selectedProduct.tags?.map(tag => (
-                    <span 
-                      key={tag} 
-                      className="px-2.5 py-1 rounded-full text-xs font-medium bg-sage-muted/30 text-sage-dark"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+              <div className="overflow-y-auto flex-1">
+                {/* Image gallery */}
+                <div className="relative bg-neutral-100">
+                  <div className="aspect-square max-h-[45vh] flex items-center justify-center overflow-hidden">
+                    {Array.isArray(selectedProduct.images) && selectedProduct.images.length > 0 ? (
+                      <>
+                        <img
+                          src={selectedProduct.images[detailImageIndex] || selectedProduct.images[0]}
+                          alt={selectedProduct.title}
+                          className="w-full h-full object-contain"
+                        />
+                        {selectedProduct.images.length > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setDetailImageIndex((i) => (i <= 0 ? selectedProduct.images.length - 1 : i - 1)); }}
+                              className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 text-neutral-700 hover:bg-white shadow"
+                              aria-label="Previous image"
+                            >
+                              <ChevronLeft className="w-5 h-5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setDetailImageIndex((i) => (i >= selectedProduct.images.length - 1 ? 0 : i + 1)); }}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 text-neutral-700 hover:bg-white shadow"
+                              aria-label="Next image"
+                            >
+                              <ChevronRight className="w-5 h-5" />
+                            </button>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-neutral-400 text-sm">No image</div>
+                    )}
+                  </div>
+                  {Array.isArray(selectedProduct.images) && selectedProduct.images.length > 1 && (
+                    <div className="flex gap-2 p-3 overflow-x-auto justify-center border-t border-neutral-200">
+                      {selectedProduct.images.map((img, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setDetailImageIndex(i); }}
+                          className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-colors ${i === detailImageIndex ? 'border-sage ring-1 ring-sage' : 'border-transparent hover:border-neutral-300'}`}
+                        >
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* Title */}
-                <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-2">
-                  {selectedProduct.title}
-                </h2>
-
-                {/* Price */}
-                <p className="text-2xl font-semibold text-sage mb-6">
-                  ${selectedProduct.price}
-                </p>
-
-                {/* Description */}
-                <div className="mb-4">
-                  <p className="text-neutral-600 text-sm leading-relaxed">
+                <div className="p-6 md:p-8">
+                  {selectedProduct.category && (
+                    <p className="text-xs font-medium text-sage-dark uppercase tracking-wide mb-1">{selectedProduct.category}</p>
+                  )}
+                  <div className="flex gap-2 mb-2 flex-wrap">
+                    {selectedProduct.tags?.map(tag => (
+                      <span key={tag} className="px-2.5 py-1 rounded-full text-xs font-medium bg-sage-muted/30 text-sage-dark">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-2">
+                    {selectedProduct.title}
+                  </h2>
+                  <p className="text-2xl font-semibold text-sage mb-4">
+                    ${selectedProduct.price}
+                  </p>
+                  <p className="text-neutral-600 text-sm leading-relaxed mb-4">
                     {selectedProduct.description}
                   </p>
-                </div>
-
-                {/* Materials */}
-                {selectedProduct.materials && (
-                  <div className="mb-4">
-                    <p className="text-neutral-600 text-sm">
+                  {selectedProduct.materials && (
+                    <p className="text-neutral-600 text-sm mb-1">
                       <span className="font-medium text-neutral-700">Materials:</span> {selectedProduct.materials}
                     </p>
-                  </div>
-                )}
-
-                {/* Dimensions */}
-                {selectedProduct.dimensions && (
-                  <div className="mb-6">
-                    <p className="text-neutral-600 text-sm">
+                  )}
+                  {selectedProduct.dimensions && (
+                    <p className="text-neutral-600 text-sm mb-1">
                       <span className="font-medium text-neutral-700">Dimensions:</span> {selectedProduct.dimensions}
                     </p>
+                  )}
+                  {selectedProduct.shipping && (
+                    <p className="text-neutral-600 text-sm mb-1">
+                      <span className="font-medium text-neutral-700">Shipping:</span> {selectedProduct.shipping}
+                    </p>
+                  )}
+                  {(selectedProduct.returnPolicy || selectedProduct.return_policy) && (
+                    <p className="text-neutral-600 text-sm mb-4">
+                      <span className="font-medium text-neutral-700">Returns:</span> {selectedProduct.returnPolicy || selectedProduct.return_policy}
+                    </p>
+                  )}
+                  {(selectedProduct.stock || 0) > 0 && (
+                    <p className="text-sm text-neutral-500 mb-4">In stock — {(selectedProduct.stock || 0)} available</p>
+                  )}
+                  <div className="flex gap-3 pt-4 border-t border-greige-light">
+                    <button
+                      onClick={() => { handleAddToCart(selectedProduct); setSelectedProduct(null); }}
+                      disabled={(selectedProduct.stock || 0) === 0}
+                      className="flex-1 btn-outline py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Add to Cart
+                    </button>
+                    <button
+                      onClick={() => { handleBuyNow(selectedProduct); setSelectedProduct(null); }}
+                      disabled={(selectedProduct.stock || 0) === 0}
+                      className="flex-1 btn-primary py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Buy Now
+                    </button>
                   </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex gap-3 pt-4 border-t border-greige-light">
-                  <button
-                    onClick={() => {
-                      handleAddToCart(selectedProduct)
-                      setSelectedProduct(null)
-                    }}
-                    disabled={(selectedProduct.stock || 0) === 0}
-                    className="flex-1 btn-outline py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Add to Cart
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleBuyNow(selectedProduct)
-                      setSelectedProduct(null)
-                    }}
-                    disabled={(selectedProduct.stock || 0) === 0}
-                    className="flex-1 btn-primary py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Buy Now
-                  </button>
                 </div>
               </div>
             </motion.div>

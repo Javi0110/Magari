@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Heart, Store, TrendingUp, Upload, DollarSign, Package, BarChart3, LogIn, UserPlus, MapPin, Edit, Trash2, Plus, Search, X, Image as ImageIcon, Trash2 as DeleteIcon, Bell, ShoppingBag } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Heart, Store, TrendingUp, Upload, DollarSign, Package, BarChart3, LogIn, UserPlus, MapPin, Edit, Trash2, Plus, Search, X, Image as ImageIcon, Trash2 as DeleteIcon, Bell, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react'
 import { sendVendorApplicationEmail } from '../utils/emailService'
 import { supabase } from '../utils/supabase'
 import { sampleVendors } from '../data/sampleData'
@@ -47,6 +47,8 @@ export default function MarketplacePage() {
   const [shopCategory, setShopCategory] = useState('all')
   const [shopMakerId, setShopMakerId] = useState('all')
   const [shopDisplayCount, setShopDisplayCount] = useState(12)
+  const [selectedMarketplaceProduct, setSelectedMarketplaceProduct] = useState(null)
+  const [marketplaceDetailImageIndex, setMarketplaceDetailImageIndex] = useState(0)
   const shopRef = useRef(null)
   const { addItem: addToCart, openCart } = useCartStore()
 
@@ -543,7 +545,17 @@ export default function MarketplacePage() {
                     {displayedMarketplaceProducts.map(product => {
                       const maker = makersById[product.vendor_id]
                       return (
-                        <div key={product.id} className="card hover:shadow-soft-lg transition-all duration-200 flex flex-col">
+                        <div
+                          key={product.id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => {
+                            setSelectedMarketplaceProduct(product)
+                            setMarketplaceDetailImageIndex(0)
+                          }}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedMarketplaceProduct(product); setMarketplaceDetailImageIndex(0); } }}
+                          className="card hover:shadow-soft-lg transition-all duration-200 flex flex-col cursor-pointer"
+                        >
                           <div className="relative aspect-square bg-neutral-100 rounded-2xl mb-4 overflow-hidden">
                             {product.images?.[0] ? (
                               <img
@@ -573,7 +585,7 @@ export default function MarketplacePage() {
                               ${Number(product.price).toFixed(2)}
                             </p>
                             <button
-                              onClick={() => handleShopAddToCart(product)}
+                              onClick={(e) => { e.stopPropagation(); handleShopAddToCart(product); }}
                               disabled={(product.stock || 0) === 0}
                               className="w-full btn-primary py-2 mt-auto disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -584,6 +596,123 @@ export default function MarketplacePage() {
                       )
                     })}
                   </div>
+
+                  {/* Marketplace product detail modal */}
+                  <AnimatePresence>
+                    {selectedMarketplaceProduct && (
+                      <>
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          onClick={() => setSelectedMarketplaceProduct(null)}
+                          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[55]"
+                        />
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl z-[60] overflow-hidden flex flex-col"
+                        >
+                          <button
+                            onClick={() => setSelectedMarketplaceProduct(null)}
+                            className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/90 text-neutral-500 hover:text-neutral-700"
+                            aria-label="Close"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                          <div className="overflow-y-auto flex-1">
+                            <div className="relative bg-neutral-100">
+                              <div className="aspect-square max-h-[45vh] flex items-center justify-center overflow-hidden">
+                                {Array.isArray(selectedMarketplaceProduct.images) && selectedMarketplaceProduct.images.length > 0 ? (
+                                  <>
+                                    <img
+                                      src={selectedMarketplaceProduct.images[marketplaceDetailImageIndex] || selectedMarketplaceProduct.images[0]}
+                                      alt={selectedMarketplaceProduct.title}
+                                      className="w-full h-full object-contain"
+                                    />
+                                    {selectedMarketplaceProduct.images.length > 1 && (
+                                      <>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => { e.stopPropagation(); setMarketplaceDetailImageIndex((i) => (i <= 0 ? selectedMarketplaceProduct.images.length - 1 : i - 1)); }}
+                                          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 text-neutral-700 hover:bg-white shadow"
+                                          aria-label="Previous image"
+                                        >
+                                          <ChevronLeft className="w-5 h-5" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => { e.stopPropagation(); setMarketplaceDetailImageIndex((i) => (i >= selectedMarketplaceProduct.images.length - 1 ? 0 : i + 1)); }}
+                                          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 text-neutral-700 hover:bg-white shadow"
+                                          aria-label="Next image"
+                                        >
+                                          <ChevronRight className="w-5 h-5" />
+                                        </button>
+                                      </>
+                                    )}
+                                  </>
+                                ) : (
+                                  <div className="text-neutral-400 text-sm">No image</div>
+                                )}
+                              </div>
+                              {Array.isArray(selectedMarketplaceProduct.images) && selectedMarketplaceProduct.images.length > 1 && (
+                                <div className="flex gap-2 p-3 overflow-x-auto justify-center border-t border-neutral-200">
+                                  {selectedMarketplaceProduct.images.map((img, i) => (
+                                    <button
+                                      key={i}
+                                      type="button"
+                                      onClick={(e) => { e.stopPropagation(); setMarketplaceDetailImageIndex(i); }}
+                                      className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-colors ${i === marketplaceDetailImageIndex ? 'border-sage ring-1 ring-sage' : 'border-transparent hover:border-neutral-300'}`}
+                                    >
+                                      <img src={img} alt="" className="w-full h-full object-cover" />
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <div className="p-6 md:p-8">
+                              {selectedMarketplaceProduct.category && (
+                                <p className="text-xs font-medium text-sage-dark uppercase tracking-wide mb-1">{selectedMarketplaceProduct.category}</p>
+                              )}
+                              {makersById[selectedMarketplaceProduct.vendor_id] && (
+                                <p className="text-sm text-neutral-500 mb-1">by {makersById[selectedMarketplaceProduct.vendor_id].businessName}</p>
+                              )}
+                              <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-2">
+                                {selectedMarketplaceProduct.title}
+                              </h2>
+                              <p className="text-2xl font-semibold text-sage mb-4">
+                                ${Number(selectedMarketplaceProduct.price).toFixed(2)}
+                              </p>
+                              <p className="text-neutral-600 text-sm leading-relaxed mb-4">
+                                {selectedMarketplaceProduct.description}
+                              </p>
+                              {selectedMarketplaceProduct.materials && (
+                                <p className="text-neutral-600 text-sm mb-1">
+                                  <span className="font-medium text-neutral-700">Materials:</span> {selectedMarketplaceProduct.materials}
+                                </p>
+                              )}
+                              {selectedMarketplaceProduct.dimensions && (
+                                <p className="text-neutral-600 text-sm mb-4">
+                                  <span className="font-medium text-neutral-700">Dimensions:</span> {selectedMarketplaceProduct.dimensions}
+                                </p>
+                              )}
+                              <div className="flex gap-3 pt-4 border-t border-greige-light">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleShopAddToCart(selectedMarketplaceProduct); setSelectedMarketplaceProduct(null); }}
+                                  disabled={(selectedMarketplaceProduct.stock || 0) === 0}
+                                  className="flex-1 btn-primary py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {(selectedMarketplaceProduct.stock || 0) === 0 ? 'Sold Out' : 'Add to cart'}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
                   {hasMoreMarketplace && (
                     <div className="text-center mt-8">
                       <button
