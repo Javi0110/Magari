@@ -22,7 +22,7 @@ import {
 import { sampleTestimonials } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
 import { supabase } from '../utils/supabase'
-import { SHOP_MAGARI_CATEGORIES } from '../constants/shopCategories'
+import { SHOP_MAGARI_CATEGORIES, SHIPPING_OPTIONS, RETURN_POLICY_OPTIONS } from '../constants/shopCategories'
 import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailRelay'
 import { useNotificationsStore } from '../store/notificationsStore'
 
@@ -457,6 +457,7 @@ function ProductsView() {
               <th className="py-3 px-4 font-semibold text-sage-dark">Category</th>
               <th className="py-3 px-4 font-semibold text-sage-dark">Room</th>
               <th className="py-3 px-4 font-semibold text-sage-dark">Price</th>
+              <th className="py-3 px-4 font-semibold text-sage-dark">Stock</th>
               <th className="py-3 px-4 font-semibold text-sage-dark">Tags</th>
               <th className="py-3 px-4 font-semibold text-sage-dark">Actions</th>
             </tr>
@@ -464,7 +465,7 @@ function ProductsView() {
           <tbody>
             {filteredProducts.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-stone">
+                <td colSpan={7} className="py-12 text-center text-stone">
                   No products found
                 </td>
               </tr>
@@ -489,6 +490,7 @@ function ProductsView() {
                   </td>
                   <td className="py-3 px-4 text-stone text-sm">{product.room}</td>
                   <td className="py-3 px-4 font-semibold text-sage">${product.price}</td>
+                  <td className="py-3 px-4 text-stone text-sm">{product.stock ?? 0}</td>
                   <td className="py-3 px-4">
                     <div className="flex gap-1 flex-wrap">
                       {product.tags?.slice(0, 2).map(tag => (
@@ -571,8 +573,9 @@ function ProductForm({ product, onClose }) {
     dimensions: product?.dimensions || '',
     images: product?.images?.join(', ') || '',
     tags: product?.tags?.join(', ') || 'magari',
-    shipping: product?.shipping || 'Ships from San Juan, PR to USA & PR',
-    returnPolicy: product?.returnPolicy || '30-day returns accepted',
+    shipping: product?.shipping || SHIPPING_OPTIONS[0],
+    returnPolicy: product?.returnPolicy || RETURN_POLICY_OPTIONS[0],
+    stock: product?.stock ?? 0,
   })
 
   // Handle image file uploads
@@ -652,6 +655,7 @@ function ProductForm({ product, onClose }) {
     const productData = {
       ...formData,
       price: parseFloat(formData.price),
+      stock: Math.max(0, parseInt(formData.stock, 10) || 0),
       images: imageUrls.length > 0 ? imageUrls : formData.images.split(',').map(img => img.trim()).filter(img => img),
       tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
     }
@@ -881,28 +885,49 @@ function ProductForm({ product, onClose }) {
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sage-dark font-medium mb-2">
-                  Shipping Info
+                  Quantity in stock
                 </label>
                 <input
-                  type="text"
+                  type="number"
+                  min="0"
+                  value={formData.stock}
+                  onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                  className="input-field"
+                  placeholder="0"
+                />
+                <p className="text-xs text-neutral-500 mt-1">Stock is reduced automatically when a customer completes a purchase.</p>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sage-dark font-medium mb-2">
+                  Shipping
+                </label>
+                <select
                   value={formData.shipping}
                   onChange={(e) => setFormData({ ...formData, shipping: e.target.value })}
                   className="input-field"
-                  placeholder="Ships from San Juan, PR to USA & PR"
-                />
+                >
+                  {SHIPPING_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
                 <label className="block text-sage-dark font-medium mb-2">
-                  Return Policy
+                  Return policy
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.returnPolicy}
                   onChange={(e) => setFormData({ ...formData, returnPolicy: e.target.value })}
                   className="input-field"
-                  placeholder="30-day returns accepted"
-                />
+                >
+                  {RETURN_POLICY_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
               </div>
             </div>
 

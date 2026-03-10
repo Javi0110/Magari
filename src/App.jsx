@@ -23,6 +23,8 @@ import VendorProfilePage from './pages/VendorProfile'
 import AboutPage from './pages/About'
 import AdminPage from './pages/Admin'
 import CasaMagariPage from './pages/CasaMagari'
+import CheckoutSuccessPage from './pages/CheckoutSuccess'
+import CheckoutCancelPage from './pages/CheckoutCancel'
 
 // SEO Meta Tags by Route
 const pageMeta = {
@@ -263,6 +265,8 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/casa-magari" element={<CasaMagariPage />} />
+          <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+          <Route path="/checkout/cancel" element={<CheckoutCancelPage />} />
           
           {/* 404 Not Found */}
           <Route path="*" element={<NotFoundPage />} />

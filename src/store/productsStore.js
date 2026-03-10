@@ -18,13 +18,14 @@ function fromDb(row) {
 // Payload for shop_products: only columns that exist in the table
 const SHOP_PRODUCT_KEYS = [
   'slug', 'title', 'description', 'price', 'category', 'room', 'materials',
-  'dimensions', 'images', 'tags', 'badge', 'stock', 'is_active'
+  'dimensions', 'images', 'tags', 'badge', 'stock', 'is_active', 'shipping'
 ]
 function toDb(product) {
   const out = {}
   for (const key of SHOP_PRODUCT_KEYS) {
     if (product[key] !== undefined) out[key] = product[key]
   }
+  if (product.returnPolicy !== undefined) out.return_policy = product.returnPolicy
   return out
 }
 
