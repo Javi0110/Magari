@@ -33,7 +33,14 @@ Solo estos pasos requieren tu cuenta y tu teclado. El resto del código ya está
 
 **Comprobar:** En la consola del navegador (F12) deberías ver: *"EmailJS configurado. Los correos se enviarán a magaribyelena@gmail.com..."*
 
-### 1b. Alternativa sin EmailJS (vendor applications y compras)
+### 1b. Email al vendor cuando se aprueba o rechaza su solicitud
+
+Cuando el admin aprueba o rechaza una solicitud en el dashboard, el vendor recibe un email automático:
+
+- **Recomendado:** Usar **Resend** con la Edge Function `send-vendor-email`. En **`supabase/README.md`** (sección 5) tienes los pasos: crear cuenta en Resend, añadir `RESEND_API_KEY` en Supabase Secrets y desplegar la función con `npx supabase functions deploy send-vendor-email`.
+- **Alternativa:** Si tienes EmailJS configurado en `.env`, la app lo usará como respaldo si la Edge Function no está desplegada o falla.
+
+### 1c. Alternativa sin EmailJS (notificaciones a ti cuando hay solicitud de vendor)
 
 Si no puedes crear o editar plantillas en EmailJS, en **`NOTIFICACIONES_SIN_EMAILJS.md`** tienes dos alternativas para que te llegue un email cada vez que haya una solicitud de vendor (y luego compras):
 

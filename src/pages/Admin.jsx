@@ -22,7 +22,7 @@ import {
 import { sampleTestimonials } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
 import { supabase } from '../utils/supabase'
-import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailService'
+import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailRelay'
 import { useNotificationsStore } from '../store/notificationsStore'
 
 function AdminNotificationsDropdown({ notifications, error, onMarkAsRead, onMarkAllAsRead, onClose }) {
