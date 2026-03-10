@@ -22,6 +22,7 @@ import BecomeVendorPage from './pages/BecomeVendor'
 import VendorProfilePage from './pages/VendorProfile'
 import AboutPage from './pages/About'
 import AdminPage from './pages/Admin'
+import CasaMagariPage from './pages/CasaMagari'
 
 // SEO Meta Tags by Route
 const pageMeta = {
@@ -96,6 +97,10 @@ const pageMeta = {
   '/admin': {
     title: 'Admin Dashboard — Magari & Co.',
     description: 'Admin portal for Magari & Co.'
+  },
+  '/casa-magari': {
+    title: 'Casa Magari — A Future Design-Forward Stay by Magari & Co.',
+    description: 'Follow the behind-the-scenes journey of Casa Magari, a future Airbnb-style stay curated with mom-made pieces, local art, and slow, beautiful living.'
   }
 }
 
@@ -176,6 +181,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/casa-magari" element={<CasaMagariPage />} />
           
           {/* 404 Not Found */}
           <Route path="*" element={<NotFoundPage />} />
