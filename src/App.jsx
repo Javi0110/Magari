@@ -107,12 +107,44 @@ const pageMeta = {
 function App() {
   const location = useLocation()
 
-  // Update page title and meta tags on route change
+  // One-time: inject LocalBusiness structured data for Magari & Co. in Austin, TX
+  useEffect(() => {
+    const existing = document.getElementById('magari-localbusiness-schema')
+    if (existing) return
+    const script = document.createElement('script')
+    script.id = 'magari-localbusiness-schema'
+    script.type = 'application/ld+json'
+    script.innerHTML = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'LocalBusiness',
+      name: 'Magari & Co.',
+      description:
+        'Magari & Co. is a design studio and curated marketplace based in Austin, Texas, offering interior design services, styling, and mom-made home goods.',
+      url: 'https://casamagari.com',
+      image: 'https://casamagari.com/og-image.jpg',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Austin',
+        addressRegion: 'TX',
+        addressCountry: 'US'
+      },
+      areaServed: {
+        '@type': 'Place',
+        name: 'Austin, Texas, United States'
+      },
+      sameAs: [
+        'https://www.instagram.com/magariandco/'
+      ]
+    })
+    document.head.appendChild(script)
+  }, [])
+
+  // Update page title, meta tags, and Open Graph on route change
   useEffect(() => {
     const meta = pageMeta[location.pathname] || pageMeta['/']
     document.title = meta.title
     
-    // Update meta description
+    // Meta description
     let metaDescription = document.querySelector('meta[name="description"]')
     if (metaDescription) {
       metaDescription.setAttribute('content', meta.description)
@@ -123,29 +155,78 @@ function App() {
       document.head.appendChild(metaDescription)
     }
 
-    // Update Open Graph tags
-    let ogTitle = document.querySelector('meta[property="og:title"]')
-    if (ogTitle) {
-      ogTitle.setAttribute('content', meta.title)
+    const canonicalBase = 'https://casamagari.com'
+    const canonicalUrl = canonicalBase + (location.pathname === '/' ? '' : location.pathname)
+
+    // Canonical link
+    let linkCanonical = document.querySelector('link[rel="canonical"]')
+    if (!linkCanonical) {
+      linkCanonical = document.createElement('link')
+      linkCanonical.rel = 'canonical'
+      document.head.appendChild(linkCanonical)
+    }
+    linkCanonical.setAttribute('href', canonicalUrl)
+
+    // Open Graph tags
+    const ensureOg = (property, content) => {
+      let tag = document.querySelector(`meta[property="${property}"]`)
+      if (!tag) {
+        tag = document.createElement('meta')
+        tag.setAttribute('property', property)
+        document.head.appendChild(tag)
+      }
+      tag.setAttribute('content', content)
     }
 
-    let ogDescription = document.querySelector('meta[property="og:description"]')
-    if (ogDescription) {
-      ogDescription.setAttribute('content', meta.description)
+    ensureOg('og:title', meta.title)
+    ensureOg('og:description', meta.description)
+    ensureOg('og:type', location.pathname === '/' ? 'website' : 'article')
+    ensureOg('og:url', canonicalUrl)
+    ensureOg('og:image', 'https://casamagari.com/og-image.jpg')
+
+    // Twitter Card
+    let twitterCard = document.querySelector('meta[name="twitter:card"]')
+    if (!twitterCard) {
+      twitterCard = document.createElement('meta')
+      twitterCard.name = 'twitter:card'
+      document.head.appendChild(twitterCard)
     }
+    twitterCard.setAttribute('content', 'summary_large_image')
+
+    let twitterTitle = document.querySelector('meta[name="twitter:title"]')
+    if (!twitterTitle) {
+      twitterTitle = document.createElement('meta')
+      twitterTitle.name = 'twitter:title'
+      document.head.appendChild(twitterTitle)
+    }
+    twitterTitle.setAttribute('content', meta.title)
+
+    let twitterDescription = document.querySelector('meta[name="twitter:description"]')
+    if (!twitterDescription) {
+      twitterDescription = document.createElement('meta')
+      twitterDescription.name = 'twitter:description'
+      document.head.appendChild(twitterDescription)
+    }
+    twitterDescription.setAttribute('content', meta.description)
+
+    let twitterImage = document.querySelector('meta[name="twitter:image"]')
+    if (!twitterImage) {
+      twitterImage = document.createElement('meta')
+      twitterImage.name = 'twitter:image'
+      document.head.appendChild(twitterImage)
+    }
+    twitterImage.setAttribute('content', 'https://casamagari.com/og-image.jpg')
 
     // Scroll to top on route change
     window.scrollTo(0, 0)
 
     // 🔌 INTEGRATION: Track page views
-    // Google Analytics
     if (typeof gtag !== 'undefined') {
       gtag('config', 'GA_MEASUREMENT_ID', {
         page_path: location.pathname,
       })
     }
     
-    // Meta Pixel
     if (typeof fbq !== 'undefined') {
       fbq('track', 'PageView')
     }
