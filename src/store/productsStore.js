@@ -68,7 +68,7 @@ export const useProductsStore = create((set, get) => ({
     }
     set({ loading: true, error: null })
     const { data, error } = await supabase
-      .from('products')
+      .from('shop_products')
       .select('*')
       .order('created_at', { ascending: false })
     
@@ -115,7 +115,7 @@ export const useProductsStore = create((set, get) => ({
     })
     
     const { data, error } = await supabase
-      .from('products')
+      .from('shop_products')
       .insert(payload)
       .select('*')
       .single()
@@ -145,7 +145,7 @@ export const useProductsStore = create((set, get) => ({
     
     const payload = toDb(updates)
     const { data, error } = await supabase
-      .from('products')
+      .from('shop_products')
       .update(payload)
       .eq('id', id)
       .select('*')
@@ -168,7 +168,7 @@ export const useProductsStore = create((set, get) => ({
   deleteProduct: async (id) => {
     if (supabase) {
       const { error } = await supabase
-        .from('products')
+        .from('shop_products')
         .delete()
         .eq('id', id)
       if (error) {
