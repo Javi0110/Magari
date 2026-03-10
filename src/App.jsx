@@ -65,6 +65,10 @@ const pageMeta = {
     title: 'MOMade Market — Supporting Mom Makers',
     description: 'Explore the MOMade Market curated by Magari & Co., featuring products made by mom-owned businesses.'
   },
+  '/momade-market': {
+    title: 'MOMade Market — Curated Marketplace for Mom Makers',
+    description: 'Shop a curated marketplace of mom-made ceramics, textiles, decor, stationery and gifts, and discover the stories behind each maker.'
+  },
   '/momade/shop': {
     title: 'Shop the MOMade Market — Magari & Co.',
     description: 'Shop mom-made products across ceramics, textiles, decor, art and more from our approved makers.'
@@ -163,6 +167,7 @@ function App() {
           {/* MOMade market routes */}
           <Route path="/marketplace" element={<MarketplacePage />} />
           <Route path="/momade" element={<MarketplacePage />} />
+          <Route path="/momade-market" element={<MarketplacePage />} />
           <Route path="/momade/shop" element={<MarketplacePage />} />
           <Route path="/momade/become-a-vendor" element={<MarketplacePage />} />
           <Route path="/momade/vendor-login" element={<MarketplacePage />} />

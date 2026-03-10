@@ -374,7 +374,7 @@ export default function MarketplacePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {view === 'landing' && (
           <>
-            {/* Hero Section */}
+            {/* Hero Section – curated marketplace intro */}
             <div className="text-center py-4 md:py-6">
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -394,9 +394,9 @@ export default function MarketplacePage() {
                   MOMade Marketplace
                 </h1>
                 <p className="text-xl md:text-2xl text-stone max-w-3xl mx-auto mb-6">
-                  A curated shop supporting moms who make. 
+                  A curated marketplace of mom-made ceramics, textiles, decor, paper goods and gifts.
                   <br />
-                  Handcrafted with love, sold with purpose.
+                  Every piece is made by a mom-owned business and selected by Magari &amp; Co.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
@@ -416,7 +416,7 @@ export default function MarketplacePage() {
               </motion.div>
             </div>
 
-            {/* Marketplace Shop Section */}
+            {/* Marketplace Shop Section – shop by category & filters */}
             <div ref={shopRef} className="mt-6 md:mt-8 mb-12">
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
                 <div>
@@ -424,7 +424,7 @@ export default function MarketplacePage() {
                     Shop the MOMade Marketplace
                   </h2>
                   <p className="text-neutral-600 mt-2">
-                    Discover products from our approved makers and curate your home with mom-made pieces.
+                    Browse by maker or shop by product type to find ceramics, textiles, art, stationery, gifts and more.
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
@@ -467,11 +467,13 @@ export default function MarketplacePage() {
                     <option value="all">All categories</option>
                     <option value="Ceramics">Ceramics</option>
                     <option value="Textiles">Textiles</option>
-                    <option value="Jewelry">Jewelry</option>
                     <option value="Home Decor">Home Decor</option>
-                    <option value="Art">Art</option>
-                    <option value="Beauty">Beauty</option>
-                    <option value="Food">Food</option>
+                    <option value="Art">Art &amp; Prints</option>
+                    <option value="Stationery">Stationery &amp; Paper Goods</option>
+                    <option value="Jewelry">Jewelry</option>
+                    <option value="Gifts">Gifts</option>
+                    <option value="Beauty">Self-care &amp; Beauty</option>
+                    <option value="Food">Pantry &amp; Treats</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
@@ -567,11 +569,15 @@ export default function MarketplacePage() {
               )}
             </div>
 
-            {/* Featured Vendors */}
+            {/* Featured makers + maker profiles + story behind the products */}
             <div className="mt-8 md:mt-10 mb-14">
-              <h2 className="font-serif text-3xl md:text-4xl text-center text-neutral-600 mb-6 md:mb-8">
+              <h2 className="font-serif text-3xl md:text-4xl text-center text-neutral-600 mb-3 md:mb-4">
                 Meet Our Makers
               </h2>
+              <p className="text-neutral-600 text-sm md:text-base max-w-3xl mx-auto mb-6 md:mb-8 text-center">
+                Each maker is a mom building a product-based business alongside motherhood. Browse their profiles,
+                discover where they&apos;re based, and learn the story behind the pieces you bring home.
+              </p>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {makersLoading && makers.length === 0 && (
@@ -579,7 +585,7 @@ export default function MarketplacePage() {
                 )}
                 {!makersLoading && makers.length === 0 && (
                   <p className="text-center text-neutral-500 col-span-full">
-                    Maker profiles will appear here once approved vendors publish their profile.
+                    Maker profiles will appear here as approved vendors publish their profile.
                   </p>
                 )}
                 {makers.map((vendor, index) => (
