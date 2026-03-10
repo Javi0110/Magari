@@ -3,7 +3,6 @@ import { useCartStore } from '../store/cartStore'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { createOrderAndNotifications } from '../utils/orders'
 import { supabase } from '../utils/supabase'
 
 export default function Cart() {
@@ -116,27 +115,32 @@ export default function Cart() {
     }
     setCheckingOut(true)
     try {
-      await createOrderAndNotifications({
-        items: items.map(i => ({
-          id: i.id,
-          title: i.title,
-          price: i.price,
-          quantity: i.quantity,
-          vendorId: i.vendorId ?? i.vendor_id
-        })),
-        total: getFinalTotal(),
-        customerName: name,
-        customerEmail: email,
-        shippingAddress: shippingZip ? `ZIP: ${shippingZip}` : ''
+      const response = await fetch('/.netlify/functions/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: name,
+          customerEmail: email,
+          items: items.map(i => ({
+            id: i.id,
+            title: i.title,
+            price: i.price,
+            quantity: i.quantity,
+            vendorId: i.vendorId ?? i.vendor_id
+          })),
+        }),
       })
-      clearCart()
-      closeCart()
-      setCustomerName('')
-      setCustomerEmail('')
-      alert('Pedido registrado. Te contactaremos para coordinar el pago y envío.')
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || 'No se pudo iniciar el pago.')
+      }
+
+      // Redirect to Stripe Checkout
+      window.location.href = data.url
     } catch (err) {
       console.error(err)
-      alert(err.message || 'Error al registrar el pedido.')
+      alert(err.message || 'No se pudo iniciar el pago. Intenta de nuevo.')
     } finally {
       setCheckingOut(false)
     }
@@ -355,7 +359,7 @@ export default function Cart() {
 
                 <div className="space-y-2">
                   <p className="text-xs text-neutral-500 text-center">
-                    Ships to USA &amp; PR. We&apos;ll reach out to coordinate payment and shipping.
+                    Ships to USA &amp; PR. Payment is processed securely via Stripe; we&apos;ll reach out to coordinate shipping.
                   </p>
                   <button
                     type="button"
