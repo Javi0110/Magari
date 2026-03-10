@@ -11,10 +11,12 @@ export default function Header() {
   const itemCount = getItemCount()
 
   const navigation = [
-    { name: 'Shop Magari', href: '/shop' },
+    { name: 'Home', href: '/' },
     { name: 'Design Services', href: '/design-services' },
-    { name: 'Marketplace', href: '/marketplace', isIcon: true },
+    { name: 'Shop Magari', href: '/shop' },
+    { name: 'MOMade Market', href: '/momade', isIcon: true },
     { name: 'About', href: '/about' },
+    { name: 'Contact', href: '/contact' },
   ]
 
   return (
@@ -53,13 +55,13 @@ export default function Header() {
                   ? "flex items-center justify-center h-24 cursor-pointer transition-opacity hover:opacity-80"
                   : "text-stone hover:text-sage transition-colors font-medium tracking-wide flex items-center"
                 }
-                aria-label={item.isIcon ? "Marketplace" : item.name}
+                aria-label={item.isIcon ? "MOMade Market" : item.name}
               >
                 {item.isIcon ? (
                   <>
                     <img 
                       src="/momade-logo.png" 
-                      alt="MOMade Marketplace" 
+                      alt="MOMade Market" 
                       className="h-14 md:h-16 w-auto object-contain"
                       onError={(e) => {
                         e.target.style.display = 'none'
@@ -69,7 +71,7 @@ export default function Header() {
                       }}
                     />
                     <span className="hidden text-stone hover:text-sage transition-colors font-medium tracking-wide ml-2">
-                      Marketplace
+                      MOMade Market
                     </span>
                   </>
                 ) : (
@@ -102,7 +104,7 @@ export default function Header() {
                     Admin
                   </Link>
                   <Link
-                    to="/marketplace?view=login"
+                    to="/momade/vendor-login"
                     onClick={() => setLoginDropdownOpen(false)}
                     className="block px-4 py-2 text-neutral-700 hover:bg-cream text-sm"
                   >
@@ -184,7 +186,7 @@ export default function Header() {
                 <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium">
                   <LogIn className="w-4 h-4" /> Admin
                 </Link>
-                <Link to="/marketplace?view=login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium">
+                <Link to="/momade/vendor-login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium">
                   <LogIn className="w-4 h-4" /> Vendor (Marketplace)
                 </Link>
               </div>

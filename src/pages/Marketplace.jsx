@@ -13,7 +13,15 @@ import { useCartStore } from '../store/cartStore'
 export default function MarketplacePage() {
   const location = useLocation()
   const searchParams = new URLSearchParams(location.search)
-  const initialView = searchParams.get('view') === 'login' ? 'login' : 'landing'
+  const path = location.pathname
+  let initialView = 'landing'
+  if (path.includes('vendor-login')) {
+    initialView = 'login'
+  } else if (path.includes('become-a-vendor')) {
+    initialView = 'apply'
+  } else if (searchParams.get('view') === 'login') {
+    initialView = 'login'
+  }
   const [view, setView] = useState(initialView) // landing, apply, dashboard, login
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [applicationData, setApplicationData] = useState({
@@ -226,17 +234,33 @@ export default function MarketplacePage() {
     localStorage.setItem('magari-current-user', JSON.stringify(user))
   }
 
-  // Cambiar entre landing/login según el parámetro de la URL
+  // Cambiar entre landing/login/apply según la URL
   useEffect(() => {
+    // No tocar la vista si el vendor ya está en el dashboard
+    if (view === 'dashboard') return
     const params = new URLSearchParams(location.search)
     const v = params.get('view')
-    if (v === 'login') {
+    const pathname = location.pathname
+    if (pathname.includes('vendor-login') || v === 'login') {
       setView('login')
-    } else if (view !== 'dashboard') {
-      // Si el vendor no está dentro del dashboard, ir a landing
+    } else if (pathname.includes('become-a-vendor')) {
+      setView('apply')
+    } else {
       setView('landing')
     }
-  }, [location.search])
+  }, [location.pathname, location.search, view])
+
+  // Si la ruta es /momade/shop, hacer scroll al área de productos al cargar
+  useEffect(() => {
+    if (location.pathname === '/momade/shop' || location.pathname === '/marketplace/shop') {
+      // Esperar un tick para que el DOM tenga el ref listo
+      setTimeout(() => {
+        if (shopRef.current) {
+          shopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 300)
+    }
+  }, [location.pathname])
 
   // Restaurar sesión de vendor si ya estaba logueado
   useEffect(() => {

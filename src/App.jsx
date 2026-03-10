@@ -31,9 +31,37 @@ const pageMeta = {
     title: 'Design Services — Magari & Co.',
     description: 'Transform your home from anywhere. Virtual consultations, shopping & styling, and personalized decorating + installation services.'
   },
+  '/design-services/home-staging': {
+    title: 'Home Staging — Design Services — Magari & Co.',
+    description: 'Home staging services to help your property show its best. Styling, decor, and layout optimized for buyers.'
+  },
+  '/design-services/interior-design': {
+    title: 'Interior Design — Magari & Co.',
+    description: 'Full-service interior design support to transform your home with cohesive, intentional design.'
+  },
+  '/design-services/virtual-styling': {
+    title: 'Virtual Styling — Magari & Co.',
+    description: 'Virtual interior styling with shoppable guides so you can execute the look at your own pace.'
+  },
   '/marketplace': {
     title: 'MOMade Marketplace — Supporting Mom Makers',
     description: 'A curated marketplace celebrating mom-made businesses. Handcrafted with love, sold with purpose.'
+  },
+  '/momade': {
+    title: 'MOMade Market — Supporting Mom Makers',
+    description: 'Explore the MOMade Market curated by Magari & Co., featuring products made by mom-owned businesses.'
+  },
+  '/momade/shop': {
+    title: 'Shop the MOMade Market — Magari & Co.',
+    description: 'Shop mom-made products across ceramics, textiles, decor, art and more from our approved makers.'
+  },
+  '/momade/become-a-vendor': {
+    title: 'Become a Vendor — MOMade Market',
+    description: 'Apply to sell your mom-made products on the MOMade Market. Learn how the process and commission structure work.'
+  },
+  '/momade/vendor-login': {
+    title: 'Vendor Login — MOMade Market',
+    description: 'Access your MOMade vendor dashboard to manage products, view sales, and update your profile.'
   },
   '/about': {
     title: 'About — Magari & Co.',
@@ -107,7 +135,17 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/design-services" element={<DesignServicesPage />} />
+          {/* Design services sub-routes (reuse main page for now) */}
+          <Route path="/design-services/home-staging" element={<DesignServicesPage />} />
+          <Route path="/design-services/interior-design" element={<DesignServicesPage />} />
+          <Route path="/design-services/virtual-styling" element={<DesignServicesPage />} />
+
+          {/* MOMade market routes */}
           <Route path="/marketplace" element={<MarketplacePage />} />
+          <Route path="/momade" element={<MarketplacePage />} />
+          <Route path="/momade/shop" element={<MarketplacePage />} />
+          <Route path="/momade/become-a-vendor" element={<MarketplacePage />} />
+          <Route path="/momade/vendor-login" element={<MarketplacePage />} />
           <Route path="/maker/:slug" element={<VendorProfilePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
