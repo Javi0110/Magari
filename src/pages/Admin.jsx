@@ -22,7 +22,7 @@ import {
 import { sampleTestimonials } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
 import { supabase } from '../utils/supabase'
-import { SHOP_MAGARI_CATEGORIES, SHIPPING_OPTIONS, RETURN_POLICY_OPTIONS } from '../constants/shopCategories'
+import { SHOP_MAGARI_CATEGORIES, SHIPPING_OPTIONS, RETURN_POLICY_OPTIONS, FULFILLMENT_OPTIONS } from '../constants/shopCategories'
 import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailRelay'
 import { useNotificationsStore } from '../store/notificationsStore'
 
@@ -576,6 +576,7 @@ function ProductForm({ product, onClose }) {
     shipping: product?.shipping || SHIPPING_OPTIONS[0],
     returnPolicy: product?.returnPolicy || RETURN_POLICY_OPTIONS[0],
     stock: product?.stock ?? 0,
+    fulfillment: product?.fulfillment || 'shipping',
   })
 
   // Handle image file uploads
@@ -902,7 +903,22 @@ function ProductForm({ product, onClose }) {
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sage-dark font-medium mb-2">
-                  Shipping
+                  Fulfillment
+                </label>
+                <select
+                  value={formData.fulfillment}
+                  onChange={(e) => setFormData({ ...formData, fulfillment: e.target.value })}
+                  className="input-field"
+                >
+                  {FULFILLMENT_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-neutral-500 mt-1">Local pickup is at 75 Jan Ln, Georgetown, TX (address shown after payment).</p>
+              </div>
+              <div>
+                <label className="block text-sage-dark font-medium mb-2">
+                  Shipping (display text)
                 </label>
                 <select
                   value={formData.shipping}
@@ -914,7 +930,6 @@ function ProductForm({ product, onClose }) {
                   ))}
                 </select>
               </div>
-
               <div>
                 <label className="block text-sage-dark font-medium mb-2">
                   Return policy

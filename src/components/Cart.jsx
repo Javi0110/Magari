@@ -1,32 +1,53 @@
-import { X, Minus, Plus, ShoppingBag, Tag, Truck, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react'
+import { X, Minus, Plus, ShoppingBag, Tag, Truck, ArrowRight, MapPin } from 'lucide-react'
 import { useCartStore } from '../store/cartStore'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
+import { PICKUP_DISPLAY } from '../constants/shopCategories'
+
+const SHIPPING_BASE = 8
+const SHIPPING_PER_ITEM = 2
+const DELIVERY_FLAT = 10
 
 export default function Cart() {
   const { items, isOpen, closeCart, updateQuantity, removeItem, getTotal, clearCart } = useCartStore()
   const [checkingOut, setCheckingOut] = useState(false)
   const [promoCode, setPromoCode] = useState('')
   const [appliedPromo, setAppliedPromo] = useState(null)
-  const [showShipping, setShowShipping] = useState(false)
-  const [shippingZip, setShippingZip] = useState('')
-  const [estimatedShipping, setEstimatedShipping] = useState(null)
   const [customerName, setCustomerName] = useState('')
   const [customerEmail, setCustomerEmail] = useState('')
+  const [shippingAddress, setShippingAddress] = useState('')
+  const [shippingCity, setShippingCity] = useState('')
+  const [shippingState, setShippingState] = useState('')
+  const [shippingZip, setShippingZip] = useState('')
+  const [fulfillmentMethod, setFulfillmentMethod] = useState('shipping')
   const [abandonedStatus, setAbandonedStatus] = useState(null)
 
+  const totalItemCount = items.reduce((sum, i) => sum + (i.quantity || 1), 0)
+  const allPickupOnly = items.length > 0 && items.every((i) => (i.fulfillment || 'shipping') === 'local_pickup_only')
+  const canShip = items.some((i) => {
+    const f = i.fulfillment || 'shipping'
+    return f === 'shipping' || f === 'shipping_and_delivery'
+  })
+  const canDeliver = items.some((i) => {
+    const f = i.fulfillment || 'shipping'
+    return f === 'delivery' || f === 'shipping_and_delivery'
+  })
+  const needsAddress = items.length > 0 && !allPickupOnly
+
+  useEffect(() => {
+    if (needsAddress && !canShip && canDeliver && fulfillmentMethod === 'shipping') {
+      setFulfillmentMethod('delivery')
+    }
+  }, [needsAddress, canShip, canDeliver, fulfillmentMethod])
+
+  const shippingCost = totalItemCount <= 0 ? 0 : SHIPPING_BASE + Math.max(0, totalItemCount - 1) * SHIPPING_PER_ITEM
+  const deliveryCost = DELIVERY_FLAT
+  const fulfillmentAmount =
+    allPickupOnly ? 0 : fulfillmentMethod === 'delivery' ? deliveryCost : fulfillmentMethod === 'shipping' ? shippingCost : 0
+
   const handleApplyPromo = () => {
-    // 🔌 INTEGRATION: Validate promo code
-    // const response = await fetch('/api/validate-promo', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ code: promoCode })
-    // })
-    // const { valid, discount } = await response.json()
-    
-    // Mock validation for demo
     if (promoCode.toLowerCase() === 'magari10') {
       setAppliedPromo({ code: promoCode, discount: 0.1 })
       setPromoCode('')
@@ -35,37 +56,15 @@ export default function Cart() {
     }
   }
 
-  const handleEstimateShipping = () => {
-    // 🔌 INTEGRATION: Calculate shipping
-    // const response = await fetch('/api/estimate-shipping', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ zipCode: shippingZip, items })
-    // })
-    // const { cost, estimatedDays } = await response.json()
-    
-    // Mock estimation for demo
-    if (shippingZip) {
-      setEstimatedShipping({ cost: 12.99, estimatedDays: '3-5' })
-    }
-  }
+  const getSubtotal = () => getTotal()
+  const getDiscount = () => (appliedPromo ? getSubtotal() * appliedPromo.discount : 0)
+  const getFinalTotal = () => getSubtotal() - getDiscount() + fulfillmentAmount
 
-  const getSubtotal = () => {
-    return getTotal()
-  }
-
-  const getDiscount = () => {
-    if (!appliedPromo) return 0
-    return getSubtotal() * appliedPromo.discount
-  }
-
-  const getShipping = () => {
-    return estimatedShipping?.cost || 0
-  }
-
-  const getFinalTotal = () => {
-    return getSubtotal() - getDiscount() + getShipping()
-  }
+  const hasValidShippingAddress = () =>
+    (shippingAddress || '').trim().length >= 5 &&
+    (shippingCity || '').trim().length >= 2 &&
+    (shippingState || '').trim().length >= 2 &&
+    (shippingZip || '').trim().length >= 3
 
   const handleSaveAbandonedCart = async () => {
     const email = (customerEmail || '').trim()
@@ -79,18 +78,16 @@ export default function Cart() {
     }
     try {
       setAbandonedStatus('saving')
-      const { error } = await supabase
-        .from('abandoned_carts')
-        .insert({
-          email,
-          cart: items.map(i => ({
-            id: i.id,
-            title: i.title,
-            price: i.price,
-            quantity: i.quantity,
-            vendorId: i.vendorId ?? i.vendor_id
-          }))
-        })
+      const { error } = await supabase.from('abandoned_carts').insert({
+        email,
+        cart: items.map((i) => ({
+          id: i.id,
+          title: i.title,
+          price: i.price,
+          quantity: i.quantity,
+          vendorId: i.vendorId ?? i.vendor_id,
+        })),
+      })
       if (error) {
         console.error('Error saving abandoned cart:', error)
         setAbandonedStatus('error')
@@ -110,37 +107,55 @@ export default function Cart() {
     const name = (customerName || '').trim()
     const email = (customerEmail || '').trim()
     if (!name || !email) {
-      alert('Introduce tu nombre y email para continuar.')
+      alert('Please enter your name and email to continue.')
       return
+    }
+    if (needsAddress) {
+      if (!hasValidShippingAddress()) {
+        alert('Please complete the shipping address (street, city, state, and ZIP code).')
+        return
+      }
+      if (fulfillmentMethod !== 'shipping' && fulfillmentMethod !== 'delivery') {
+        alert('Please select Shipping or Delivery.')
+        return
+      }
     }
     setCheckingOut(true)
     try {
+      const payload = {
+        customerName: name,
+        customerEmail: email,
+        fulfillmentMethod: allPickupOnly ? 'local_pickup' : fulfillmentMethod,
+        fulfillmentAmount: Math.round(fulfillmentAmount * 100) / 100,
+        items: items.map((i) => ({
+          id: i.id,
+          title: i.title,
+          price: i.price,
+          quantity: i.quantity,
+          vendorId: i.vendorId ?? i.vendor_id,
+        })),
+      }
+      if (needsAddress) {
+        payload.shippingAddress = {
+          line1: (shippingAddress || '').trim(),
+          city: (shippingCity || '').trim(),
+          state: (shippingState || '').trim(),
+          postal_code: (shippingZip || '').trim(),
+        }
+      }
       const response = await fetch('/.netlify/functions/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerName: name,
-          customerEmail: email,
-          items: items.map(i => ({
-            id: i.id,
-            title: i.title,
-            price: i.price,
-            quantity: i.quantity,
-            vendorId: i.vendorId ?? i.vendor_id
-          })),
-        }),
+        body: JSON.stringify(payload),
       })
-
       const data = await response.json().catch(() => ({}))
       if (!response.ok || !data.url) {
-        throw new Error(data.error || 'No se pudo iniciar el pago.')
+        throw new Error(data.error || 'Could not start checkout.')
       }
-
-      // Redirect to Stripe Checkout
       window.location.href = data.url
     } catch (err) {
       console.error(err)
-      alert(err.message || 'No se pudo iniciar el pago. Intenta de nuevo.')
+      alert(err.message || 'Could not start checkout. Please try again.')
     } finally {
       setCheckingOut(false)
     }
@@ -150,7 +165,6 @@ export default function Cart() {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -158,8 +172,6 @@ export default function Cart() {
             onClick={closeCart}
             className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50"
           />
-
-          {/* Cart Sidebar */}
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
@@ -167,22 +179,16 @@ export default function Cart() {
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 flex flex-col"
           >
-            {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-neutral-200">
               <h2 className="font-serif text-2xl text-neutral-600 flex items-center">
                 <ShoppingBag className="w-6 h-6 mr-2" />
                 Cart
               </h2>
-              <button
-                onClick={closeCart}
-                className="p-2 hover:bg-neutral-100 rounded-full transition-colors"
-                aria-label="Close cart"
-              >
+              <button onClick={closeCart} className="p-2 hover:bg-neutral-100 rounded-full transition-colors" aria-label="Close cart">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Cart Items */}
             <div className="flex-1 overflow-y-auto p-6">
               {items.length === 0 ? (
                 <div className="text-center py-12">
@@ -200,19 +206,10 @@ export default function Cart() {
                       exit={{ opacity: 0, x: -100 }}
                       className="flex gap-4 p-4 bg-cream rounded-2xl"
                     >
-                      {/* Product Image Placeholder */}
                       <div className="w-20 h-20 bg-neutral-200 rounded-xl flex-shrink-0" />
-
-                      {/* Product Info */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-neutral-700 truncate">
-                          {item.title}
-                        </h3>
-                        <p className="text-sage font-semibold mt-1">
-                          ${item.price}
-                        </p>
-
-                        {/* Quantity Controls */}
+                        <h3 className="font-medium text-neutral-700 truncate">{item.title}</h3>
+                        <p className="text-sage font-semibold mt-1">${item.price}</p>
                         <div className="flex items-center gap-2 mt-2">
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
@@ -221,9 +218,7 @@ export default function Cart() {
                           >
                             <Minus className="w-4 h-4" />
                           </button>
-                          <span className="text-sm font-medium w-8 text-center">
-                            {item.quantity}
-                          </span>
+                          <span className="text-sm font-medium w-8 text-center">{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             className="p-1 hover:bg-neutral-200 rounded transition-colors"
@@ -245,10 +240,8 @@ export default function Cart() {
               )}
             </div>
 
-            {/* Footer / Checkout */}
             {items.length > 0 && (
               <div className="border-t border-neutral-200 p-6 space-y-4">
-                {/* Promo Code */}
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <input
@@ -268,51 +261,58 @@ export default function Cart() {
                   </div>
                   {appliedPromo && (
                     <p className="text-sm text-sage">
-                      Promo code "{appliedPromo.code}" applied! {Math.round(appliedPromo.discount * 100)}% off
+                      Promo code &quot;{appliedPromo.code}&quot; applied! {Math.round(appliedPromo.discount * 100)}% off
                     </p>
                   )}
                 </div>
 
-                {/* Shipping Estimate */}
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setShowShipping(!showShipping)}
-                    className="w-full flex items-center justify-between text-sm text-neutral-600 hover:text-sage transition-colors"
-                  >
-                    <span className="flex items-center">
-                      <Truck className="w-4 h-4 mr-2" />
-                      Estimate shipping
-                    </span>
-                    {showShipping ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </button>
-                  {showShipping && (
+                {/* Fulfillment: pickup only vs shipping/delivery */}
+                {allPickupOnly && (
+                  <div className="rounded-xl bg-sage/10 border border-sage/20 p-3 text-sm text-neutral-700">
+                    <p className="font-medium flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-sage" />
+                      Local pickup only
+                    </p>
+                    <p className="mt-1 text-neutral-600">{PICKUP_DISPLAY}</p>
+                  </div>
+                )}
+                {needsAddress && (canShip || canDeliver) && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-neutral-700 flex items-center gap-1">
+                      <Truck className="w-3.5 h-3.5" />
+                      Shipping or delivery
+                    </p>
                     <div className="space-y-2">
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="ZIP code"
-                          value={shippingZip}
-                          onChange={(e) => setShippingZip(e.target.value)}
-                          className="flex-1 px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
-                        />
-                        <button
-                          onClick={handleEstimateShipping}
-                          disabled={!shippingZip}
-                          className="btn-outline px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Calculate
-                        </button>
-                      </div>
-                      {estimatedShipping && (
-                        <p className="text-sm text-neutral-600">
-                          ${estimatedShipping.cost.toFixed(2)} - {estimatedShipping.estimatedDays} business days
-                        </p>
+                      {canShip && (
+                        <label className="flex items-center gap-3 p-3 rounded-xl border border-greige-light hover:border-sage/50 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="fulfillment"
+                            checked={fulfillmentMethod === 'shipping'}
+                            onChange={() => setFulfillmentMethod('shipping')}
+                            className="text-sage"
+                          />
+                          <span className="text-sm">
+                            Shipping — ${SHIPPING_BASE} + ${SHIPPING_PER_ITEM}/item (${shippingCost.toFixed(2)})
+                          </span>
+                        </label>
+                      )}
+                      {canDeliver && (
+                        <label className="flex items-center gap-3 p-3 rounded-xl border border-greige-light hover:border-sage/50 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="fulfillment"
+                            checked={fulfillmentMethod === 'delivery'}
+                            onChange={() => setFulfillmentMethod('delivery')}
+                            className="text-sage"
+                          />
+                          <span className="text-sm">Delivery — ${deliveryCost} flat (within 30 miles)</span>
+                        </label>
                       )}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
-                {/* Order Summary */}
                 <div className="space-y-2 pt-2 border-t border-neutral-200">
                   <div className="flex justify-between text-sm">
                     <span className="text-neutral-600">Subtotal:</span>
@@ -324,27 +324,27 @@ export default function Cart() {
                       <span>-${getDiscount().toFixed(2)}</span>
                     </div>
                   )}
-                  {estimatedShipping && (
+                  {fulfillmentAmount > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-neutral-600">Shipping:</span>
-                      <span className="text-neutral-700">${getShipping().toFixed(2)}</span>
+                      <span className="text-neutral-600">
+                        {fulfillmentMethod === 'delivery' ? 'Delivery:' : 'Shipping:'}
+                      </span>
+                      <span className="text-neutral-700">${fulfillmentAmount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between items-center pt-2 border-t border-neutral-200">
                     <span className="font-semibold text-neutral-700">Total:</span>
-                    <span className="font-serif text-2xl text-neutral-700">
-                      ${getFinalTotal().toFixed(2)}
-                    </span>
+                    <span className="font-serif text-2xl text-neutral-700">${getFinalTotal().toFixed(2)}</span>
                   </div>
                 </div>
 
                 <div className="space-y-2 pt-2 border-t border-neutral-200">
-                  <label className="block text-sm font-medium text-neutral-700">Nombre *</label>
+                  <label className="block text-sm font-medium text-neutral-700">Name *</label>
                   <input
                     type="text"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="Tu nombre"
+                    placeholder="Your name"
                     className="input-field text-sm"
                   />
                   <label className="block text-sm font-medium text-neutral-700">Email *</label>
@@ -352,14 +352,53 @@ export default function Cart() {
                     type="email"
                     value={customerEmail}
                     onChange={(e) => setCustomerEmail(e.target.value)}
-                    placeholder="tu@email.com"
+                    placeholder="you@email.com"
                     className="input-field text-sm"
                   />
+                  {needsAddress && (
+                    <>
+                      <p className="text-xs font-medium text-neutral-600 pt-2 flex items-center gap-1">
+                        <Truck className="w-3.5 h-3.5" />
+                        Shipping address *
+                      </p>
+                      <input
+                        type="text"
+                        value={shippingAddress}
+                        onChange={(e) => setShippingAddress(e.target.value)}
+                        placeholder="Street address"
+                        className="input-field text-sm"
+                      />
+                      <div className="grid grid-cols-3 gap-2">
+                        <input
+                          type="text"
+                          value={shippingCity}
+                          onChange={(e) => setShippingCity(e.target.value)}
+                          placeholder="City"
+                          className="input-field text-sm"
+                        />
+                        <input
+                          type="text"
+                          value={shippingState}
+                          onChange={(e) => setShippingState(e.target.value)}
+                          placeholder="State"
+                          className="input-field text-sm"
+                        />
+                        <input
+                          type="text"
+                          value={shippingZip}
+                          onChange={(e) => setShippingZip(e.target.value)}
+                          placeholder="ZIP"
+                          className="input-field text-sm"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <p className="text-xs text-neutral-500 text-center">
-                    Ships to USA &amp; PR. Payment is processed securely via Stripe; we&apos;ll reach out to coordinate shipping.
+                    Ships to USA &amp; PR. Payment is processed securely via Stripe; we&apos;ll reach out to coordinate
+                    shipping or pickup.
                   </p>
                   <button
                     type="button"
@@ -378,10 +417,9 @@ export default function Cart() {
                   disabled={checkingOut}
                   className="w-full btn-primary py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {checkingOut ? 'Procesando…' : 'Confirmar pedido'}
+                  {checkingOut ? 'Processing…' : 'Proceed to checkout'}
                 </button>
 
-                {/* Continue Shopping */}
                 <Link
                   to="/shop"
                   onClick={closeCart}
@@ -398,4 +436,3 @@ export default function Cart() {
     </AnimatePresence>
   )
 }
-

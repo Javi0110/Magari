@@ -7,16 +7,17 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '')
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const FROM_EMAIL = 'Magari & Co. <hello@casamagari.com>'
 
-async function sendOrderEmail({ customerEmail, customerName, items }) {
+async function sendOrderEmail({ customerEmail, customerName, items, fulfillmentMethod = 'shipping', fulfillmentAmount = 0 }) {
   if (!RESEND_API_KEY) {
     console.warn('Missing RESEND_API_KEY, skipping order confirmation email')
     return
   }
   try {
-    const total = items.reduce(
+    const subtotal = items.reduce(
       (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
       0
     )
+    const total = subtotal + Number(fulfillmentAmount)
 
     const lines = items
       .map(
@@ -35,7 +36,9 @@ async function sendOrderEmail({ customerEmail, customerName, items }) {
         <p style="margin-top:12px; line-height:1.6;">
           ${lines}
         </p>
-        <p style="margin-top:12px;"><strong>Estimated total:</strong> $${total.toFixed(2)}</p>
+        <p style="margin-top:12px;">Subtotal: $${subtotal.toFixed(2)}${fulfillmentAmount > 0 ? ` · ${fulfillmentMethod === 'delivery' ? 'Delivery' : 'Shipping'}: $${Number(fulfillmentAmount).toFixed(2)}` : ''}</p>
+        ${fulfillmentMethod === 'local_pickup' ? `<p style="margin-top:6px;">Pickup: 75 Jan Ln, Georgetown, TX. We&apos;ll confirm full details after payment.</p>` : ''}
+        <p style="margin-top:6px;"><strong>Total:</strong> $${total.toFixed(2)}</p>
         <p style="margin-top:24px; font-size:14px; color:#555;">
           Your payment will be processed securely via Stripe. If you close the window before completing payment,
           your order will not be charged.
@@ -102,6 +105,9 @@ exports.handler = async (event) => {
     const items = Array.isArray(body.items) ? body.items : []
     const customerEmail = (body.customerEmail || '').trim()
     const customerName = (body.customerName || '').trim()
+    const fulfillmentMethod = body.fulfillmentMethod || 'shipping'
+    const fulfillmentAmount = Math.max(0, Number(body.fulfillmentAmount) || 0)
+    const shippingAddress = body.shippingAddress || {}
 
     if (!customerEmail || items.length === 0) {
       return {
@@ -115,7 +121,7 @@ exports.handler = async (event) => {
         statusCode: 400,
         headers,
         body: JSON.stringify({
-          error: 'Por favor usa un correo electrónico válido (ej: tu@email.com).',
+          error: 'Please enter a valid email address (e.g. you@email.com).',
         }),
       }
     }
@@ -123,7 +129,7 @@ exports.handler = async (event) => {
     const line_items = items.map((item) => {
       const unitAmount = Math.round((item.price || 0) * 100)
       if (unitAmount < 50) {
-        throw new Error('El monto mínimo por artículo es $0.50 USD. Revisa el depósito del servicio.')
+        throw new Error('Minimum amount per item is $0.50 USD.')
       }
       return {
         quantity: item.quantity || 1,
@@ -141,23 +147,49 @@ exports.handler = async (event) => {
       }
     })
 
+    if (fulfillmentAmount > 0) {
+      const isDelivery = fulfillmentMethod === 'delivery'
+      line_items.push({
+        quantity: 1,
+        price_data: {
+          currency: 'usd',
+          unit_amount: Math.round(fulfillmentAmount * 100),
+          product_data: {
+            name: isDelivery ? 'Delivery' : 'Shipping',
+            description: isDelivery ? 'Flat rate $10 (within 30 miles)' : 'Flat rate $8 + $2 per additional item',
+            metadata: { product_id: '', vendor_id: '' },
+          },
+        },
+      })
+    }
+
     const baseUrl = process.env.URL || 'https://casamagari.com'
+
+    const metadata = {
+      customer_name: customerName,
+      source: 'casamagari-cart',
+      fulfillment_method: fulfillmentMethod,
+    }
+    if (fulfillmentMethod === 'local_pickup') {
+      metadata.pickup_address = '75 Jan Ln, Georgetown, TX'
+    } else {
+      metadata.shipping_line1 = (shippingAddress.line1 || '').slice(0, 500)
+      metadata.shipping_city = (shippingAddress.city || '').slice(0, 500)
+      metadata.shipping_state = (shippingAddress.state || '').slice(0, 500)
+      metadata.shipping_postal_code = (shippingAddress.postal_code || '').slice(0, 500)
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       line_items,
       customer_email: customerEmail,
-      metadata: {
-        customer_name: customerName,
-        source: 'casamagari-cart',
-      },
+      metadata,
       success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/checkout/cancel`,
     })
 
-    // Fire-and-forget confirmation email (order intent)
-    sendOrderEmail({ customerEmail, customerName, items }).catch(() => {})
+    sendOrderEmail({ customerEmail, customerName, items, fulfillmentMethod, fulfillmentAmount }).catch(() => {})
 
     return {
       statusCode: 200,

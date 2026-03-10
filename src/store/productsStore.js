@@ -10,6 +10,7 @@ function fromDb(row) {
     returnPolicy: return_policy ?? rest.returnPolicy,
     createdAt: created_at ?? rest.createdAt,
     vendorId: vendor_id ?? rest.vendorId,
+    fulfillment: row.fulfillment || 'shipping',
     images: Array.isArray(row.images) ? row.images : (row.images ? (typeof row.images === 'string' ? JSON.parse(row.images || '[]') : []) : []),
     tags: Array.isArray(row.tags) ? row.tags : (row.tags ? (typeof row.tags === 'string' ? JSON.parse(row.tags || '[]') : []) : ['magari']),
   }
@@ -18,7 +19,7 @@ function fromDb(row) {
 // Payload for shop_products: only columns that exist in the table
 const SHOP_PRODUCT_KEYS = [
   'slug', 'title', 'description', 'price', 'category', 'room', 'materials',
-  'dimensions', 'images', 'tags', 'badge', 'stock', 'is_active', 'shipping'
+  'dimensions', 'images', 'tags', 'badge', 'stock', 'is_active', 'shipping', 'fulfillment'
 ]
 function toDb(product) {
   const out = {}
