@@ -61,15 +61,24 @@ function AdminNotificationsDropdown({ notifications, onMarkAsRead, onMarkAllAsRe
   )
 }
 
+const ADMIN_EMAIL = 'magaribyelena@gmail.com'
+const ADMIN_PASSWORD = 'isabella!4'
+
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loginError, setLoginError] = useState('')
 
   const handleLogin = (e) => {
     e.preventDefault()
-    // 🔌 INTEGRATION: Admin authentication
-    // Use Clerk with admin role, or custom JWT with admin flag
-    // Check role/permissions before allowing access
+    setLoginError('')
+    const trimmedEmail = (email || '').trim().toLowerCase()
+    if (trimmedEmail !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+      setLoginError('Email o contraseña incorrectos.')
+      return
+    }
     setIsLoggedIn(true)
   }
 
@@ -86,11 +95,14 @@ export default function AdminPage() {
                 Admin Login
               </h1>
               <p className="text-neutral-600 text-sm">
-                Authorized personnel only
+                Solo personal autorizado
               </p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
+              {loginError && (
+                <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">{loginError}</p>
+              )}
               <div>
                 <label className="block text-neutral-700 font-medium mb-2">
                   Email
@@ -98,8 +110,10 @@ export default function AdminPage() {
                 <input
                   type="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="input-field"
-                  placeholder="admin@magariandco.com"
+                  placeholder="magaribyelena@gmail.com"
                 />
               </div>
 
@@ -110,6 +124,8 @@ export default function AdminPage() {
                 <input
                   type="password"
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="input-field"
                   placeholder="••••••••"
                 />
@@ -120,9 +136,6 @@ export default function AdminPage() {
               </button>
             </form>
 
-            <p className="text-xs text-neutral-500 mt-4 text-center">
-              🔌 Placeholder login - any credentials work for demo
-            </p>
           </div>
         </div>
       </div>
