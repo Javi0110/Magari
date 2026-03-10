@@ -42,7 +42,11 @@ function AdminNotificationsDropdown({ notifications, error, onMarkAsRead, onMark
           {error && (
             <div className="p-4 bg-amber-50 border-b border-amber-200">
               <p className="text-amber-800 text-sm font-medium">No se pudieron cargar las notificaciones.</p>
-              <p className="text-amber-700 text-xs mt-1">Ejecuta en Supabase (SQL Editor) la migración: <code className="bg-amber-100 px-1 rounded">20260128400000_notifications_and_orders.sql</code></p>
+              {error.includes('configurado') ? (
+                <p className="text-amber-700 text-xs mt-1">En Netlify añade VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en Environment variables y vuelve a desplegar.</p>
+              ) : (
+                <p className="text-amber-700 text-xs mt-1">Ejecuta en Supabase (SQL Editor) la migración: <code className="bg-amber-100 px-1 rounded">20260128400000_notifications_and_orders.sql</code></p>
+              )}
             </div>
           )}
           {!error && notifications.length === 0 && (
@@ -1095,11 +1099,17 @@ function VendorsView() {
         <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
           <p className="text-amber-800 font-medium text-sm">No se pudieron cargar las solicitudes</p>
           <p className="text-amber-700 text-xs mt-1">{loadError}</p>
-          <p className="text-amber-700 text-xs mt-2">En Supabase → SQL Editor ejecuta estas migraciones (en este orden):</p>
-          <ul className="text-xs text-amber-800 mt-1 list-disc list-inside">
-            <li><code>20260128100000_create_vendor_applications_and_vendors.sql</code></li>
-            <li><code>20260128400000_notifications_and_orders.sql</code></li>
-          </ul>
+          {loadError.includes('no configurado') || loadError.includes('Supabase') ? (
+            <p className="text-amber-700 text-xs mt-2">Si estás en la web en vivo (Netlify): Site settings → Environment variables → añade <code className="bg-amber-100 px-1 rounded">VITE_SUPABASE_URL</code> y <code className="bg-amber-100 px-1 rounded">VITE_SUPABASE_ANON_KEY</code>, luego vuelve a desplegar.</p>
+          ) : (
+            <>
+              <p className="text-amber-700 text-xs mt-2">En Supabase → SQL Editor ejecuta estas migraciones (en este orden):</p>
+              <ul className="text-xs text-amber-800 mt-1 list-disc list-inside">
+                <li><code>20260128100000_create_vendor_applications_and_vendors.sql</code></li>
+                <li><code>20260128400000_notifications_and_orders.sql</code></li>
+              </ul>
+            </>
+          )}
         </div>
       )}
 
