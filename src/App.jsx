@@ -11,6 +11,10 @@ import Cart from './components/Cart'
 import HomePage from './pages/Home'
 import ShopPage from './pages/Shop'
 import DesignServicesPage from './pages/DesignServices'
+import HomeStagingAustinPage from './pages/HomeStagingAustin'
+import InteriorDesignAustinPage from './pages/InteriorDesignAustin'
+import VirtualStylingPage from './pages/VirtualStylingPage'
+import AirbnbDesignPage from './pages/AirbnbDesign'
 import ContactPage from './pages/Contact'
 import MarketplacePage from './pages/Marketplace'
 import VendorProfilePage from './pages/VendorProfile'
@@ -31,17 +35,21 @@ const pageMeta = {
     title: 'Design Services — Magari & Co.',
     description: 'Transform your home from anywhere. Virtual consultations, shopping & styling, and personalized decorating + installation services.'
   },
-  '/design-services/home-staging': {
-    title: 'Home Staging — Design Services — Magari & Co.',
-    description: 'Home staging services to help your property show its best. Styling, decor, and layout optimized for buyers.'
+  '/home-staging-austin': {
+    title: 'Home Staging in Austin TX — Magari & Co.',
+    description: 'Home staging services in Austin, TX to help your listing photograph beautifully and sell faster.'
   },
-  '/design-services/interior-design': {
-    title: 'Interior Design — Magari & Co.',
-    description: 'Full-service interior design support to transform your home with cohesive, intentional design.'
+  '/interior-design-austin': {
+    title: 'Interior Designer in Austin TX — Magari & Co.',
+    description: 'Full-service interior design in Austin, TX for lived-in, collected homes that reflect your story.'
   },
-  '/design-services/virtual-styling': {
-    title: 'Virtual Styling — Magari & Co.',
-    description: 'Virtual interior styling with shoppable guides so you can execute the look at your own pace.'
+  '/virtual-styling': {
+    title: 'Virtual Interior Design Services — Magari & Co.',
+    description: 'Virtual interior design and styling services with shoppable design boards you can implement from anywhere.'
+  },
+  '/airbnb-design': {
+    title: 'Airbnb Interior Design & Styling — Magari & Co.',
+    description: 'Airbnb interior design and short-term rental styling to help your listing stand out and earn 5-star reviews.'
   },
   '/marketplace': {
     title: 'MOMade Marketplace — Supporting Mom Makers',
@@ -135,10 +143,11 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/design-services" element={<DesignServicesPage />} />
-          {/* Design services sub-routes (reuse main page for now) */}
-          <Route path="/design-services/home-staging" element={<DesignServicesPage />} />
-          <Route path="/design-services/interior-design" element={<DesignServicesPage />} />
-          <Route path="/design-services/virtual-styling" element={<DesignServicesPage />} />
+          {/* SEO landing pages for design services */}
+          <Route path="/home-staging-austin" element={<HomeStagingAustinPage />} />
+          <Route path="/interior-design-austin" element={<InteriorDesignAustinPage />} />
+          <Route path="/virtual-styling" element={<VirtualStylingPage />} />
+          <Route path="/airbnb-design" element={<AirbnbDesignPage />} />
 
           {/* MOMade market routes */}
           <Route path="/marketplace" element={<MarketplacePage />} />
