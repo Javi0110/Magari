@@ -1,8 +1,17 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Palette, Home, Store, LayoutDashboard, ShoppingBag } from 'lucide-react'
+import { useEffect } from 'react'
+import { ArrowRight, Palette, Home, Store, LayoutDashboard, ShoppingBag, Instagram } from 'lucide-react'
 
 export default function HomePage() {
+  useEffect(() => {
+    // Load Instagram embed script once to render embedded posts
+    if (document.querySelector('script[src="https://www.instagram.com/embed.js"]')) return
+    const script = document.createElement('script')
+    script.src = 'https://www.instagram.com/embed.js'
+    script.async = true
+    document.body.appendChild(script)
+  }, [])
 
   const galleryImages = [
     '/gallery/1.jpg',
@@ -187,6 +196,111 @@ export default function HomePage() {
                 </div>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Instagram Feed Section */}
+      <section className="py-16 bg-white border-t border-cream-dark/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10"
+          >
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Instagram className="w-5 h-5 text-neutral-500" />
+                <p className="text-xs uppercase tracking-[0.25em] text-neutral-500">
+                  Instagram
+                </p>
+              </div>
+              <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-2">
+                Follow our design process on Instagram.
+              </h2>
+              <p className="text-neutral-600 text-sm md:text-base max-w-xl">
+                See behind-the-scenes from installs, styling days, maker features, and the Casa Magari journey as it comes to life.
+              </p>
+            </div>
+            <div className="flex md:justify-end">
+              <a
+                href="https://www.instagram.com/magariandco/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-medium text-sage hover:text-sage-dark"
+              >
+                @magariandco
+                <ArrowRight className="w-4 h-4" />
+              </a>
+            </div>
+          </motion.div>
+
+          <div className="card p-0 overflow-hidden">
+            <div className="flex flex-col lg:flex-row justify-center gap-6 px-2 py-4">
+              <div className="max-w-xl w-full mx-auto">
+                <blockquote
+                  className="instagram-media"
+                  data-instgrm-captioned
+                  data-instgrm-permalink="https://www.instagram.com/reel/DQKxIx_EZ7z/?utm_source=ig_embed&amp;utm_campaign=loading"
+                  data-instgrm-version="14"
+                  style={{
+                    background: '#FFF',
+                    border: 0,
+                    borderRadius: 3,
+                    boxShadow:
+                      '0 0 1px 0 rgba(0,0,0,0.5), 0 1px 10px 0 rgba(0,0,0,0.15)',
+                    margin: 1,
+                    maxWidth: 540,
+                    minWidth: 326,
+                    padding: 0,
+                    width: '100%',
+                  }}
+                />
+              </div>
+              <div className="max-w-xl w-full mx-auto">
+                <blockquote
+                  className="instagram-media"
+                  data-instgrm-captioned
+                  data-instgrm-permalink="https://www.instagram.com/reel/DPW6TdBERrT/?utm_source=ig_embed&amp;utm_campaign=loading"
+                  data-instgrm-version="14"
+                  style={{
+                    background: '#FFF',
+                    border: 0,
+                    borderRadius: 3,
+                    boxShadow:
+                      '0 0 1px 0 rgba(0,0,0,0.5), 0 1px 10px 0 rgba(0,0,0,0.15)',
+                    margin: 1,
+                    maxWidth: 540,
+                    minWidth: 326,
+                    padding: 0,
+                    width: '100%',
+                  }}
+                />
+              </div>
+            </div>
+            <div className="flex justify-center px-2 pb-4">
+              <div className="max-w-xl w-full mx-auto">
+                <blockquote
+                  className="instagram-media"
+                  data-instgrm-captioned
+                  data-instgrm-permalink="https://www.instagram.com/reel/DHqyKC6Rhbs/?utm_source=ig_embed&amp;utm_campaign=loading"
+                  data-instgrm-version="14"
+                  style={{
+                    background: '#FFF',
+                    border: 0,
+                    borderRadius: 3,
+                    boxShadow:
+                      '0 0 1px 0 rgba(0,0,0,0.5), 0 1px 10px 0 rgba(0,0,0,0.15)',
+                    margin: 1,
+                    maxWidth: 540,
+                    minWidth: 326,
+                    padding: 0,
+                    width: '100%',
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
