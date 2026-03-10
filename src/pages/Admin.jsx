@@ -1077,6 +1077,21 @@ function VendorsView() {
     }
   }
 
+  const handleDeleteApplication = async (app) => {
+    if (!supabase || !app?.id) return
+    if (!confirm(`¿Eliminar la solicitud de ${app.business_name}? Esta acción no se puede deshacer.`)) return
+    setActionLoading(app.id)
+    try {
+      await supabase.from('vendor_applications').delete().eq('id', app.id)
+      await loadApplications()
+    } catch (err) {
+      console.error(err)
+      alert('Error al eliminar: ' + (err.message || 'intenta de nuevo'))
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
   const pending = applications.filter(a => a.status === 'pending')
   const approved = applications.filter(a => a.status === 'approved')
   const rejected = applications.filter(a => a.status === 'rejected')
@@ -1184,10 +1199,21 @@ function VendorsView() {
         <div className="grid md:grid-cols-2 gap-3">
           {approved.length === 0 && <p className="text-neutral-500 text-sm">None yet.</p>}
           {approved.map(app => (
-            <div key={app.id} className="card">
-              <p className="font-medium text-neutral-700">{app.business_name}</p>
-              <p className="text-sm text-neutral-500">by {app.name} · {app.email}</p>
-              <span className="badge badge-handmade mt-2">Approved</span>
+            <div key={app.id} className="card flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p className="font-medium text-neutral-700">{app.business_name}</p>
+                <p className="text-sm text-neutral-500">by {app.name} · {app.email}</p>
+                <span className="badge badge-handmade mt-2">Approved</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleDeleteApplication(app)}
+                disabled={!!actionLoading}
+                className="p-2 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                title="Eliminar solicitud"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
           ))}
         </div>
@@ -1199,10 +1225,21 @@ function VendorsView() {
         <div className="grid md:grid-cols-2 gap-3">
           {rejected.length === 0 && <p className="text-neutral-500 text-sm">None.</p>}
           {rejected.map(app => (
-            <div key={app.id} className="card opacity-75">
-              <p className="font-medium text-neutral-700">{app.business_name}</p>
-              <p className="text-sm text-neutral-500">by {app.name}</p>
-              <span className="badge bg-neutral-400 text-white mt-2">Rejected</span>
+            <div key={app.id} className="card opacity-75 flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p className="font-medium text-neutral-700">{app.business_name}</p>
+                <p className="text-sm text-neutral-500">by {app.name}</p>
+                <span className="badge bg-neutral-400 text-white mt-2">Rejected</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleDeleteApplication(app)}
+                disabled={!!actionLoading}
+                className="p-2 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                title="Eliminar solicitud"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
           ))}
         </div>
