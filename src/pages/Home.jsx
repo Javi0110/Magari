@@ -72,7 +72,7 @@ export default function HomePage() {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/design-services/virtual-styling" className="btn-primary text-center">
+                <Link to="/virtual-styling" className="btn-primary text-center">
                   Book Design Consultation
                   <ArrowRight className="inline-block ml-2 w-5 h-5" />
                 </Link>
