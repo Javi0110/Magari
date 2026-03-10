@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { createOrderAndNotifications } from '../utils/orders'
+import { supabase } from '../utils/supabase'
 
 export default function Cart() {
   const { items, isOpen, closeCart, updateQuantity, removeItem, getTotal, clearCart } = useCartStore()
@@ -15,6 +16,7 @@ export default function Cart() {
   const [estimatedShipping, setEstimatedShipping] = useState(null)
   const [customerName, setCustomerName] = useState('')
   const [customerEmail, setCustomerEmail] = useState('')
+  const [abandonedStatus, setAbandonedStatus] = useState(null)
 
   const handleApplyPromo = () => {
     // 🔌 INTEGRATION: Validate promo code
@@ -64,6 +66,39 @@ export default function Cart() {
 
   const getFinalTotal = () => {
     return getSubtotal() - getDiscount() + getShipping()
+  }
+
+  const handleSaveAbandonedCart = async () => {
+    const email = (customerEmail || '').trim()
+    if (!email) {
+      alert('Add your email above so we can send your cart later.')
+      return
+    }
+    if (!supabase) {
+      alert('Cart saved locally. We will remember these items on this device.')
+      return
+    }
+    try {
+      setAbandonedStatus('saving')
+      await supabase
+        .from('abandoned_carts')
+        .insert({
+          email,
+          cart: items.map(i => ({
+            id: i.id,
+            title: i.title,
+            price: i.price,
+            quantity: i.quantity,
+            vendorId: i.vendorId ?? i.vendor_id
+          }))
+        })
+      setAbandonedStatus('saved')
+      alert('We saved your cart. You can come back to it later.')
+    } catch (err) {
+      console.error('Error saving abandoned cart:', err)
+      setAbandonedStatus('error')
+      alert('We could not save your cart right now. Please try again later.')
+    }
   }
 
   const handleCheckout = async () => {
@@ -312,9 +347,21 @@ export default function Cart() {
                   />
                 </div>
 
-                <p className="text-xs text-neutral-500 text-center">
-                  Ships to USA & PR. Te contactaremos para coordinar pago y envío.
-                </p>
+                <div className="space-y-2">
+                  <p className="text-xs text-neutral-500 text-center">
+                    Ships to USA &amp; PR. We&apos;ll reach out to coordinate payment and shipping.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleSaveAbandonedCart}
+                    disabled={abandonedStatus === 'saving'}
+                    className="w-full text-xs text-neutral-600 hover:text-sage underline underline-offset-2 disabled:opacity-60"
+                  >
+                    {abandonedStatus === 'saved'
+                      ? 'Cart saved. You can return to it later.'
+                      : 'Not ready to check out? Save this cart to come back later.'}
+                  </button>
+                </div>
 
                 <button
                   onClick={handleCheckout}

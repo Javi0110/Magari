@@ -148,6 +148,20 @@ export default function ShopPage() {
   const displayedProducts = filteredProducts.slice(0, displayCount)
   const hasMore = displayCount < filteredProducts.length
 
+  const bestSellers = useMemo(
+    () => filteredProducts.filter(p => p.badge === 'bestseller').slice(0, 4),
+    [filteredProducts]
+  )
+
+  const newArrivals = useMemo(
+    () =>
+      filteredProducts
+        .filter(p => p.badge === 'new')
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+        .slice(0, 6),
+    [filteredProducts]
+  )
+
   const clearFilters = () => {
     setSearchQuery('')
     setSelectedCategory('all')
@@ -283,6 +297,88 @@ export default function ShopPage() {
             ))}
           </div>
         </section>
+
+        {/* Best sellers + New arrivals */}
+        {(bestSellers.length > 0 || newArrivals.length > 0) && (
+          <section className="mb-12">
+            <div className="grid lg:grid-cols-2 gap-8">
+              {bestSellers.length > 0 && (
+                <div>
+                  <h2 className="font-serif text-2xl text-neutral-800 mb-3">Best sellers</h2>
+                  <p className="text-sm text-neutral-600 mb-4">
+                    Pieces our community keeps coming back for again and again.
+                  </p>
+                  <div className="space-y-3">
+                    {bestSellers.map((product) => (
+                      <button
+                        key={product.id}
+                        type="button"
+                        onClick={() => setSelectedProduct(product)}
+                        className="w-full flex items-center gap-4 text-left hover:bg-cream rounded-2xl px-3 py-3 transition-colors"
+                      >
+                        <div className="w-16 h-16 rounded-xl bg-neutral-200 overflow-hidden flex-shrink-0">
+                          {product.images?.[0] && (
+                            <img
+                              src={product.images[0]}
+                              alt={product.title}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-neutral-800 truncate">
+                            {product.title}
+                          </p>
+                          <p className="text-xs text-neutral-500 line-clamp-1">
+                            {product.description}
+                          </p>
+                          <p className="text-sm font-semibold text-sage mt-1">
+                            ${product.price}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {newArrivals.length > 0 && (
+                <div>
+                  <h2 className="font-serif text-2xl text-neutral-800 mb-3">New arrivals</h2>
+                  <p className="text-sm text-neutral-600 mb-4">
+                    Fresh pieces just added to the shop.
+                  </p>
+                  <div className="grid sm:grid-cols-3 gap-3">
+                    {newArrivals.map((product) => (
+                      <button
+                        key={product.id}
+                        type="button"
+                        onClick={() => setSelectedProduct(product)}
+                        className="card px-3 py-3 text-left hover:shadow-soft-lg transition-shadow"
+                      >
+                        <div className="w-full aspect-square rounded-xl bg-neutral-200 overflow-hidden mb-2">
+                          {product.images?.[0] && (
+                            <img
+                              src={product.images[0]}
+                              alt={product.title}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </div>
+                        <p className="font-medium text-sm text-neutral-800 line-clamp-1">
+                          {product.title}
+                        </p>
+                        <p className="text-sm font-semibold text-sage mt-1">
+                          ${product.price}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters - Left Column */}
@@ -592,34 +688,67 @@ export default function ShopPage() {
           </>
         )}
 
-            {/* Newsletter Opt-in */}
-            {showNewsletter && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="card text-center py-12 mb-12"
-              >
-                <h3 className="font-serif text-3xl text-neutral-700 mb-2">
-                  Join the Magari family
+            {/* Customer reviews + Newsletter Opt-in */}
+            <div className="space-y-8 mb-12">
+              <section className="card px-6 py-8">
+                <h3 className="font-serif text-2xl text-neutral-800 mb-4 text-center">
+                  What our clients are saying
                 </h3>
-                <p className="text-neutral-600 mb-6">
-                  Get updates & exclusive launches delivered to your inbox.
-                </p>
-                <form onSubmit={handleNewsletterSubmit} className="max-w-md mx-auto flex gap-2">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={newsletterEmail}
-                    onChange={(e) => setNewsletterEmail(e.target.value)}
-                    required
-                    className="flex-1 px-4 py-3 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
-                  />
-                  <button type="submit" className="btn-primary px-6">
-                    Subscribe
-                  </button>
-                </form>
-              </motion.div>
-            )}
+                <div className="grid md:grid-cols-3 gap-6 text-sm text-neutral-700">
+                  <div>
+                    <p className="italic mb-2">
+                      “The pieces we ordered from Magari completely transformed our living room. Everything feels layered, warm, and intentional.”
+                    </p>
+                    <p className="text-xs text-neutral-500">— Homeowner in Austin, TX</p>
+                  </div>
+                  <div>
+                    <p className="italic mb-2">
+                      “Thoughtful curation and beautiful quality. My clients always ask where I find these accessories.”
+                    </p>
+                    <p className="text-xs text-neutral-500">— Realtor partner</p>
+                  </div>
+                  <div>
+                    <p className="italic mb-2">
+                      “I love that I can shop styling pieces and also book design support from the same studio.”
+                    </p>
+                    <p className="text-xs text-neutral-500">— Design client</p>
+                  </div>
+                </div>
+              </section>
+
+              {showNewsletter && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="card text-center py-12"
+                >
+                  <h3 className="font-serif text-3xl text-neutral-700 mb-2">
+                    Join the Magari family
+                  </h3>
+                  <p className="text-neutral-600 mb-6">
+                    Get updates &amp; exclusive launches delivered to your inbox.
+                  </p>
+                  <form onSubmit={handleNewsletterSubmit} className="max-w-md mx-auto flex gap-2">
+                    <input
+                      type="email"
+                      placeholder="Enter your email"
+                      value={newsletterEmail}
+                      onChange={(e) => setNewsletterEmail(e.target.value)}
+                      required
+                      className="flex-1 px-4 py-3 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+                    />
+                    <button type="submit" className="btn-primary px-6">
+                      {newsletterStatus === 'saving' ? 'Subscribing…' : 'Subscribe'}
+                    </button>
+                  </form>
+                  {newsletterStatus === 'error' && (
+                    <p className="mt-3 text-xs text-red-500">
+                      Something went wrong. Please try again in a moment.
+                    </p>
+                  )}
+                </motion.div>
+              )}
+            </div>
           </div>
         </div>
       </div>
