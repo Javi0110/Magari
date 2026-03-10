@@ -953,7 +953,7 @@ export default function MarketplacePage() {
 
                 <div>
                   <label className="block text-neutral-700 font-medium mb-2">
-                    Payout Method *
+                    Preferred payout method *
                   </label>
                   <select
                     required
@@ -962,8 +962,10 @@ export default function MarketplacePage() {
                     className="input-field"
                   >
                     <option value="paypal">PayPal</option>
-                    <option value="bank">Bank Transfer (ACH)</option>
-                    <option value="stripe">Stripe Connect</option>
+                    <option value="bank">Bank transfer</option>
+                    <option value="zelle">Zelle</option>
+                    <option value="venmo">Venmo</option>
+                    <option value="other">Other (tell us below)</option>
                   </select>
                 </div>
 
