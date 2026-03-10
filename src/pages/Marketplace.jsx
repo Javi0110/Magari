@@ -216,6 +216,18 @@ export default function MarketplacePage() {
     localStorage.setItem('magari-current-user', JSON.stringify(user))
   }
 
+  // Cambiar entre landing/login según el parámetro de la URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const v = params.get('view')
+    if (v === 'login') {
+      setView('login')
+    } else if (view !== 'dashboard') {
+      // Si el vendor no está dentro del dashboard, ir a landing
+      setView('landing')
+    }
+  }, [location.search])
+
   // Restaurar sesión de vendor si ya estaba logueado
   useEffect(() => {
     try {
