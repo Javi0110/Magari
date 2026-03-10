@@ -196,8 +196,11 @@ export default function MarketplacePage() {
       return
     }
     if (supabase) {
-      // Simplificar: login solo por email + access_code para evitar confusiones.
-      const { data: vendors, error } = await supabase
+      // Simplificar: login por email + access_code.
+      let vendor = null
+      let error = null
+
+      const { data: vendors, error: err1 } = await supabase
         .from('vendors')
         .select('id, email, name, business_name, status')
         .eq('status', 'active')
@@ -205,11 +208,33 @@ export default function MarketplacePage() {
         .eq('access_code', code)
         .limit(1)
 
-      if (error || !vendors || !vendors.length) {
+      if (err1) {
+        error = err1
+      } else if (vendors && vendors.length) {
+        vendor = vendors[0]
+      }
+
+      // Fallback muy permisivo: si no encontramos por código pero
+      // sí existe exactamente un vendor activo con ese email,
+      // permitimos el acceso solo con el email.
+      if (!vendor && !error) {
+        const { data: emailVendors, error: err2 } = await supabase
+          .from('vendors')
+          .select('id, email, name, business_name, status')
+          .eq('status', 'active')
+          .ilike('email', email)
+          .limit(2)
+        if (err2) {
+          error = err2
+        } else if (emailVendors && emailVendors.length === 1) {
+          vendor = emailVendors[0]
+        }
+      }
+
+      if (error || !vendor) {
         setLoginError('Email o código de acceso incorrectos.')
         return
       }
-      const vendor = vendors[0]
       setIsLoggedIn(true)
       setView('dashboard')
       const user = {
