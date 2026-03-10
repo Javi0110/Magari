@@ -110,6 +110,15 @@ exports.handler = async (event) => {
         body: JSON.stringify({ error: 'Missing email or items' }),
       }
     }
+    if (customerEmail.length < 5 || !customerEmail.includes('@') || !customerEmail.includes('.')) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({
+          error: 'Por favor usa un correo electrónico válido (ej: tu@email.com).',
+        }),
+      }
+    }
 
     const line_items = items.map((item) => {
       const unitAmount = Math.round((item.price || 0) * 100)

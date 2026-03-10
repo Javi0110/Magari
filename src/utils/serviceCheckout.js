@@ -15,6 +15,11 @@ export async function sendServiceConfirmation(payload) {
   return data
 }
 
+function isValidEmail(value) {
+  const s = (value || '').trim()
+  return s.length >= 5 && s.includes('@') && s.includes('.')
+}
+
 /**
  * Create a Stripe Checkout session for a design service deposit
  */
@@ -24,7 +29,10 @@ export async function createServiceDepositCheckout({ service, reference, amount,
   const name = (customer?.fullName || customer?.name || '').trim()
 
   if (!price || !email) {
-    throw new Error('Missing deposit amount or customer email for checkout')
+    throw new Error('Faltan el monto del depósito o el correo electrónico.')
+  }
+  if (!isValidEmail(email)) {
+    throw new Error('Por favor escribe un correo electrónico válido (ej: tu@email.com) antes de continuar al pago.')
   }
 
   const body = {
