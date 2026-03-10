@@ -70,6 +70,12 @@ export default function AdminPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
+  const [showNotifications, setShowNotifications] = useState(false)
+  const { items: notifications, unreadCount, fetchForAdmin, markAsRead, markAllAsRead } = useNotificationsStore()
+
+  useEffect(() => {
+    if (isLoggedIn) fetchForAdmin()
+  }, [isLoggedIn, fetchForAdmin])
 
   const handleLogin = (e) => {
     e.preventDefault()
@@ -141,13 +147,6 @@ export default function AdminPage() {
       </div>
     )
   }
-
-  const { items: notifications, unreadCount, fetchForAdmin, markAsRead, markAllAsRead } = useNotificationsStore()
-  const [showNotifications, setShowNotifications] = useState(false)
-
-  useEffect(() => {
-    fetchForAdmin()
-  }, [fetchForAdmin])
 
   return (
     <div className="min-h-screen bg-cream py-12">
