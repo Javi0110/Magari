@@ -713,6 +713,95 @@ export default function MarketplacePage() {
   )
 }
 
+function VendorOrdersTab({ vendorId }) {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(!!vendorId)
+  useEffect(() => {
+    if (!supabase || !vendorId) {
+      setLoading(false)
+      return
+    }
+    supabase.from('order_items').select('id, product_title, quantity, price, order_id, created_at').eq('vendor_id', vendorId).order('created_at', { ascending: false }).limit(50)
+      .then(async ({ data: itemsData }) => {
+        const items = itemsData || []
+        const orderIds = [...new Set(items.map(i => i.order_id).filter(Boolean))]
+        let ordersMap = {}
+        if (orderIds.length > 0) {
+          const { data: ordersData } = await supabase.from('orders').select('id, customer_name, total, status').in('id', orderIds)
+          ordersMap = (ordersData || []).reduce((acc, o) => ({ ...acc, [o.id]: o }), {})
+        }
+        setItems(items.map(i => ({ ...i, order: ordersMap[i.order_id] })))
+        setLoading(false)
+      })
+  }, [vendorId])
+  if (loading) return <div className="card p-8 text-center"><p className="text-neutral-600">Cargando…</p></div>
+  if (items.length === 0) return (
+    <div className="card p-8 text-center">
+      <Package className="w-16 h-16 mx-auto text-neutral-300 mb-4" />
+      <p className="text-neutral-600">No hay pedidos con tus productos aún.</p>
+    </div>
+  )
+  return (
+    <div className="card p-6">
+      <h3 className="font-serif text-xl text-neutral-700 mb-4">Tus ventas</h3>
+      <div className="space-y-3">
+        {items.map(item => {
+          const order = item.order
+          return (
+            <div key={item.id} className="flex justify-between items-center py-2 border-b border-neutral-200 last:border-0">
+              <div>
+                <p className="font-medium text-neutral-700">{item.product_title} × {item.quantity}</p>
+                <p className="text-sm text-neutral-500">Pedido #{item.order_id}{order ? ` · ${order.customer_name}` : ''}</p>
+              </div>
+              <p className="font-medium text-sage">${(Number(item.price) * (item.quantity || 1)).toFixed(2)}</p>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function VendorAnalyticsTab({ vendorId }) {
+  const [stats, setStats] = useState({ totalSales: 0, productsSold: 0 })
+  const [loading, setLoading] = useState(!!vendorId)
+  useEffect(() => {
+    if (!supabase || !vendorId) {
+      setLoading(false)
+      return
+    }
+    supabase.from('order_items').select('quantity, price').eq('vendor_id', vendorId)
+      .then(({ data }) => {
+        const items = data || []
+        const productsSold = items.reduce((s, i) => s + (Number(i.quantity) || 0), 0)
+        const totalSales = items.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.quantity) || 0), 0)
+        setStats({ totalSales, productsSold })
+        setLoading(false)
+      })
+  }, [vendorId])
+  const earnings = stats.totalSales * 0.88
+  if (loading) return <div className="card p-8 text-center"><p className="text-neutral-600">Cargando…</p></div>
+  return (
+    <div className="grid md:grid-cols-3 gap-6">
+      <div className="card">
+        <p className="text-neutral-600 mb-2">Total Sales</p>
+        <p className="text-4xl font-bold text-sage">${stats.totalSales.toFixed(2)}</p>
+        <p className="text-sm text-neutral-500 mt-1">Desde el inicio</p>
+      </div>
+      <div className="card">
+        <p className="text-neutral-600 mb-2">Products Sold</p>
+        <p className="text-4xl font-bold text-earth">{stats.productsSold}</p>
+        <p className="text-sm text-neutral-500 mt-1">Unidades vendidas</p>
+      </div>
+      <div className="card">
+        <p className="text-neutral-600 mb-2">Your Earnings</p>
+        <p className="text-4xl font-bold text-taupe">${earnings.toFixed(2)}</p>
+        <p className="text-sm text-neutral-500 mt-1">88% después de comisión</p>
+      </div>
+    </div>
+  )
+}
+
 function VendorNotificationsDropdown({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }) {
   return (
     <>
@@ -885,30 +974,11 @@ function VendorDashboard({ onLogout }) {
       )}
 
       {activeTab === 'orders' && (
-        <div className="card p-8 text-center">
-          <Package className="w-16 h-16 mx-auto text-neutral-300 mb-4" />
-          <p className="text-neutral-600">No orders yet. Your orders will appear here.</p>
-        </div>
+        <VendorOrdersTab vendorId={currentUser?.vendorId} />
       )}
 
       {activeTab === 'analytics' && (
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="card">
-            <p className="text-neutral-600 mb-2">Total Sales</p>
-            <p className="text-4xl font-bold text-sage">$245</p>
-            <p className="text-sm text-neutral-500 mt-1">Last 30 days</p>
-          </div>
-          <div className="card">
-            <p className="text-neutral-600 mb-2">Products Sold</p>
-            <p className="text-4xl font-bold text-earth">7</p>
-            <p className="text-sm text-neutral-500 mt-1">Last 30 days</p>
-          </div>
-          <div className="card">
-            <p className="text-neutral-600 mb-2">Your Earnings</p>
-            <p className="text-4xl font-bold text-taupe">$215.60</p>
-            <p className="text-sm text-neutral-500 mt-1">88% after fees</p>
-          </div>
-        </div>
+        <VendorAnalyticsTab vendorId={currentUser?.vendorId} />
       )}
 
       {activeTab === 'settings' && (
@@ -916,28 +986,14 @@ function VendorDashboard({ onLogout }) {
           <h2 className="font-serif text-2xl text-neutral-700 mb-6">Account Settings</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-neutral-700 font-medium mb-2">
-                Business Name
-              </label>
-              <input
-                type="text"
-                defaultValue="María Ceramics"
-                className="input-field"
-              />
+              <label className="block text-neutral-700 font-medium mb-2">Business Name</label>
+              <input type="text" defaultValue={currentUser?.businessName || ''} className="input-field" readOnly />
             </div>
             <div>
-              <label className="block text-neutral-700 font-medium mb-2">
-                Payout Method
-              </label>
-              <select className="input-field">
-                <option>PayPal</option>
-                <option>Bank Transfer</option>
-                <option>Stripe Connect</option>
-              </select>
+              <label className="block text-neutral-700 font-medium mb-2">Email</label>
+              <input type="email" defaultValue={currentUser?.email || ''} className="input-field" readOnly />
             </div>
-            <button className="btn-primary">
-              Save Changes
-            </button>
+            <p className="text-sm text-neutral-500">Para cambiar datos de contacto, escribe a magaribyelena@gmail.com</p>
           </div>
         </div>
       )}

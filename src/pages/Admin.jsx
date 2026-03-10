@@ -19,7 +19,7 @@ import {
   Upload,
   Bell
 } from 'lucide-react'
-import { sampleProducts, sampleVendors, sampleTestimonials } from '../data/sampleData'
+import { sampleTestimonials } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
 import { supabase } from '../utils/supabase'
 import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailService'
@@ -218,44 +218,78 @@ export default function AdminPage() {
   )
 }
 
-// Dashboard View
+// Dashboard View – datos reales desde Supabase
 function DashboardView() {
+  const [stats, setStats] = useState({ revenue: 0, ordersCount: 0, vendorsCount: 0, productsCount: 0, pendingApplications: 0 })
+  const [recentOrders, setRecentOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
+    const load = async () => {
+      const [ordersRes, vendorsRes, productsRes, applicationsRes] = await Promise.all([
+        supabase.from('orders').select('id, total'),
+        supabase.from('vendors').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase.from('products').select('*', { count: 'exact', head: true }),
+        supabase.from('vendor_applications').select('*', { count: 'exact', head: true }).eq('status', 'pending')
+      ])
+      const orders = ordersRes.data || []
+      const revenue = orders.reduce((sum, o) => sum + Number(o.total || 0), 0)
+      const { data: recent } = await supabase.from('orders').select('id, customer_name, total, status, created_at').order('created_at', { ascending: false }).limit(5)
+      setStats({
+        revenue,
+        ordersCount: orders.length,
+        vendorsCount: vendorsRes.count ?? 0,
+        productsCount: productsRes.count ?? 0,
+        pendingApplications: applicationsRes.count ?? 0
+      })
+      setRecentOrders(recent || [])
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  if (loading) {
+    return <div className="card p-6"><p className="text-neutral-600">Cargando…</p></div>
+  }
+
   return (
     <div className="space-y-6">
-      {/* Stats Grid */}
       <div className="grid md:grid-cols-4 gap-6">
         {[
-          { label: 'Total Revenue', value: '$12,453', change: '+12.5%', color: 'turquoise' },
-          { label: 'Orders', value: '156', change: '+8.2%', color: 'orange' },
-          { label: 'Active Vendors', value: '12', change: '+3', color: 'lime' },
-          { label: 'Products', value: '94', change: '+6', color: 'neutral-600' },
+          { label: 'Total Revenue', value: `$${stats.revenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, color: 'turquoise' },
+          { label: 'Orders', value: String(stats.ordersCount), color: 'orange' },
+          { label: 'Active Vendors', value: String(stats.vendorsCount), color: 'lime' },
+          { label: 'Products', value: String(stats.productsCount), color: 'neutral-600' },
         ].map((stat, index) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.05 }}
             className="card"
           >
             <p className="text-neutral-600 text-sm mb-1">{stat.label}</p>
             <p className={`text-3xl font-bold text-${stat.color} mb-1`}>{stat.value}</p>
-            <p className="text-xs text-neutral-500">{stat.change} from last month</p>
           </motion.div>
         ))}
       </div>
 
-      {/* Recent Activity */}
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="card p-6">
           <h3 className="font-serif text-xl text-neutral-700 mb-4">Recent Orders</h3>
           <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-neutral-200 last:border-0">
+            {recentOrders.length === 0 && <p className="text-neutral-500 text-sm">No hay pedidos aún.</p>}
+            {recentOrders.map(order => (
+              <div key={order.id} className="flex items-center justify-between py-2 border-b border-neutral-200 last:border-0">
                 <div>
-                  <p className="font-medium text-neutral-700">Order #{1000 + i}</p>
-                  <p className="text-sm text-neutral-500">2 items · $125.00</p>
+                  <p className="font-medium text-neutral-700">Order #{order.id}</p>
+                  <p className="text-sm text-neutral-500">{order.customer_name} · ${Number(order.total).toFixed(2)}</p>
                 </div>
-                <span className="badge bg-taupe/20 text-taupe-dark">Completed</span>
+                <span className="badge bg-taupe/20 text-taupe-dark">{order.status}</span>
               </div>
             ))}
           </div>
@@ -266,15 +300,7 @@ function DashboardView() {
           <div className="space-y-3">
             <div className="flex items-center justify-between py-2 border-b border-neutral-200">
               <p className="text-neutral-700">Vendor applications</p>
-              <span className="badge bg-earth/20 text-earth-dark">2 pending</span>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-neutral-200">
-              <p className="text-neutral-700">Reviews to moderate</p>
-              <span className="badge bg-sage/20 text-sage-dark">5 pending</span>
-            </div>
-            <div className="flex items-center justify-between py-2">
-              <p className="text-neutral-700">Low stock items</p>
-              <span className="badge bg-neutral-200 text-neutral-700">3 items</span>
+              <span className="badge bg-earth/20 text-earth-dark">{stats.pendingApplications} pending</span>
             </div>
           </div>
         </div>
