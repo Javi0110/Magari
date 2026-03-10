@@ -991,26 +991,70 @@ function OrdersView() {
   )
 }
 
+// Service request status options
+const SERVICE_STATUS_OPTIONS = [
+  { value: 'new', label: 'New' },
+  { value: 'in_progress', label: 'In progress' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'cancelled', label: 'Cancelled' },
+]
+
 // Services (Design Requests) View
 function ServicesView() {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(null)
+
+  const loadRequests = async () => {
+    if (!supabase) return
+    setLoading(true)
+    const { data } = await supabase
+      .from('service_requests')
+      .select('*')
+      .order('created_at', { ascending: false })
+    setRequests(data || [])
+    setLoading(false)
+  }
 
   useEffect(() => {
     if (!supabase) {
       setLoading(false)
       return
     }
-    const load = async () => {
-      const { data } = await supabase
-        .from('service_requests')
-        .select('*')
-        .order('created_at', { ascending: false })
-      setRequests(data || [])
-      setLoading(false)
-    }
-    load()
+    loadRequests()
   }, [])
+
+  const handleStatusChange = async (reqId, newStatus) => {
+    if (!supabase || !reqId) return
+    setActionLoading(reqId)
+    const { error } = await supabase
+      .from('service_requests')
+      .update({ status: newStatus })
+      .eq('id', reqId)
+    setActionLoading(null)
+    if (error) {
+      console.error('Error updating service request status:', error)
+      alert('No se pudo actualizar el estado: ' + (error.message || 'Error'))
+      return
+    }
+    setRequests((prev) =>
+      prev.map((r) => (r.id === reqId ? { ...r, status: newStatus } : r))
+    )
+  }
+
+  const handleDelete = async (req) => {
+    if (!supabase || !req?.id) return
+    if (!confirm(`¿Eliminar la solicitud de ${req.service} #${req.reference}? Esta acción no se puede deshacer.`)) return
+    setActionLoading(req.id)
+    const { error } = await supabase.from('service_requests').delete().eq('id', req.id)
+    setActionLoading(null)
+    if (error) {
+      console.error('Error deleting service request:', error)
+      alert('No se pudo eliminar: ' + (error.message || 'Error'))
+      return
+    }
+    setRequests((prev) => prev.filter((r) => r.id !== req.id))
+  }
 
   if (loading) {
     return <div className="card p-6"><p className="text-neutral-600">Cargando solicitudes de servicios…</p></div>
@@ -1027,6 +1071,7 @@ function ServicesView() {
           const payload = req.payload || {}
           const contact = req.contact || {}
           const areas = payload.areas || []
+          const status = req.status || 'new'
           const firstMedia = []
           areas.forEach((area) => {
             ;(area.entries || []).forEach((entry) => {
@@ -1039,11 +1084,26 @@ function ServicesView() {
           })
           return (
             <div key={req.id} className="card p-4 border border-neutral-200">
-              <div className="flex justify-between items-start gap-4">
-                <div>
-                  <p className="font-medium text-neutral-800">
-                    {req.service} · <span className="text-xs text-neutral-500">#{req.reference}</span>
-                  </p>
+              <div className="flex flex-wrap justify-between items-start gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <p className="font-medium text-neutral-800">
+                      {req.service} · <span className="text-xs text-neutral-500">#{req.reference}</span>
+                    </p>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        status === 'completed'
+                          ? 'bg-green-100 text-green-800'
+                          : status === 'cancelled'
+                          ? 'bg-neutral-200 text-neutral-600'
+                          : status === 'in_progress'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-sage/20 text-sage-dark'
+                      }`}
+                    >
+                      {SERVICE_STATUS_OPTIONS.find((o) => o.value === status)?.label || status}
+                    </span>
+                  </div>
                   <p className="text-sm text-neutral-500">
                     {contact.fullName || contact.name || 'Cliente'} · {contact.email || 'Sin email'}
                   </p>
@@ -1059,6 +1119,29 @@ function ServicesView() {
                   <p className="text-sm text-neutral-600 mt-2">
                     Subtotal: ${Number(req.subtotal || 0).toFixed(2)} · Depósito: ${Number(req.deposit || 0).toFixed(2)}
                   </p>
+                </div>
+                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+                  <select
+                    value={status}
+                    onChange={(e) => handleStatusChange(req.id, e.target.value)}
+                    disabled={!!actionLoading}
+                    className="input-field text-sm py-2 pr-8 w-full sm:w-auto min-w-[140px]"
+                  >
+                    {SERVICE_STATUS_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(req)}
+                    disabled={!!actionLoading}
+                    className="p-2 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Eliminar solicitud"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
               {areas.length > 0 && (
