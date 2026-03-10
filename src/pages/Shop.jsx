@@ -9,6 +9,7 @@ import { useProductsStore } from '../store/productsStore'
 import { useCartStore } from '../store/cartStore'
 import { useWishlistStore } from '../store/wishlistStore'
 import { supabase } from '../utils/supabase'
+import { SHOP_MAGARI_CATEGORIES } from '../constants/shopCategories'
 
 export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -17,7 +18,6 @@ export default function ShopPage() {
   const [availability, setAvailability] = useState('all')
   const [selectedColor, setSelectedColor] = useState('all')
   const [selectedMaterial, setSelectedMaterial] = useState('all')
-  const [selectedCollection, setSelectedCollection] = useState('all')
   const [selectedShipping, setSelectedShipping] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState('featured')
@@ -33,10 +33,9 @@ export default function ShopPage() {
   const { addItem, openCart } = useCartStore()
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore()
 
-  const categories = ['all', 'Home Decor', 'Handmade Ceramics', 'Stationery', 'Gifts']
+  const categories = ['all', ...SHOP_MAGARI_CATEGORIES]
   const colors = ['all', 'Neutral', 'Terracotta', 'Green', 'Blue', 'Mixed']
   const materials = ['all', 'Clay', 'Paper', 'Fabric', 'Wood']
-  const collections = ['all', 'Elemento', 'Casa Magari', 'Limited Edition']
   const shippingOptions = ['all', 'PR only', 'USA', 'Both']
 
   useEffect(() => {
@@ -90,13 +89,6 @@ export default function ShopPage() {
       )
     }
     
-    // Collection filter (if product has collection property)
-    if (selectedCollection !== 'all') {
-      filtered = filtered.filter(product => 
-        product.collection === selectedCollection
-      )
-    }
-    
     // Shipping filter (if product has shipping property)
     if (selectedShipping !== 'all') {
       filtered = filtered.filter(product => {
@@ -142,7 +134,7 @@ export default function ShopPage() {
     return filtered
   }, [
     allProducts, searchQuery, selectedCategory, priceRange, availability,
-    selectedColor, selectedMaterial, selectedCollection, selectedShipping, sortBy
+    selectedColor, selectedMaterial, selectedShipping, sortBy
   ])
 
   const displayedProducts = filteredProducts.slice(0, displayCount)
@@ -169,7 +161,6 @@ export default function ShopPage() {
     setAvailability('all')
     setSelectedColor('all')
     setSelectedMaterial('all')
-    setSelectedCollection('all')
     setSelectedShipping('all')
   }
 
@@ -263,40 +254,8 @@ export default function ShopPage() {
             >
               Shop All Products
             </button>
-            <button
-              type="button"
-              onClick={() => setSelectedCategory('Gifts')}
-              className="btn-secondary"
-            >
-              Shop Gifts
-            </button>
           </div>
         </div>
-
-        {/* Featured collections */}
-        <section className="mb-10">
-          <h2 className="font-serif text-2xl text-neutral-700 mb-4 text-center md:text-left">
-            Featured collections
-          </h2>
-          <div className="grid md:grid-cols-4 gap-4">
-            {[
-              { label: 'Handmade Ceramics', value: 'Handmade Ceramics', blurb: 'Mugs, bowls, and vessels with character.' },
-              { label: 'Home Decor', value: 'Home Decor', blurb: 'Textiles, vases, and artful accents.' },
-              { label: 'Stationery', value: 'Stationery', blurb: 'Notecards and paper goods for slow moments.' },
-              { label: 'Gifts', value: 'Gifts', blurb: 'Thoughtful pieces ready to gift.' },
-            ].map((col) => (
-              <button
-                key={col.label}
-                type="button"
-                onClick={() => setSelectedCategory(col.value)}
-                className="card text-left px-4 py-5 hover:shadow-soft-lg transition-shadow"
-              >
-                <p className="font-serif text-lg text-neutral-800 mb-1">{col.label}</p>
-                <p className="text-xs text-neutral-600">{col.blurb}</p>
-              </button>
-            ))}
-          </div>
-        </section>
 
         {/* Best sellers + New arrivals */}
         {(bestSellers.length > 0 || newArrivals.length > 0) && (
@@ -483,20 +442,6 @@ export default function ShopPage() {
                   </select>
                 </div>
 
-                {/* Collection */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Collection</label>
-                  <select
-                    value={selectedCollection}
-                    onChange={(e) => setSelectedCollection(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
-                  >
-                    {collections.map(collection => (
-                      <option key={collection} value={collection}>{collection === 'all' ? 'All Collections' : collection}</option>
-                    ))}
-                  </select>
-                </div>
-
                 {/* Shipping */}
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">Shipping</label>
@@ -531,7 +476,7 @@ export default function ShopPage() {
                   {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
                 </p>
                 <p className="text-xs text-neutral-500">
-                  Use filters or featured collections above to find the right piece faster.
+                  Use filters above to find the right piece faster.
                 </p>
               </div>
               <div className="flex items-center gap-2 justify-end">

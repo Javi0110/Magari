@@ -22,6 +22,7 @@ import {
 import { sampleTestimonials } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
 import { supabase } from '../utils/supabase'
+import { SHOP_MAGARI_CATEGORIES } from '../constants/shopCategories'
 import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailRelay'
 import { useNotificationsStore } from '../store/notificationsStore'
 
@@ -563,7 +564,7 @@ function ProductForm({ product, onClose }) {
   const [formData, setFormData] = useState({
     title: product?.title || '',
     price: product?.price || '',
-    category: product?.category || 'Handmade',
+    category: product?.category || SHOP_MAGARI_CATEGORIES[0],
     room: product?.room || 'Any',
     description: product?.description || '',
     materials: product?.materials || '',
@@ -728,10 +729,9 @@ function ProductForm({ product, onClose }) {
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="input-field"
                 >
-                  <option value="Handmade">Handmade</option>
-                  <option value="Elementos Collection">Elementos Collection</option>
-                  <option value="Curated">Curated</option>
-                  <option value="Bundles">Bundles</option>
+                  {SHOP_MAGARI_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
                 </select>
               </div>
 
