@@ -1485,6 +1485,7 @@ function VendorsView({ highlightedApplicationId = null, onClearHighlight }) {
               <div>
                 <p className="font-medium text-neutral-700">{app.business_name}</p>
                 <p className="text-sm text-neutral-500">by {app.name} · {app.email}</p>
+                {app.phone && <p className="text-sm text-neutral-500">Tel: {app.phone}</p>}
                 <span className="badge badge-handmade mt-2">Approved</span>
               </div>
               <button
@@ -1514,7 +1515,8 @@ function VendorsView({ highlightedApplicationId = null, onClearHighlight }) {
             >
               <div>
                 <p className="font-medium text-neutral-700">{app.business_name}</p>
-                <p className="text-sm text-neutral-500">by {app.name}</p>
+                <p className="text-sm text-neutral-500">by {app.name} · {app.email}</p>
+                {app.phone && <p className="text-sm text-neutral-500">Tel: {app.phone}</p>}
                 <span className="badge bg-neutral-400 text-white mt-2">Rejected</span>
               </div>
               <button
