@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { submitLeadMagnet } from '../utils/leadMagnet'
 
 export default function HomeStagingAustinPage() {
   return (
@@ -163,21 +164,106 @@ export default function HomeStagingAustinPage() {
           </div>
         </section>
 
-        {/* Call to Action */}
-        <section className="bg-white rounded-2xl shadow-soft p-6 md:p-8">
-          <h2 className="font-serif text-2xl text-neutral-800 mb-3">
-            Ready to stage your Austin home?
-          </h2>
-          <p className="text-neutral-600 mb-4">
-            Book a home staging consultation and we&apos;ll create a tailored plan to get your property photo‑ready and
-            market‑ready.
-          </p>
-          <a href="/design-services/home-staging" className="btn-primary inline-flex items-center">
-            Book Home Staging Consult
-          </a>
-        </section>
+        {/* Lead magnet + Call to Action */}
+        <LeadMagnetSection />
       </div>
     </div>
   )
 }
+
+function LeadMagnetSection() {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [status, setStatus] = useState('idle') // idle | sending | success | error
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    const trimmedEmail = (email || '').trim()
+    if (!trimmedEmail) {
+      setError('Please enter your email.')
+      return
+    }
+    setStatus('sending')
+    try {
+      await submitLeadMagnet({ name, email: trimmedEmail })
+      setStatus('success')
+      setName('')
+      setEmail('')
+    } catch (err) {
+      setStatus('error')
+      setError(err?.message || 'We could not send the guide right now. Please try again in a moment.')
+    }
+  }
+
+  return (
+    <section className="bg-white rounded-2xl shadow-soft p-6 md:p-8 space-y-8">
+      <div>
+        <h2 className="font-serif text-2xl md:text-3xl text-neutral-800 mb-3">
+          Free guide: 5 Design Secrets That Help Homes Sell Faster
+        </h2>
+        <p className="text-neutral-600 text-sm md:text-base max-w-2xl">
+          Get a short, practical guide with the five staging shifts we use most often in Austin listings—
+          the same principles that help photos stand out online and make in‑person showings feel inviting.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-0 md:flex md:items-end md:gap-4">
+        <div className="flex-1 space-y-3">
+          <div className="grid md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
+                Name (optional)
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
+                placeholder="Your name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
+                Email *
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
+                placeholder="you@example.com"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-neutral-500">
+            We&apos;ll send the PDF straight to your inbox. You&apos;ll also receive occasional staging and design tips—no spam.
+          </p>
+        </div>
+
+        <button
+          type="submit"
+          disabled={status === 'sending'}
+          className="w-full md:w-auto btn-primary mt-2 md:mt-0"
+        >
+          {status === 'sending' ? 'Sending your guide…' : 'Email me the free guide'}
+        </button>
+      </form>
+
+      {status === 'success' && (
+        <p className="text-sm text-sage">
+          Check your inbox—your guide “5 Design Secrets That Help Homes Sell Faster” is on its way.
+        </p>
+      )}
+      {status === 'error' && (
+        <p className="text-sm text-red-600">
+          {error}
+        </p>
+      )}
+    </section>
+  )
+}
+
 
