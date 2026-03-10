@@ -1079,10 +1079,25 @@ function VendorsView() {
 
   const handleDeleteApplication = async (app) => {
     if (!supabase || !app?.id) return
-    if (!confirm(`¿Eliminar la solicitud de ${app.business_name}? Esta acción no se puede deshacer.`)) return
+    if (!confirm(`¿Eliminar la solicitud de ${app.business_name}? Esto también eliminará la cuenta de vendor asociada (si existe) y no se puede deshacer.`)) return
     setActionLoading(app.id)
     try {
-      await supabase.from('vendor_applications').delete().eq('id', app.id)
+      // Primero elimina cualquier vendor creado a partir de esta solicitud
+      const { error: vendorErr } = await supabase
+        .from('vendors')
+        .delete()
+        .eq('application_id', app.id)
+      if (vendorErr) {
+        console.error('Error al eliminar vendor asociado:', vendorErr)
+      }
+
+      // Luego elimina la solicitud
+      const { error: appErr } = await supabase
+        .from('vendor_applications')
+        .delete()
+        .eq('id', app.id)
+      if (appErr) throw appErr
+
       await loadApplications()
     } catch (err) {
       console.error(err)
