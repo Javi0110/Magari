@@ -1,0 +1,3 @@
+# SPA: todas las rutas sirven index.html para que React Router funcione
+# (evita "Page not found" al refrescar en /admin, /marketplace, etc.)
+/*    /index.html   200
