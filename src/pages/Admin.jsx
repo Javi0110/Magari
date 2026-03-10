@@ -25,7 +25,7 @@ import { supabase } from '../utils/supabase'
 import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailService'
 import { useNotificationsStore } from '../store/notificationsStore'
 
-function AdminNotificationsDropdown({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }) {
+function AdminNotificationsDropdown({ notifications, error, onMarkAsRead, onMarkAllAsRead, onClose }) {
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} aria-hidden="true" />
@@ -39,8 +39,14 @@ function AdminNotificationsDropdown({ notifications, onMarkAsRead, onMarkAllAsRe
           )}
         </div>
         <div className="divide-y divide-neutral-100">
-          {notifications.length === 0 && (
-            <p className="p-4 text-neutral-500 text-sm">No hay notificaciones.</p>
+          {error && (
+            <div className="p-4 bg-amber-50 border-b border-amber-200">
+              <p className="text-amber-800 text-sm font-medium">No se pudieron cargar las notificaciones.</p>
+              <p className="text-amber-700 text-xs mt-1">Ejecuta en Supabase (SQL Editor) la migración: <code className="bg-amber-100 px-1 rounded">20260128400000_notifications_and_orders.sql</code></p>
+            </div>
+          )}
+          {!error && notifications.length === 0 && (
+            <p className="p-4 text-neutral-500 text-sm">No hay notificaciones aún. Aparecerán cuando alguien solicite ser vendor o haga una compra.</p>
           )}
           {notifications.map(n => (
             <div
@@ -71,7 +77,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   const [showNotifications, setShowNotifications] = useState(false)
-  const { items: notifications, unreadCount, fetchForAdmin, markAsRead, markAllAsRead } = useNotificationsStore()
+  const { items: notifications, unreadCount, error: notificationsError, fetchForAdmin, markAsRead, markAllAsRead } = useNotificationsStore()
 
   useEffect(() => {
     if (isLoggedIn) fetchForAdmin()
@@ -179,6 +185,7 @@ export default function AdminPage() {
               {showNotifications && (
                 <AdminNotificationsDropdown
                   notifications={notifications}
+                  error={notificationsError}
                   onMarkAsRead={markAsRead}
                   onMarkAllAsRead={() => markAllAsRead('admin', null)}
                   onClose={() => setShowNotifications(false)}
@@ -970,19 +977,27 @@ function VendorsView() {
   const [approvedVendors, setApprovedVendors] = useState([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(null)
+  const [loadError, setLoadError] = useState(null)
 
   const loadApplications = async () => {
     if (!supabase) {
+      setLoadError('Supabase no configurado. Revisa tu .env')
       setLoading(false)
       return
     }
     setLoading(true)
+    setLoadError(null)
     try {
       const { data: apps, error: appsErr } = await supabase
         .from('vendor_applications')
         .select('*')
         .order('submitted_at', { ascending: false })
-      if (!appsErr) setApplications(apps || [])
+      if (appsErr) {
+        setLoadError(appsErr.message || 'Error al cargar solicitudes. ¿Ejecutaste la migración vendor_applications en Supabase?')
+        setApplications([])
+      } else {
+        setApplications(apps || [])
+      }
       const { data: vendors, error: vendorsErr } = await supabase
         .from('vendors')
         .select('*')
@@ -990,6 +1005,7 @@ function VendorsView() {
       if (!vendorsErr) setApprovedVendors(vendors || [])
     } catch (e) {
       console.error(e)
+      setLoadError(e.message || 'Error de conexión')
     } finally {
       setLoading(false)
     }
@@ -1075,11 +1091,23 @@ function VendorsView() {
       <h2 className="font-serif text-2xl text-neutral-700 mb-6">Vendor Applications (MOMade)</h2>
       <p className="text-neutral-600 mb-6">Solicitudes del formulario del marketplace. Aprueba o rechaza y se enviará un email al solicitante.</p>
 
+      {loadError && (
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <p className="text-amber-800 font-medium text-sm">No se pudieron cargar las solicitudes</p>
+          <p className="text-amber-700 text-xs mt-1">{loadError}</p>
+          <p className="text-amber-700 text-xs mt-2">En Supabase → SQL Editor ejecuta estas migraciones (en este orden):</p>
+          <ul className="text-xs text-amber-800 mt-1 list-disc list-inside">
+            <li><code>20260128100000_create_vendor_applications_and_vendors.sql</code></li>
+            <li><code>20260128400000_notifications_and_orders.sql</code></li>
+          </ul>
+        </div>
+      )}
+
       {/* Pending */}
       <div className="mb-8">
         <h3 className="font-semibold text-neutral-700 mb-3">Pending ({pending.length})</h3>
         <div className="space-y-4">
-          {pending.length === 0 && <p className="text-neutral-500 text-sm">No pending applications.</p>}
+          {!loadError && pending.length === 0 && <p className="text-neutral-500 text-sm">No hay solicitudes pendientes. Cuando alguien envíe el formulario en Marketplace aparecerán aquí.</p>}
           {pending.map(app => (
             <div key={app.id} className="card border border-neutral-200">
               <div className="flex flex-wrap items-start justify-between gap-3 mb-3">

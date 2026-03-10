@@ -5,10 +5,14 @@ export const useNotificationsStore = create((set, get) => ({
   items: [],
   unreadCount: 0,
   loading: false,
+  error: null,
 
   fetchForAdmin: async () => {
-    if (!supabase) return
-    set({ loading: true })
+    if (!supabase) {
+      set({ error: 'Supabase no configurado' })
+      return
+    }
+    set({ loading: true, error: null })
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
@@ -17,14 +21,16 @@ export const useNotificationsStore = create((set, get) => ({
       .order('created_at', { ascending: false })
       .limit(100)
     set({ loading: false })
-    if (error) return
-    set({ items: data || [] })
-    set({ unreadCount: (data || []).filter(n => !n.read).length })
+    if (error) {
+      set({ error: error.message, items: [] })
+      return
+    }
+    set({ items: data || [], unreadCount: (data || []).filter(n => !n.read).length, error: null })
   },
 
   fetchForVendor: async (vendorId) => {
     if (!supabase || !vendorId) return
-    set({ loading: true })
+    set({ loading: true, error: null })
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
@@ -33,9 +39,11 @@ export const useNotificationsStore = create((set, get) => ({
       .order('created_at', { ascending: false })
       .limit(100)
     set({ loading: false })
-    if (error) return
-    set({ items: data || [] })
-    set({ unreadCount: (data || []).filter(n => !n.read).length })
+    if (error) {
+      set({ error: error.message, items: [] })
+      return
+    }
+    set({ items: data || [], unreadCount: (data || []).filter(n => !n.read).length, error: null })
   },
 
   markAsRead: async (id) => {
