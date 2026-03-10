@@ -351,7 +351,7 @@ export default function MarketplacePage() {
         {view === 'landing' && (
           <>
             {/* Hero Section */}
-            <div className="text-center mb-0 -mt-2 md:-mt-4">
+            <div className="text-center py-8 md:py-10">
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -360,7 +360,7 @@ export default function MarketplacePage() {
                 <img 
                   src="/momade-logo.png" 
                   alt="M&Made. MARKET" 
-                  className="h-64 md:h-80 lg:h-96 mx-auto mb-0"
+                  className="h-52 md:h-64 lg:h-72 mx-auto mb-4"
                   onError={(e) => {
                     e.target.style.display = 'none'
                     e.target.nextSibling.style.display = 'block'
