@@ -1816,7 +1816,7 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
   const [formData, setFormData] = useState({
     title: product?.title || '',
     price: product?.price || '',
-    category: product?.category || (isMagariShop ? 'Handmade' : 'Ceramics'),
+    category: product?.category || (isMagariShop ? 'Curated' : 'Ceramics'),
     room: product?.room || 'Any',
     description: product?.description || '',
     materials: product?.materials || '',
@@ -2025,7 +2025,6 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
                 >
                   {isMagariShop ? (
                     <>
-                      <option value="Handmade">Handmade</option>
                       <option value="Elementos Collection">Elementos Collection</option>
                       <option value="Curated">Curated</option>
                       <option value="Bundles">Bundles</option>
