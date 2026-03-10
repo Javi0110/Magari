@@ -26,6 +26,8 @@ export default function MarketplacePage() {
   })
   const [uploadedImages, setUploadedImages] = useState([])
   const [isDraggingImages, setIsDraggingImages] = useState(false)
+  const [makers, setMakers] = useState([])
+  const [makersLoading, setMakersLoading] = useState(false)
 
   // Handle image file uploads for vendor application
   const handleImageUpload = (files) => {
@@ -161,6 +163,7 @@ export default function MarketplacePage() {
     password: ''
   })
   const [loginError, setLoginError] = useState('')
+  const [currentUser, setCurrentUser] = useState(null)
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -186,25 +189,71 @@ export default function MarketplacePage() {
       const vendor = vendors[0]
       setIsLoggedIn(true)
       setView('dashboard')
-      localStorage.setItem('magari-current-user', JSON.stringify({
+      const user = {
         email: vendor.email,
         vendorId: vendor.id,
         name: vendor.name,
         businessName: vendor.business_name,
         isMagariAccount: false,
         vendorSlug: (vendor.business_name || vendor.email).toLowerCase().replace(/[^a-z0-9]/g, '-')
-      }))
+      }
+      setCurrentUser(user)
+      localStorage.setItem('magari-current-user', JSON.stringify(user))
       return
     }
     const isMagariAccount = email.includes('magari') || email === 'magari@magariandco.com'
     setIsLoggedIn(true)
     setView('dashboard')
-    localStorage.setItem('magari-current-user', JSON.stringify({
+    const user = {
       email,
       isMagariAccount,
       vendorSlug: isMagariAccount ? 'magari' : email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-')
-    }))
+    }
+    setCurrentUser(user)
+    localStorage.setItem('magari-current-user', JSON.stringify(user))
   }
+
+  // Restaurar sesión de vendor si ya estaba logueado
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('magari-current-user')
+      if (!raw) return
+      const user = JSON.parse(raw)
+      setCurrentUser(user)
+      setIsLoggedIn(true)
+      setView('dashboard')
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  // Cargar makers publicados desde Supabase para la sección "Meet Our Makers"
+  useEffect(() => {
+    const loadMakers = async () => {
+      if (!supabase) return
+      setMakersLoading(true)
+      const { data, error } = await supabase
+        .from('vendors')
+        .select('id, business_name, name, profile_bio, profile_location, profile_instagram, published')
+        .eq('status', 'active')
+        .eq('published', true)
+        .order('created_at', { ascending: false })
+      if (!error && data) {
+        setMakers(
+          data.map(v => ({
+            id: v.id,
+            businessName: v.business_name,
+            name: v.name,
+            bio: v.profile_bio || '',
+            location: v.profile_location || 'Puerto Rico',
+            instagram: v.profile_instagram || '',
+          }))
+        )
+      }
+      setMakersLoading(false)
+    }
+    loadMakers()
+  }, [])
 
   return (
     <div className="min-h-screen bg-cream py-0">
@@ -256,10 +305,17 @@ export default function MarketplacePage() {
               </h2>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {sampleVendors.map((vendor, index) => (
-                  <Link
+                {makersLoading && makers.length === 0 && (
+                  <p className="text-center text-neutral-500 col-span-full">Loading makers…</p>
+                )}
+                {!makersLoading && makers.length === 0 && (
+                  <p className="text-center text-neutral-500 col-span-full">
+                    Maker profiles will appear here once approved vendors publish their profile.
+                  </p>
+                )}
+                {makers.map((vendor, index) => (
+                  <div
                     key={vendor.id}
-                    to={`/maker/${vendor.slug}`}
                   >
                     <motion.div
                       initial={{ opacity: 0, y: 30 }}
@@ -284,39 +340,23 @@ export default function MarketplacePage() {
                       <p className="text-stone mb-4 line-clamp-3">
                         {vendor.bio}
                       </p>
-                      
-                      {/* Categories */}
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {vendor.categories.map(cat => (
-                          <span key={cat} className="badge badge-maker">
-                            {cat}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* Product Grid */}
-                      <div className="grid grid-cols-3 gap-2 mb-4">
-                        {vendor.products.slice(0, 3).map((product) => (
-                          <div key={product.id} className="aspect-square bg-greige-light rounded-lg" />
-                        ))}
-                      </div>
-
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-sage font-medium hover:underline">
-                          View Shop →
+                        <span className="text-sage font-medium">
+                          Marketplace maker
                         </span>
-                        <a
-                          href={`https://instagram.com/${vendor.instagram.replace('@', '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-stone-light hover:text-sage transition-colors"
-                        >
-                          {vendor.instagram}
-                        </a>
+                        {vendor.instagram && (
+                          <a
+                            href={`https://instagram.com/${vendor.instagram.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-stone-light hover:text-sage transition-colors"
+                          >
+                            {vendor.instagram}
+                          </a>
+                        )}
                       </div>
                     </motion.div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             </div>
@@ -1004,20 +1044,7 @@ function VendorDashboard({ onLogout }) {
       )}
 
       {activeTab === 'settings' && (
-        <div className="card p-8">
-          <h2 className="font-serif text-2xl text-neutral-700 mb-6">Account Settings</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-neutral-700 font-medium mb-2">Business Name</label>
-              <input type="text" defaultValue={currentUser?.businessName || ''} className="input-field" readOnly />
-            </div>
-            <div>
-              <label className="block text-neutral-700 font-medium mb-2">Email</label>
-              <input type="email" defaultValue={currentUser?.email || ''} className="input-field" readOnly />
-            </div>
-            <p className="text-sm text-neutral-500">Para cambiar datos de contacto, escribe a magaribyelena@gmail.com</p>
-          </div>
-        </div>
+        <VendorProfileSettings vendorId={currentUser?.vendorId} currentUser={currentUser} />
       )}
     </div>
   )
@@ -1201,6 +1228,194 @@ function ProductsSection({ isMagariAccount, activeSection, vendorSlug, onAddProd
           </tbody>
         </table>
       </div>
+    </div>
+  )
+}
+
+// Vendor Profile Settings – controls what appears in "Meet Our Makers"
+function VendorProfileSettings({ vendorId, currentUser }) {
+  const [bio, setBio] = useState('')
+  const [location, setLocation] = useState('')
+  const [website, setWebsite] = useState('')
+  const [instagram, setInstagram] = useState('')
+  const [published, setPublished] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!supabase || !vendorId) {
+        setLoading(false)
+        return
+      }
+      const { data, error } = await supabase
+        .from('vendors')
+        .select('profile_bio, profile_location, profile_website, profile_instagram, published')
+        .eq('id', vendorId)
+        .single()
+      if (error) {
+        console.error('Error loading vendor profile:', error)
+        setError('Could not load your profile. Please try again later.')
+      } else if (data) {
+        setBio(data.profile_bio || '')
+        setLocation(data.profile_location || '')
+        setWebsite(data.profile_website || '')
+        setInstagram(data.profile_instagram || '')
+        setPublished(!!data.published)
+      }
+      setLoading(false)
+    }
+    loadProfile()
+  }, [vendorId])
+
+  const handleSave = async (e) => {
+    e.preventDefault()
+    setError('')
+    setSuccess('')
+    if (!supabase || !vendorId) return
+    setSaving(true)
+    const slugSource = currentUser?.businessName || currentUser?.email || ''
+    try {
+      const { error: updateErr } = await supabase
+        .from('vendors')
+        .update({
+          profile_bio: bio,
+          profile_location: location,
+          profile_website: website,
+          profile_instagram: instagram,
+          published
+        })
+        .eq('id', vendorId)
+      if (updateErr) throw updateErr
+      setSuccess('Profile saved. Your maker card will show under “Meet Our Makers” when published is ON.')
+    } catch (err) {
+      console.error('Error saving vendor profile:', err)
+      setError('Could not save your profile. Please try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (!vendorId) {
+    return (
+      <div className="card p-8">
+        <h2 className="font-serif text-2xl text-neutral-700 mb-4">Account Settings</h2>
+        <p className="text-neutral-600 text-sm">
+          This demo account cannot edit a public profile. Log in with a vendor account to manage your maker card.
+        </p>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="card p-8">
+        <p className="text-neutral-600">Loading your profile…</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="card p-8">
+      <h2 className="font-serif text-2xl text-neutral-700 mb-2">Account Settings</h2>
+      <p className="text-neutral-600 text-sm mb-6">
+        This information appears on your public maker card in the “Meet Our Makers” section.
+      </p>
+
+      <form onSubmit={handleSave} className="space-y-5">
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-neutral-700 font-medium mb-2">Business name</label>
+            <input
+              type="text"
+              value={currentUser?.businessName || ''}
+              readOnly
+              className="input-field bg-neutral-50"
+            />
+          </div>
+          <div>
+            <label className="block text-neutral-700 font-medium mb-2">Contact email</label>
+            <input
+              type="email"
+              value={currentUser?.email || ''}
+              readOnly
+              className="input-field bg-neutral-50"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-neutral-700 font-medium mb-2">Short bio</label>
+          <textarea
+            rows={4}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            className="input-field"
+            placeholder="Tell customers about your story, what you create, and what makes your brand special."
+          />
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-neutral-700 font-medium mb-2">Location</label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="input-field"
+              placeholder="San Juan, PR"
+            />
+          </div>
+          <div>
+            <label className="block text-neutral-700 font-medium mb-2">Website (optional)</label>
+            <input
+              type="url"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              className="input-field"
+              placeholder="https://yourshop.com"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-neutral-700 font-medium mb-2">Instagram handle (optional)</label>
+          <input
+            type="text"
+            value={instagram}
+            onChange={(e) => setInstagram(e.target.value)}
+            className="input-field"
+            placeholder="@yourhandle"
+          />
+        </div>
+
+        <div className="flex items-center justify-between pt-4 border-t border-neutral-200 mt-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={published}
+              onChange={(e) => setPublished(e.target.checked)}
+              className="h-4 w-4"
+            />
+            <span className="text-neutral-700 text-sm font-medium">
+              Show my profile in the “Meet Our Makers” section
+            </span>
+          </label>
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="btn-primary disabled:opacity-60"
+          >
+            {saving ? 'Saving…' : 'Save profile'}
+          </button>
+        </div>
+
+        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {success && <p className="text-sage text-sm">{success}</p>}
+      </form>
     </div>
   )
 }
