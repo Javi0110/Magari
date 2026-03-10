@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
-import { ShoppingCart, Menu, X } from 'lucide-react'
+import { ShoppingCart, Menu, X, LogIn } from 'lucide-react'
 import { useState } from 'react'
 import { useCartStore } from '../store/cartStore'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [loginDropdownOpen, setLoginDropdownOpen] = useState(false)
   const { openCart, getItemCount } = useCartStore()
   const itemCount = getItemCount()
 
@@ -78,6 +79,40 @@ export default function Header() {
             ))}
           </div>
 
+          {/* Login dropdown (desktop) */}
+          <div className="hidden lg:block relative">
+            <button
+              onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
+              className="flex items-center gap-2 text-stone hover:text-sage transition-colors font-medium"
+              aria-expanded={loginDropdownOpen}
+              aria-haspopup="true"
+            >
+              <LogIn className="w-5 h-5" />
+              Login
+            </button>
+            {loginDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setLoginDropdownOpen(false)} aria-hidden="true" />
+                <div className="absolute right-0 top-full mt-2 w-48 py-1 bg-white border border-greige-light rounded-xl shadow-lg z-50">
+                  <Link
+                    to="/admin"
+                    onClick={() => setLoginDropdownOpen(false)}
+                    className="block px-4 py-2 text-neutral-700 hover:bg-cream text-sm"
+                  >
+                    Admin
+                  </Link>
+                  <Link
+                    to="/marketplace"
+                    onClick={() => setLoginDropdownOpen(false)}
+                    className="block px-4 py-2 text-neutral-700 hover:bg-cream text-sm"
+                  >
+                    Vendor (Marketplace)
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+
           {/* Cart & Mobile Menu */}
           <div className="flex items-center space-x-4">
             <button
@@ -144,6 +179,15 @@ export default function Header() {
                   )}
                 </Link>
               ))}
+              <div className="border-t border-greige-light pt-3 mt-3">
+                <p className="text-xs text-neutral-500 mb-2">Entrar a mi perfil</p>
+                <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium">
+                  <LogIn className="w-4 h-4" /> Admin
+                </Link>
+                <Link to="/marketplace" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium">
+                  <LogIn className="w-4 h-4" /> Vendor (Marketplace)
+                </Link>
+              </div>
             </div>
           </motion.div>
         )}

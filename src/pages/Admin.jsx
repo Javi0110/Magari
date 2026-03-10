@@ -153,12 +153,13 @@ export default function AdminPage() {
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="p-2 rounded-full hover:bg-neutral-100 relative"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-neutral-100 border border-neutral-200/80"
                 aria-label="Notificaciones"
               >
-                <Bell className="w-6 h-6 text-neutral-600" />
+                <Bell className="w-5 h-5 text-neutral-600" />
+                <span className="font-medium text-neutral-700 hidden sm:inline">Notificaciones</span>
                 {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-sage text-white text-xs flex items-center justify-center">
+                  <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-sage text-white text-xs flex items-center justify-center font-medium">
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
