@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Heart, Store, TrendingUp, Upload, DollarSign, Package, BarChart3, LogIn, UserPlus, MapPin, Edit, Trash2, Plus, Search, X, Image as ImageIcon, Trash2 as DeleteIcon, Bell } from 'lucide-react'
@@ -8,6 +8,7 @@ import { sampleVendors } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
 import { useVendorProductsStore } from '../store/vendorProductsStore'
 import { useNotificationsStore } from '../store/notificationsStore'
+import { useCartStore } from '../store/cartStore'
 
 export default function MarketplacePage() {
   const location = useLocation()
@@ -31,6 +32,15 @@ export default function MarketplacePage() {
   const [isDraggingImages, setIsDraggingImages] = useState(false)
   const [makers, setMakers] = useState([])
   const [makersLoading, setMakersLoading] = useState(false)
+  const [marketplaceProducts, setMarketplaceProducts] = useState([])
+  const [marketplaceLoading, setMarketplaceLoading] = useState(false)
+  const [marketplaceError, setMarketplaceError] = useState('')
+  const [shopSearch, setShopSearch] = useState('')
+  const [shopCategory, setShopCategory] = useState('all')
+  const [shopMakerId, setShopMakerId] = useState('all')
+  const [shopDisplayCount, setShopDisplayCount] = useState(12)
+  const shopRef = useRef(null)
+  const { addItem: addToCart, openCart } = useCartStore()
 
   // Handle image file uploads for vendor application
   const handleImageUpload = (files) => {
@@ -271,6 +281,70 @@ export default function MarketplacePage() {
     loadMakers()
   }, [])
 
+  // Cargar productos del marketplace (productos con vendor asignado)
+  useEffect(() => {
+    const loadMarketplaceProducts = async () => {
+      if (!supabase) return
+      setMarketplaceLoading(true)
+      setMarketplaceError('')
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, title, price, category, images, description, stock, vendor_id, created_at')
+        .not('vendor_id', 'is', null)
+        .order('created_at', { ascending: false })
+      if (error) {
+        console.error('Error loading marketplace products:', error)
+        setMarketplaceError('Could not load marketplace products. Please try again later.')
+        setMarketplaceProducts([])
+      } else {
+        setMarketplaceProducts(data || [])
+      }
+      setMarketplaceLoading(false)
+    }
+    loadMarketplaceProducts()
+  }, [])
+
+  // Map makers by id for quick lookup
+  const makersById = useMemo(() => {
+    const map = {}
+    makers.forEach(m => {
+      map[m.id] = m
+    })
+    return map
+  }, [makers])
+
+  const filteredMarketplaceProducts = useMemo(() => {
+    let items = [...marketplaceProducts]
+    if (shopSearch) {
+      const q = shopSearch.toLowerCase()
+      items = items.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        (p.description || '').toLowerCase().includes(q) ||
+        (p.category || '').toLowerCase().includes(q)
+      )
+    }
+    if (shopCategory !== 'all') {
+      items = items.filter(p => p.category === shopCategory)
+    }
+    if (shopMakerId !== 'all') {
+      items = items.filter(p => String(p.vendor_id) === String(shopMakerId))
+    }
+    return items
+  }, [marketplaceProducts, shopSearch, shopCategory, shopMakerId])
+
+  const displayedMarketplaceProducts = filteredMarketplaceProducts.slice(0, shopDisplayCount)
+  const hasMoreMarketplace = shopDisplayCount < filteredMarketplaceProducts.length
+
+  const handleShopAddToCart = (product) => {
+    addToCart(product)
+  }
+
+  const scrollToShop = () => {
+    if (shopRef.current) {
+      shopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   return (
     <div className="min-h-screen bg-cream py-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -302,7 +376,11 @@ export default function MarketplacePage() {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
-                  <button onClick={() => setView('apply')} className="btn-primary">
+                  <button onClick={scrollToShop} className="btn-primary">
+                    <ShoppingBag className="inline-block w-5 h-5 mr-2" />
+                    Shop all MOMade
+                  </button>
+                  <button onClick={() => setView('apply')} className="btn-outline">
                     <Heart className="inline-block w-5 h-5 mr-2" />
                     Apply to Join
                   </button>
@@ -312,6 +390,157 @@ export default function MarketplacePage() {
                   </button>
                 </div>
               </motion.div>
+            </div>
+
+            {/* Marketplace Shop Section */}
+            <div ref={shopRef} className="mt-10 md:mt-16 mb-16">
+              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="font-serif text-3xl md:text-4xl text-neutral-700">
+                    Shop the MOMade Marketplace
+                  </h2>
+                  <p className="text-neutral-600 mt-2">
+                    Discover products from our approved makers and curate your home with mom-made pieces.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                    <input
+                      type="text"
+                      placeholder="Search products…"
+                      value={shopSearch}
+                      onChange={(e) => {
+                        setShopSearch(e.target.value)
+                        setShopDisplayCount(12)
+                      }}
+                      className="input-field pl-9"
+                    />
+                  </div>
+                  <select
+                    value={shopMakerId}
+                    onChange={(e) => {
+                      setShopMakerId(e.target.value)
+                      setShopDisplayCount(12)
+                    }}
+                    className="input-field w-full sm:w-48"
+                  >
+                    <option value="all">All makers</option>
+                    {makers.map(m => (
+                      <option key={m.id} value={m.id}>
+                        {m.businessName}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={shopCategory}
+                    onChange={(e) => {
+                      setShopCategory(e.target.value)
+                      setShopDisplayCount(12)
+                    }}
+                    className="input-field w-full sm:w-40"
+                  >
+                    <option value="all">All categories</option>
+                    <option value="Ceramics">Ceramics</option>
+                    <option value="Textiles">Textiles</option>
+                    <option value="Jewelry">Jewelry</option>
+                    <option value="Home Decor">Home Decor</option>
+                    <option value="Art">Art</option>
+                    <option value="Beauty">Beauty</option>
+                    <option value="Food">Food</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              {marketplaceLoading && marketplaceProducts.length === 0 && (
+                <div className="card p-8 text-center">
+                  <p className="text-neutral-600">Loading products…</p>
+                </div>
+              )}
+
+              {marketplaceError && (
+                <div className="card p-4 mb-4 bg-amber-50 border border-amber-200 text-sm text-amber-800">
+                  {marketplaceError}
+                </div>
+              )}
+
+              {!marketplaceLoading && !marketplaceError && displayedMarketplaceProducts.length === 0 && (
+                <div className="card p-8 text-center">
+                  <p className="text-neutral-600 mb-2">No products found for your filters.</p>
+                  <button
+                    onClick={() => {
+                      setShopSearch('')
+                      setShopCategory('all')
+                      setShopMakerId('all')
+                      setShopDisplayCount(12)
+                    }}
+                    className="btn-outline text-sm"
+                  >
+                    Clear filters
+                  </button>
+                </div>
+              )}
+
+              {displayedMarketplaceProducts.length > 0 && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {displayedMarketplaceProducts.map(product => {
+                      const maker = makersById[product.vendor_id]
+                      return (
+                        <div key={product.id} className="card hover:shadow-soft-lg transition-all duration-200 flex flex-col">
+                          <div className="relative aspect-square bg-neutral-100 rounded-2xl mb-4 overflow-hidden">
+                            {product.images?.[0] ? (
+                              <img
+                                src={product.images[0]}
+                                alt={product.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-neutral-400 text-sm">
+                                Product image
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 flex flex-col">
+                            <h3 className="font-serif text-xl text-neutral-800 mb-1">
+                              {product.title}
+                            </h3>
+                            {maker && (
+                              <p className="text-xs text-neutral-500 mb-1">
+                                by {maker.businessName}
+                              </p>
+                            )}
+                            <p className="text-sm text-neutral-600 line-clamp-2 mb-3">
+                              {product.description}
+                            </p>
+                            <p className="text-lg font-semibold text-sage mb-4">
+                              ${Number(product.price).toFixed(2)}
+                            </p>
+                            <button
+                              onClick={() => handleShopAddToCart(product)}
+                              disabled={(product.stock || 0) === 0}
+                              className="w-full btn-primary py-2 mt-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {(product.stock || 0) === 0 ? 'Sold Out' : 'Add to cart'}
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {hasMoreMarketplace && (
+                    <div className="text-center mt-8">
+                      <button
+                        onClick={() => setShopDisplayCount(prev => prev + 12)}
+                        className="btn-outline px-8 py-2"
+                      >
+                        Load more products
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Featured Vendors */}
