@@ -1022,19 +1022,44 @@ function VendorsView() {
   const handleApprove = async (app) => {
     if (!supabase || !app?.id) return
     setActionLoading(app.id)
-    const accessCode = generateAccessCode()
     try {
-      const { error: insertErr } = await supabase
+      // ¿Ya existe un vendor con este email? (evita el error de clave duplicada)
+      const { data: existing, error: fetchErr } = await supabase
         .from('vendors')
-        .insert({
-          application_id: app.id,
-          email: app.email,
-          name: app.name,
-          business_name: app.business_name,
-          access_code: accessCode,
-          status: 'active'
-        })
-      if (insertErr) throw insertErr
+        .select('*')
+        .eq('email', app.email)
+
+      if (fetchErr) throw fetchErr
+
+      let accessCode
+
+      if (existing && existing.length > 0) {
+        const vendor = existing[0]
+        accessCode = vendor.access_code
+        // Asegura que quede ligada a esta application y activa
+        const { error: updateVendorErr } = await supabase
+          .from('vendors')
+          .update({
+            application_id: app.id,
+            status: 'active'
+          })
+          .eq('id', vendor.id)
+        if (updateVendorErr) throw updateVendorErr
+      } else {
+        accessCode = generateAccessCode()
+        const { error: insertErr } = await supabase
+          .from('vendors')
+          .insert({
+            application_id: app.id,
+            email: app.email,
+            name: app.name,
+            business_name: app.business_name,
+            access_code: accessCode,
+            status: 'active'
+          })
+        if (insertErr) throw insertErr
+      }
+
       await supabase
         .from('vendor_applications')
         .update({ status: 'approved', reviewed_at: new Date().toISOString() })
@@ -1049,7 +1074,11 @@ function VendorsView() {
       await loadApplications()
     } catch (err) {
       console.error(err)
-      alert('Error al aprobar: ' + (err.message || 'intenta de nuevo'))
+      let msg = err?.message || ''
+      if (err?.code === '23505') {
+        msg = 'Ya existe un vendor con este email en la tabla vendors de Supabase.'
+      }
+      alert('Error al aprobar: ' + (msg || 'intenta de nuevo'))
     } finally {
       setActionLoading(null)
     }
