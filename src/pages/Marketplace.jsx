@@ -196,18 +196,46 @@ export default function MarketplacePage() {
       return
     }
     if (supabase) {
-      const { data: vendors, error } = await supabase
+      // Primero intentamos con password (si el vendor ya creó una contraseña),
+      // luego caemos al código de acceso enviado por email.
+      let vendor = null
+      let error = null
+
+      // Login por password
+      let res = await supabase
         .from('vendors')
         .select('id, email, name, business_name, status')
         .eq('email', email)
-        .eq('access_code', code)
+        .eq('password', code)
         .eq('status', 'active')
         .limit(1)
-      if (error || !vendors?.length) {
+
+      if (res.error) {
+        error = res.error
+      } else if (res.data && res.data.length) {
+        vendor = res.data[0]
+      }
+
+      // Si no hay vendor con password, probar con access_code (flujo antiguo)
+      if (!vendor && !error) {
+        const res2 = await supabase
+          .from('vendors')
+          .select('id, email, name, business_name, status')
+          .eq('email', email)
+          .eq('access_code', code)
+          .eq('status', 'active')
+          .limit(1)
+        if (res2.error) {
+          error = res2.error
+        } else if (res2.data && res2.data.length) {
+          vendor = res2.data[0]
+        }
+      }
+
+      if (error || !vendor) {
         setLoginError('Email o código de acceso incorrectos.')
         return
       }
-      const vendor = vendors[0]
       setIsLoggedIn(true)
       setView('dashboard')
       const user = {
@@ -248,7 +276,7 @@ export default function MarketplacePage() {
     } else {
       setView('landing')
     }
-  }, [location.pathname, location.search, view])
+  }, [location.pathname, location.search])
 
   // Si la ruta es /momade/shop, hacer scroll al área de productos al cargar
   useEffect(() => {
@@ -1531,6 +1559,10 @@ function VendorProfileSettings({ vendorId, currentUser }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
+  const [passwordMessage, setPasswordMessage] = useState('')
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -1742,6 +1774,86 @@ function VendorProfileSettings({ vendorId, currentUser }) {
         {error && <p className="text-red-600 text-sm">{error}</p>}
         {success && <p className="text-sage text-sm">{success}</p>}
       </form>
+
+      {/* Password section */}
+      <div className="mt-8 pt-6 border-t border-neutral-200">
+        <h3 className="font-serif text-xl text-neutral-700 mb-3">
+          Vendor password
+        </h3>
+        <p className="text-neutral-600 text-sm mb-4">
+          After you set a password, you can log in with your email and this password instead of the one‑time access code.
+        </p>
+        <div className="grid md:grid-cols-2 gap-4 mb-3">
+          <div>
+            <label className="block text-neutral-700 font-medium mb-1 text-sm">
+              New password
+            </label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="input-field text-sm"
+              placeholder="••••••••"
+            />
+          </div>
+          <div>
+            <label className="block text-neutral-700 font-medium mb-1 text-sm">
+              Confirm password
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="input-field text-sm"
+              placeholder="Repeat password"
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          disabled={passwordSaving || !newPassword || !confirmPassword}
+          onClick={async () => {
+            setPasswordMessage('')
+            if (!supabase || !vendorId) return
+            if (newPassword !== confirmPassword) {
+              setPasswordMessage('Passwords do not match.')
+              return
+            }
+            if (newPassword.length < 6) {
+              setPasswordMessage('Password should be at least 6 characters.')
+              return
+            }
+            setPasswordSaving(true)
+            try {
+              const { error: updateErr } = await supabase
+                .from('vendors')
+                .update({ password: newPassword })
+                .eq('id', vendorId)
+              if (updateErr) {
+                console.error('Error saving vendor password:', updateErr)
+                setPasswordMessage('Could not save password. Please try again.')
+              } else {
+                setPasswordMessage('Password saved. You can now log in using your email and this password.')
+                setNewPassword('')
+                setConfirmPassword('')
+              }
+            } catch (e) {
+              console.error(e)
+              setPasswordMessage('Unexpected error. Please try again.')
+            } finally {
+              setPasswordSaving(false)
+            }
+          }}
+          className="btn-outline text-sm"
+        >
+          {passwordSaving ? 'Saving password…' : 'Save password'}
+        </button>
+        {passwordMessage && (
+          <p className={`mt-2 text-sm ${passwordMessage.startsWith('Password saved') ? 'text-sage' : 'text-red-600'}`}>
+            {passwordMessage}
+          </p>
+        )}
+      </div>
     </div>
   )
 }
