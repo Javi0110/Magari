@@ -108,7 +108,7 @@ Próximos pasos:
 
 Si tienes alguna pregunta, no dudes en contactarnos:
 • Email: ${MAGARI_EMAIL}
-• Instagram: @magariandco
+• Instagram: @magari.andco
 
 ¡Estamos emocionados de trabajar contigo!
 
@@ -193,7 +193,7 @@ Tu mensaje:
 
 Si tienes alguna pregunta urgente, puedes contactarnos directamente en:
 • Email: ${MAGARI_EMAIL}
-• Instagram: @magariandco
+• Instagram: @magari.andco
 
 ¡Esperamos hablar contigo pronto!
 

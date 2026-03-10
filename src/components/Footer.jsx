@@ -78,7 +78,7 @@ export default function Footer() {
             {/* Social Links */}
             <div className="flex space-x-4">
               <a
-                href="https://instagram.com/magariandco"
+                href="https://instagram.com/magari.andco"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-neutral-500 hover:text-sage transition-colors"

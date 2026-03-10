@@ -4,13 +4,25 @@ import { useEffect } from 'react'
 import { ArrowRight, Palette, Home, Store, LayoutDashboard, ShoppingBag, Instagram } from 'lucide-react'
 
 export default function HomePage() {
+  const INSTAGRAM_HANDLE = 'magari.andco'
+  const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM_HANDLE}/`
+
   useEffect(() => {
-    // Load Instagram embed script once to render embedded posts
-    if (document.querySelector('script[src="https://www.instagram.com/embed.js"]')) return
-    const script = document.createElement('script')
-    script.src = 'https://www.instagram.com/embed.js'
-    script.async = true
-    document.body.appendChild(script)
+    const runEmbeds = () => {
+      if (typeof window !== 'undefined' && window.instgrm?.Embeds?.process) {
+        window.instgrm.Embeds.process()
+      }
+    }
+    let script = document.querySelector('script[src="https://www.instagram.com/embed.js"]')
+    if (!script) {
+      script = document.createElement('script')
+      script.src = 'https://www.instagram.com/embed.js'
+      script.async = true
+      script.addEventListener('load', runEmbeds)
+      document.body.appendChild(script)
+    }
+    const t = setTimeout(runEmbeds, 600)
+    return () => clearTimeout(t)
   }, [])
 
   const galleryImages = [
@@ -225,12 +237,12 @@ export default function HomePage() {
             </div>
             <div className="flex md:justify-end">
               <a
-                href="https://www.instagram.com/magariandco/"
+                href={INSTAGRAM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm font-medium text-sage hover:text-sage-dark"
               >
-                @magariandco
+                @{INSTAGRAM_HANDLE}
                 <ArrowRight className="w-4 h-4" />
               </a>
             </div>

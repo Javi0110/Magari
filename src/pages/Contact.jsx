@@ -176,7 +176,7 @@ export default function ContactPage() {
                   <div>
                     <p className="font-medium text-neutral-700 mb-1">Instagram</p>
                     <a
-                      href="https://instagram.com/magariandco"
+                      href="https://instagram.com/magari.andco"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-earth hover:underline"

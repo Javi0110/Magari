@@ -135,7 +135,7 @@ function App() {
         name: 'Austin, Texas, United States'
       },
       sameAs: [
-        'https://www.instagram.com/magariandco/'
+        'https://www.instagram.com/magari.andco/'
       ]
     })
     document.head.appendChild(script)
