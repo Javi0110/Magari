@@ -982,6 +982,7 @@ function VendorsView() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(null)
   const [loadError, setLoadError] = useState(null)
+  const [previewImage, setPreviewImage] = useState(null)
 
   const loadApplications = async () => {
     if (!supabase) {
@@ -1044,13 +1045,17 @@ function VendorsView() {
         .from('vendor_applications')
         .update({ status: 'approved', reviewed_at: new Date().toISOString() })
         .eq('id', app.id)
-      await sendVendorApprovalEmail({
+      const emailResult = await sendVendorApprovalEmail({
         email: app.email,
         name: app.name,
         businessName: app.business_name,
         accessCode,
         loginUrl: `${window.location.origin}/marketplace`
       })
+      if (!emailResult?.success) {
+        console.error('Error enviando email de aprobación al vendor:', emailResult?.error)
+        alert('La solicitud se aprobó, pero el email al vendor NO se pudo enviar. Revisa la configuración de Resend/Netlify.')
+      }
       await loadApplications()
     } catch (err) {
       console.error(err)
@@ -1072,11 +1077,15 @@ function VendorsView() {
         .from('vendor_applications')
         .update({ status: 'rejected', reviewed_at: new Date().toISOString() })
         .eq('id', app.id)
-      await sendVendorRejectionEmail({
+      const emailResult = await sendVendorRejectionEmail({
         email: app.email,
         name: app.name,
         businessName: app.business_name
       })
+      if (!emailResult?.success) {
+        console.error('Error enviando email de rechazo al vendor:', emailResult?.error)
+        alert('La solicitud se marcó como RECHAZADA, pero el email al vendor NO se pudo enviar. Revisa la configuración de Resend/Netlify.')
+      }
       await loadApplications()
     } catch (err) {
       console.error(err)
@@ -1195,15 +1204,14 @@ function VendorsView() {
                     <p className="font-medium text-neutral-700 mb-2">Imágenes de muestra</p>
                     <div className="flex flex-wrap gap-2">
                       {app.form_data.sampleImages.map((dataUrl, i) => (
-                        <a
+                        <button
                           key={i}
-                          href={dataUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          type="button"
+                          onClick={() => setPreviewImage(dataUrl)}
                           className="block w-20 h-20 rounded-lg overflow-hidden border border-neutral-200 hover:opacity-90"
                         >
                           <img src={dataUrl} alt={`Muestra ${i + 1}`} className="w-full h-full object-cover" />
-                        </a>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -1268,6 +1276,19 @@ function VendorsView() {
           ))}
         </div>
       </div>
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div
+            className="max-w-3xl max-h-[90vh] bg-white rounded-lg overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img src={previewImage} alt="Vista previa" className="w-full h-full object-contain" />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

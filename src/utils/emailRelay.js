@@ -6,14 +6,19 @@
 const RELAY_URL = '/.netlify/functions/send-vendor-email'
 
 async function postRelay(payload) {
-  const res = await fetch(RELAY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) return { success: false, error: data.error || res.statusText }
-  return { success: true }
+  try {
+    const res = await fetch(RELAY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) return { success: false, error: data.error || res.statusText }
+    return { success: true }
+  } catch (err) {
+    console.error('Error llamando al relay de email:', err)
+    return { success: false, error: err?.message || 'Network error' }
+  }
 }
 
 export async function sendVendorApprovalEmail({ email, name, businessName, accessCode, loginUrl }) {
