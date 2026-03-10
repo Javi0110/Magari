@@ -263,8 +263,10 @@ export default function MarketplacePage() {
 
   // Cambiar entre landing/login/apply según la URL
   useEffect(() => {
-    // No tocar la vista si el vendor ya está en el dashboard
-    if (view === 'dashboard') return
+    // Si el vendor está en su dashboard y sigue en la ruta de login,
+    // no forzamos cambio de vista. Pero si navega a /momade desde el header,
+    // sí permitimos volver a la landing del marketplace.
+    if (view === 'dashboard' && location.pathname.includes('vendor-login')) return
     const params = new URLSearchParams(location.search)
     const v = params.get('view')
     const pathname = location.pathname
