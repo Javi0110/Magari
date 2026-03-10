@@ -25,15 +25,6 @@ export default function HomePage() {
     return () => clearTimeout(t)
   }, [])
 
-  const galleryImages = [
-    '/gallery/1.jpg',
-    '/gallery/2.jpg',
-    '/gallery/3.jpg',
-    '/gallery/4.jpg',
-    '/gallery/5.jpg',
-    '/gallery/6.jpg',
-  ]
-
   const features = [
     {
       icon: <Home className="w-8 h-8" />,
@@ -168,44 +159,6 @@ export default function HomePage() {
                     <ArrowRight className="ml-1 w-4 h-4" />
                   </span>
                 </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Gallery Section */}
-      <section className="py-20 bg-cream">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="font-serif text-4xl md:text-5xl text-neutral-600 mb-4">
-              Featured Work
-            </h2>
-            <p className="text-neutral-500 text-lg">
-              Handpicked pieces and styled spaces
-            </p>
-          </motion.div>
-
-          {/* Simple Grid Gallery */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {galleryImages.map((img, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-                className="aspect-square rounded-2xl overflow-hidden shadow-soft hover:shadow-soft-lg transition-shadow cursor-pointer bg-neutral-200"
-              >
-                {/* 🔌 INTEGRATION: Replace with actual images */}
-                <div className="w-full h-full flex items-center justify-center text-neutral-400 text-sm">
-                  Image {index + 1}
-                </div>
               </motion.div>
             ))}
           </div>
