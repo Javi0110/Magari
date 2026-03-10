@@ -1254,7 +1254,7 @@ function VendorProfileSettings({ vendorId, currentUser }) {
   const [location, setLocation] = useState('')
   const [website, setWebsite] = useState('')
   const [instagram, setInstagram] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
+  const [avatarDataUrl, setAvatarDataUrl] = useState('')
   const [published, setPublished] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -1280,7 +1280,7 @@ function VendorProfileSettings({ vendorId, currentUser }) {
         setLocation(data.profile_location || '')
         setWebsite(data.profile_website || '')
         setInstagram(data.profile_instagram || '')
-        setAvatarUrl(data.profile_avatar_url || '')
+        setAvatarDataUrl(data.profile_avatar_url || '')
         setPublished(!!data.published)
       }
       setLoading(false)
@@ -1303,7 +1303,7 @@ function VendorProfileSettings({ vendorId, currentUser }) {
           profile_location: location,
           profile_website: website,
           profile_instagram: instagram,
-          profile_avatar_url: avatarUrl,
+          profile_avatar_url: avatarDataUrl,
           published
         })
         .eq('id', vendorId)
@@ -1400,14 +1400,36 @@ function VendorProfileSettings({ vendorId, currentUser }) {
         </div>
 
         <div>
-          <label className="block text-neutral-700 font-medium mb-2">Logo image URL</label>
-          <input
-            type="url"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            className="input-field"
-            placeholder="Paste a direct link to your logo image (PNG or JPG)."
-          />
+          <label className="block text-neutral-700 font-medium mb-2">Logo image</label>
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 rounded-full overflow-hidden bg-neutral-100 border border-neutral-200 flex items-center justify-center">
+              {avatarDataUrl ? (
+                <img src={avatarDataUrl} alt="Logo preview" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xs text-neutral-400 text-center px-2">No logo yet</span>
+              )}
+            </div>
+            <label className="inline-flex items-center px-4 py-2 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 bg-white cursor-pointer hover:bg-neutral-50">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  const reader = new FileReader()
+                  reader.onload = () => {
+                    if (typeof reader.result === 'string') {
+                      setAvatarDataUrl(reader.result)
+                    }
+                  }
+                  reader.readAsDataURL(file)
+                  e.target.value = ''
+                }}
+              />
+              Upload logo
+            </label>
+          </div>
           <p className="text-xs text-neutral-500 mt-1">
             This logo will show as your profile photo in the “Meet Our Makers” grid.
           </p>
