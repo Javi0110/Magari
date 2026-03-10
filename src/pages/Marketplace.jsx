@@ -73,10 +73,30 @@ export default function MarketplacePage() {
     })
   }
 
+  const fileToDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+
   const handleApplicationSubmit = async (e) => {
     e.preventDefault()
     
     const submittedAt = new Date().toISOString()
+    const imageDataUrls = []
+    for (const img of uploadedImages) {
+      if (img?.file) {
+        try {
+          const dataUrl = await fileToDataUrl(img.file)
+          imageDataUrls.push(dataUrl)
+        } catch (err) {
+          console.warn('Could not read image', err)
+        }
+      }
+    }
+    
     const applicationPayload = {
       ...applicationData,
       sampleImages: uploadedImages,
@@ -98,6 +118,7 @@ export default function MarketplacePage() {
           form_data: {
             ...applicationData,
             sampleImageCount: uploadedImages.length,
+            sampleImages: imageDataUrls,
             submittedAt
           }
         })

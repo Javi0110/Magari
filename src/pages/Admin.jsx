@@ -1151,7 +1151,25 @@ function VendorsView() {
                 {app.categories?.length > 0 && <p><strong>Categorías:</strong> {app.categories.join(', ')}</p>}
                 {app.bio && <p><strong>Bio:</strong> {app.bio}</p>}
                 <p><strong>Pago:</strong> {app.payout_method} – {app.payout_email}</p>
-                {app.form_data?.sampleImageCount != null && (
+                {Array.isArray(app.form_data?.sampleImages) && app.form_data.sampleImages.length > 0 && (
+                  <div className="mt-3">
+                    <p className="font-medium text-neutral-700 mb-2">Imágenes de muestra</p>
+                    <div className="flex flex-wrap gap-2">
+                      {app.form_data.sampleImages.map((dataUrl, i) => (
+                        <a
+                          key={i}
+                          href={dataUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block w-20 h-20 rounded-lg overflow-hidden border border-neutral-200 hover:opacity-90"
+                        >
+                          <img src={dataUrl} alt={`Muestra ${i + 1}`} className="w-full h-full object-cover" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {app.form_data?.sampleImageCount != null && (!Array.isArray(app.form_data?.sampleImages) || app.form_data.sampleImages.length === 0) && (
                   <p><strong>Imágenes de muestra:</strong> {app.form_data.sampleImageCount}</p>
                 )}
               </div>
