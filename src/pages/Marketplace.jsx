@@ -196,46 +196,20 @@ export default function MarketplacePage() {
       return
     }
     if (supabase) {
-      // Primero intentamos con password (si el vendor ya creó una contraseña),
-      // luego caemos al código de acceso enviado por email.
-      let vendor = null
-      let error = null
-
-      // Login por password
-      let res = await supabase
+      // Simplificar: login solo por email + access_code para evitar confusiones.
+      const { data: vendors, error } = await supabase
         .from('vendors')
         .select('id, email, name, business_name, status')
-        .eq('email', email)
-        .eq('password', code)
         .eq('status', 'active')
+        .ilike('email', email)
+        .eq('access_code', code)
         .limit(1)
 
-      if (res.error) {
-        error = res.error
-      } else if (res.data && res.data.length) {
-        vendor = res.data[0]
-      }
-
-      // Si no hay vendor con password, probar con access_code (flujo antiguo)
-      if (!vendor && !error) {
-        const res2 = await supabase
-          .from('vendors')
-          .select('id, email, name, business_name, status')
-          .eq('email', email)
-          .eq('access_code', code)
-          .eq('status', 'active')
-          .limit(1)
-        if (res2.error) {
-          error = res2.error
-        } else if (res2.data && res2.data.length) {
-          vendor = res2.data[0]
-        }
-      }
-
-      if (error || !vendor) {
+      if (error || !vendors || !vendors.length) {
         setLoginError('Email o código de acceso incorrectos.')
         return
       }
+      const vendor = vendors[0]
       setIsLoggedIn(true)
       setView('dashboard')
       const user = {
