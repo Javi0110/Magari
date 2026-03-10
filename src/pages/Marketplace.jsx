@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Heart, Store, TrendingUp, Upload, DollarSign, Package, BarChart3, LogIn, UserPlus, MapPin, Edit, Trash2, Plus, Search, X, Image as ImageIcon, Trash2 as DeleteIcon, Bell } from 'lucide-react'
+import { Heart, Store, TrendingUp, Upload, DollarSign, Package, BarChart3, LogIn, UserPlus, MapPin, Edit, Trash2, Plus, Search, X, Image as ImageIcon, Trash2 as DeleteIcon, Bell, ShoppingBag } from 'lucide-react'
 import { sendVendorApplicationEmail } from '../utils/emailService'
 import { supabase } from '../utils/supabase'
 import { sampleVendors } from '../data/sampleData'
