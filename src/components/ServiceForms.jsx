@@ -10,6 +10,8 @@ import {
   MailCheck
 } from 'lucide-react'
 import { sendServiceRequestEmail } from '../utils/emailService'
+import { supabase } from '../utils/supabase'
+import { createServiceDepositCheckout } from '../utils/serviceCheckout'
 
 const CONTACT_STORAGE_KEY = 'magari_saved_contact'
 
@@ -71,6 +73,49 @@ const createInitialAreas = () => {
     }
     return acc
   }, {})
+}
+
+const fileToDataUrl = (file) =>
+  new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result)
+    reader.readAsDataURL(file)
+  })
+
+const serializeAreasWithMedia = async (areasState, selectedAreas) => {
+  const result = []
+  for (const area of selectedAreas) {
+    const areaState = areasState[area.id]
+    const entries = []
+    for (const entry of areaState.entries || []) {
+      const media = []
+      if (Array.isArray(entry.media)) {
+        for (const m of entry.media) {
+          let dataUrl = m.dataUrl
+          if (!dataUrl && m.file instanceof File) {
+            dataUrl = await fileToDataUrl(m.file)
+          }
+          media.push({
+            name: m.name,
+            type: m.type,
+            size: m.size,
+            dataUrl: dataUrl || null
+          })
+        }
+      }
+      entries.push({
+        ...entry,
+        media
+      })
+    }
+    result.push({
+      id: area.id,
+      label: area.label,
+      description: areasState[area.id].description,
+      entries
+    })
+  }
+  return result
 }
 
 const mediaFromFiles = (files) => {
@@ -501,29 +546,12 @@ export const VirtualStylingForm = ({ onClose }) => {
 
   const handleSubmit = async () => {
     const reference = `VS-${Date.now().toString().slice(-6)}`
+    const serializedAreas = await serializeAreasWithMedia(areas, selectedAreas)
+
     const payload = {
       service: 'Virtual Styling',
       contact,
-      areas: selectedAreas.map((area) => {
-        const areaEntries = areas[area.id].entries
-        return {
-          id: area.id,
-          label: area.label,
-          description: areas[area.id].description,
-          entries: areaEntries.map((entry, entryIndex) => ({
-            entryId: entry.id,
-            name: buildEntryLabel(area, areaEntries, entry, entryIndex),
-            nickname: entry.nickname,
-            measurements: entry.measurements,
-            keepNotes: entry.keepNotes,
-            removeNotes: entry.removeNotes,
-            unsureNotes: entry.unsureNotes,
-            mediaCount: entry.media.length,
-            stylePreference: entry.stylePreference,
-            budgetRange: entry.budgetRange
-          }))
-        }
-      }),
+      areas: serializedAreas,
       timeline,
       schedule: { date: scheduleDate, time: scheduleTime },
       subtotal,
@@ -531,18 +559,40 @@ export const VirtualStylingForm = ({ onClose }) => {
       reference
     }
 
-    const existing = JSON.parse(localStorage.getItem('magari_service_requests') || '[]')
-    localStorage.setItem('magari_service_requests', JSON.stringify([...existing, payload]))
+    try {
+      if (supabase) {
+        await supabase.from('service_requests').insert({
+          service: payload.service,
+          reference,
+          contact: payload.contact,
+          subtotal,
+          deposit,
+          payload
+        })
+      }
+    } catch (err) {
+      console.error('Error saving service request in Supabase:', err)
+    }
 
-    // Send confirmation emails
     try {
       await sendServiceRequestEmail(payload)
     } catch (error) {
       console.error('Error sending email:', error)
-      // Continue anyway - the request is still saved
     }
 
-    setSubmitted(reference)
+    try {
+      const url = await createServiceDepositCheckout({
+        service: payload.service,
+        reference,
+        amount: deposit,
+        customer: contact
+      })
+      window.location.href = url
+    } catch (err) {
+      console.error('Error creating Stripe checkout for Virtual Styling deposit:', err)
+      alert('Tu solicitud se guardó, pero hubo un error al crear el pago del depósito. Por favor, intenta más tarde o contáctanos directamente.')
+      setSubmitted(reference)
+    }
   }
 
   if (submitted) {
@@ -1063,48 +1113,53 @@ export const ShoppingStylingForm = ({ onClose }) => {
 
   const handleSubmit = async () => {
     const reference = `SS-${Date.now().toString().slice(-6)}`
+    const serializedAreas = await serializeAreasWithMedia(areas, selectedAreas)
+
     const payload = {
       service: 'Shopping & Styling',
       contact,
       serviceMode,
       measurementVisit,
-      areas: selectedAreas.map((area) => {
-        const areaEntries = areas[area.id].entries
-        return {
-          id: area.id,
-          label: area.label,
-          description: areas[area.id].description,
-          entries: areaEntries.map((entry, entryIndex) => ({
-            entryId: entry.id,
-            name: buildEntryLabel(area, areaEntries, entry, entryIndex),
-            nickname: entry.nickname,
-            measurements: entry.measurements,
-            mediaCount: entry.media.length,
-            stylePreference: entry.stylePreference,
-            budgetRange: entry.budgetRange,
-            keepNotes: entry.keepNotes,
-            removeNotes: entry.removeNotes,
-            unsureNotes: entry.unsureNotes
-          }))
-        }
-      }),
+      areas: serializedAreas,
       subtotal,
       deposit,
       reference
     }
 
-    const existing = JSON.parse(localStorage.getItem('magari_service_requests') || '[]')
-    localStorage.setItem('magari_service_requests', JSON.stringify([...existing, payload]))
+    try {
+      if (supabase) {
+        await supabase.from('service_requests').insert({
+          service: payload.service,
+          reference,
+          contact: payload.contact,
+          subtotal,
+          deposit,
+          payload
+        })
+      }
+    } catch (err) {
+      console.error('Error saving Shopping & Styling request in Supabase:', err)
+    }
     
-    // Send confirmation emails
     try {
       await sendServiceRequestEmail(payload)
     } catch (error) {
       console.error('Error sending email:', error)
-      // Continue anyway - the request is still saved
     }
     
-    setSubmitted(reference)
+    try {
+      const url = await createServiceDepositCheckout({
+        service: payload.service,
+        reference,
+        amount: deposit,
+        customer: contact
+      })
+      window.location.href = url
+    } catch (err) {
+      console.error('Error creating Stripe checkout for Shopping & Styling deposit:', err)
+      alert('Tu solicitud se guardó, pero hubo un error al crear el pago del depósito. Por favor, intenta más tarde o contáctanos directamente.')
+      setSubmitted(reference)
+    }
   }
 
   if (submitted) {
@@ -1637,29 +1692,12 @@ export const DecoratingInstallationForm = ({ onClose }) => {
     }
 
     const reference = `DI-${Date.now().toString().slice(-6)}`
+    const serializedAreas = await serializeAreasWithMedia(areas, selectedAreas)
+
     const payload = {
       service: 'Decorating + Installation',
       contact,
-      areas: selectedAreas.map((area) => {
-        const areaEntries = areas[area.id].entries
-        return {
-          id: area.id,
-          label: area.label,
-          description: areas[area.id].description,
-          entries: areaEntries.map((entry, entryIndex) => ({
-            entryId: entry.id,
-            name: buildEntryLabel(area, areaEntries, entry, entryIndex),
-            nickname: entry.nickname,
-            stylePreference: entry.stylePreference,
-            budgetRange: entry.budgetRange,
-            keepNotes: entry.keepNotes,
-            removeNotes: entry.removeNotes,
-            unsureNotes: entry.unsureNotes,
-            measurements: entry.measurements,
-            mediaCount: entry.media.length
-          }))
-        }
-      }),
+      areas: serializedAreas,
       installDays,
       desiredDate,
       deliveryOption,
@@ -1674,18 +1712,40 @@ export const DecoratingInstallationForm = ({ onClose }) => {
       reference
     }
 
-    const existing = JSON.parse(localStorage.getItem('magari_service_requests') || '[]')
-    localStorage.setItem('magari_service_requests', JSON.stringify([...existing, payload]))
+    try {
+      if (supabase) {
+        await supabase.from('service_requests').insert({
+          service: payload.service,
+          reference,
+          contact: payload.contact,
+          subtotal,
+          deposit,
+          payload
+        })
+      }
+    } catch (err) {
+      console.error('Error saving Decorating + Installation request in Supabase:', err)
+    }
     
-    // Send confirmation emails
     try {
       await sendServiceRequestEmail(payload)
     } catch (error) {
       console.error('Error sending email:', error)
-      // Continue anyway - the request is still saved
     }
     
-    setSubmitted(reference)
+    try {
+      const url = await createServiceDepositCheckout({
+        service: payload.service,
+        reference,
+        amount: deposit,
+        customer: contact
+      })
+      window.location.href = url
+    } catch (err) {
+      console.error('Error creating Stripe checkout for Decorating + Installation deposit:', err)
+      alert('Tu solicitud se guardó, pero hubo un error al crear el pago del depósito. Por favor, intenta más tarde o contáctanos directamente.')
+      setSubmitted(reference)
+    }
   }
 
   if (submitted) {

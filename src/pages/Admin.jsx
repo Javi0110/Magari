@@ -229,6 +229,7 @@ export default function AdminPage() {
             { id: 'products', icon: <Package className="w-4 h-4" />, label: 'Products' },
             { id: 'orders', icon: <ShoppingBag className="w-4 h-4" />, label: 'Orders' },
             { id: 'vendors', icon: <Users className="w-4 h-4" />, label: 'Vendors' },
+            { id: 'services', icon: <Settings className="w-4 h-4" />, label: 'Services' },
             { id: 'reviews', icon: <MessageSquare className="w-4 h-4" />, label: 'Reviews' },
             { id: 'settings', icon: <Settings className="w-4 h-4" />, label: 'Settings' },
           ].map(tab => (
@@ -251,6 +252,7 @@ export default function AdminPage() {
         {activeTab === 'dashboard' && <DashboardView />}
         {activeTab === 'products' && <ProductsView />}
         {activeTab === 'orders' && <OrdersView />}
+        {activeTab === 'services' && <ServicesView />}
         {activeTab === 'vendors' && (
           <VendorsView
             highlightedApplicationId={highlightedApplicationId}
@@ -984,6 +986,119 @@ function OrdersView() {
             </p>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+// Services (Design Requests) View
+function ServicesView() {
+  const [requests, setRequests] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
+    const load = async () => {
+      const { data } = await supabase
+        .from('service_requests')
+        .select('*')
+        .order('created_at', { ascending: false })
+      setRequests(data || [])
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  if (loading) {
+    return <div className="card p-6"><p className="text-neutral-600">Cargando solicitudes de servicios…</p></div>
+  }
+
+  return (
+    <div>
+      <h2 className="font-serif text-2xl text-neutral-700 mb-6">Service Requests</h2>
+      {requests.length === 0 && (
+        <p className="text-neutral-600">Aún no hay solicitudes de servicios.</p>
+      )}
+      <div className="space-y-4">
+        {requests.map((req) => {
+          const payload = req.payload || {}
+          const contact = req.contact || {}
+          const areas = payload.areas || []
+          const firstMedia = []
+          areas.forEach((area) => {
+            ;(area.entries || []).forEach((entry) => {
+              ;(entry.media || []).forEach((m) => {
+                if (m.dataUrl && firstMedia.length < 6) {
+                  firstMedia.push(m.dataUrl)
+                }
+              })
+            })
+          })
+          return (
+            <div key={req.id} className="card p-4 border border-neutral-200">
+              <div className="flex justify-between items-start gap-4">
+                <div>
+                  <p className="font-medium text-neutral-800">
+                    {req.service} · <span className="text-xs text-neutral-500">#{req.reference}</span>
+                  </p>
+                  <p className="text-sm text-neutral-500">
+                    {contact.fullName || contact.name || 'Cliente'} · {contact.email || 'Sin email'}
+                  </p>
+                  {contact.phone && (
+                    <p className="text-sm text-neutral-500">Tel: {contact.phone}</p>
+                  )}
+                  {contact.address && (
+                    <p className="text-xs text-neutral-500 mt-1">{contact.address}</p>
+                  )}
+                  <p className="text-xs text-neutral-400 mt-1">
+                    Enviado: {req.created_at ? new Date(req.created_at).toLocaleString('es-PR') : '—'}
+                  </p>
+                  <p className="text-sm text-neutral-600 mt-2">
+                    Subtotal: ${Number(req.subtotal || 0).toFixed(2)} · Depósito: ${Number(req.deposit || 0).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+              {areas.length > 0 && (
+                <div className="mt-3 border-t border-neutral-100 pt-3 text-sm text-neutral-700 space-y-2">
+                  <p className="font-medium">Spaces & details</p>
+                  <ul className="space-y-1 text-xs text-neutral-600">
+                    {areas.map((area) => (
+                      <li key={area.id || area.label}>
+                        <span className="font-semibold">{area.label}</span>
+                        {Array.isArray(area.entries) && area.entries.length > 0 && (
+                          <span>
+                            {' '}
+                            · {area.entries.length} espacio(s)
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {firstMedia.length > 0 && (
+                <div className="mt-3 border-t border-neutral-100 pt-3">
+                  <p className="font-medium text-sm text-neutral-700 mb-2">Imágenes subidas</p>
+                  <div className="flex flex-wrap gap-2">
+                    {firstMedia.map((src, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => window.open(src, '_blank')}
+                        className="block w-20 h-20 rounded-lg overflow-hidden border border-neutral-200 hover:opacity-90"
+                      >
+                        <img src={src} alt={`Imagen ${idx + 1}`} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
