@@ -1970,7 +1970,6 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
     title: product?.title || '',
     price: product?.price || '',
     category: product?.category || (isMagariShop ? 'Curated' : 'Ceramics'),
-    room: product?.room || 'Any',
     description: product?.description || '',
     materials: product?.materials || '',
     dimensions: product?.dimensions || '',
@@ -1989,7 +1988,6 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
     shipping: product?.shipping || generateShippingInfo(vendorLocation, product?.shippingOptions || { delivery: false, pickup: false, shipping: false }),
     returnPolicy: product?.returnPolicy || '30-day returns accepted',
     stock: product?.stock || 0,
-    vendorName: product?.vendorName || '',
   })
   
   // Update shipping info when shipping options change
@@ -2097,7 +2095,6 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
       images: imageUrls.length > 0 ? imageUrls : formData.images.split(',').map(img => img.trim()).filter(img => img),
       tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
       stock: isMagariShop ? undefined : parseInt(formData.stock) || 0,
-      vendorName: isMagariShop ? undefined : (formData.vendorName || vendorSlug),
       shippingOptions: formData.shippingOptions,
       shippingPrices: {
         delivery: parseFloat(formData.shippingPrices.delivery) || 0,
@@ -2194,23 +2191,7 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
                   )}
                 </select>
               </div>
-              <div>
-                <label className="block text-sage-dark font-medium mb-2">Room</label>
-                <select
-                  value={formData.room}
-                  onChange={(e) => setFormData({ ...formData, room: e.target.value })}
-                  className="input-field"
-                >
-                  <option value="Any">Any</option>
-                  <option value="Kitchen">Kitchen</option>
-                  <option value="Living Room">Living Room</option>
-                  <option value="Bedroom">Bedroom</option>
-                </select>
-              </div>
-            </div>
-
-            {!isMagariShop && (
-              <div className="grid md:grid-cols-2 gap-6">
+              {!isMagariShop && (
                 <div>
                   <label className="block text-sage-dark font-medium mb-2">Stock Quantity</label>
                   <input
@@ -2221,17 +2202,8 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
                     className="input-field"
                   />
                 </div>
-                <div>
-                  <label className="block text-sage-dark font-medium mb-2">Vendor/Business Name</label>
-                  <input
-                    type="text"
-                    value={formData.vendorName}
-                    onChange={(e) => setFormData({ ...formData, vendorName: e.target.value })}
-                    className="input-field"
-                  />
-                </div>
-              </div>
-            )}
+              )}
+            </div>
 
             <div>
               <label className="block text-sage-dark font-medium mb-2">Description *</label>
