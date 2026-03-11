@@ -65,8 +65,8 @@ export const useProductsStore = create((set, get) => ({
       set({ initialized: true })
       return
     }
-    // Keep showing cached/previous products while fetching; only replace when fetch completes
-    set({ loading: true, error: null })
+    // Clear products so we never show stale/partial cache (e.g. one product); skeletons show while loading
+    set({ loading: true, error: null, products: [] })
     const { data, error } = await supabase
       .from('shop_products')
       .select('*')
