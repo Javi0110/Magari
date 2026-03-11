@@ -167,7 +167,7 @@ export default function ShopPage() {
 
   const handleAddToCart = (product) => {
     addItem(product)
-    // Cart won't open automatically - user can click cart icon when ready
+    openCart()
   }
 
   const handleBuyNow = (product) => {
