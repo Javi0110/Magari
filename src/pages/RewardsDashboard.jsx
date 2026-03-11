@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Gift, ArrowRight, Star } from 'lucide-react'
-import { supabase } from '../utils/supabase'
 
 const TIERS = [
   { id: 'dreamer', label: 'Dreamer', min: 0, max: 199 },
@@ -33,50 +32,22 @@ export default function RewardsDashboardPage() {
     if (!trimmed) return
     localStorage.setItem('magari-rewards-email', trimmed)
 
-    if (!supabase) {
-      setError('Supabase is not configured yet.')
-      return
-    }
-
     setLoading(true)
     setError(null)
     try {
-      // Upsert basic rewards user
-      const referralCode = `MG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
-      const { data: userRow, error: upsertErr } = await supabase
-        .from('rewards_users')
-        .upsert(
-          { email: trimmed, referral_code: referralCode },
-          { onConflict: 'email' }
-        )
-        .select('*')
-        .single()
-      if (upsertErr) throw upsertErr
-      setUser(userRow)
-
-      const { data: ledgerRows, error: ledgerErr } = await supabase
-        .from('rewards_point_ledger')
-        .select('*')
-        .eq('user_id', userRow.id)
-        .order('created_at', { ascending: false })
-      if (ledgerErr) throw ledgerErr
-      setLedger(ledgerRows || [])
-
-      const { data: orderRows, error: ordersErr } = await supabase
-        .from('shop_orders')
-        .select('*')
-        .eq('customer_email', trimmed)
-        .order('created_at', { ascending: false })
-      if (ordersErr) throw ordersErr
-      setOrders(orderRows || [])
-
-      const { data: couponRows, error: couponsErr } = await supabase
-        .from('rewards_coupons')
-        .select('*')
-        .eq('user_id', userRow.id)
-        .order('created_at', { ascending: false })
-      if (couponsErr) throw couponsErr
-      setCoupons(couponRows || [])
+      const res = await fetch('/.netlify/functions/rewards-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmed }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Could not load rewards right now.')
+      }
+      setUser(data.user)
+      setLedger(data.ledger || [])
+      setOrders(data.orders || [])
+      setCoupons(data.coupons || [])
     } catch (err) {
       console.error('Error loading rewards:', err)
       setError(err.message || 'Could not load rewards right now.')
