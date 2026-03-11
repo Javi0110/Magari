@@ -107,7 +107,7 @@ export default function RewardsDashboardPage() {
             </Link>
             <span className="mx-2">/</span>
             <Link to="/rewards" className="hover:text-sage transition-colors">
-              Magari Rewards
+              Magari Rewards Circle
             </Link>
             <span className="mx-2">/</span>
             <span className="text-neutral-700">Dashboard</span>

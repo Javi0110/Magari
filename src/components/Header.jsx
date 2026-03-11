@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
 import { ShoppingCart, Menu, X, LogIn, User } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCartStore } from '../store/cartStore'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [loginDropdownOpen, setLoginDropdownOpen] = useState(false)
+  const [userRole, setUserRole] = useState(null) // 'admin' | 'vendor' | 'customer' | null
   const { openCart, getItemCount } = useCartStore()
   const itemCount = getItemCount()
 
@@ -18,6 +19,26 @@ export default function Header() {
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
   ]
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('magari-current-user')
+      if (!raw) {
+        setUserRole(null)
+        return
+      }
+      const user = JSON.parse(raw)
+      if (user.isMagariAccount) {
+        setUserRole('admin')
+      } else if (user.vendorId) {
+        setUserRole('vendor')
+      } else {
+        setUserRole('customer')
+      }
+    } catch {
+      setUserRole(null)
+    }
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 bg-cream/98 backdrop-blur-md border-b border-greige-light/40">
@@ -101,21 +122,71 @@ export default function Header() {
             {loginDropdownOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setLoginDropdownOpen(false)} aria-hidden="true" />
-                <div className="absolute right-0 top-full mt-2 w-48 py-1 bg-white border border-greige-light rounded-xl shadow-lg z-50">
-                  <Link
-                    to="/admin"
+                <div className="absolute right-0 top-full mt-2 w-56 py-2 bg-white border border-greige-light rounded-2xl shadow-lg shadow-black/5 z-50">
+                  <button
+                    type="button"
                     onClick={() => setLoginDropdownOpen(false)}
-                    className="block px-4 py-2 text-neutral-700 hover:bg-cream text-sm"
+                    className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
                   >
-                    Admin
-                  </Link>
-                  <Link
-                    to="/momade/vendor-login"
+                    My Account
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setLoginDropdownOpen(false)}
-                    className="block px-4 py-2 text-neutral-700 hover:bg-cream text-sm"
+                    className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
                   >
-                    Vendor (Marketplace)
+                    Orders
+                  </button>
+                  <Link
+                    to="/rewards/dashboard"
+                    onClick={() => setLoginDropdownOpen(false)}
+                    className="block px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
+                  >
+                    Rewards
                   </Link>
+                  <button
+                    type="button"
+                    onClick={() => setLoginDropdownOpen(false)}
+                    className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
+                  >
+                    Referrals
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLoginDropdownOpen(false)}
+                    className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
+                  >
+                    Settings
+                  </button>
+                  {userRole === 'admin' && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setLoginDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
+                    >
+                      Admin
+                    </Link>
+                  )}
+                  {userRole === 'vendor' && (
+                    <Link
+                      to="/momade/vendor-login"
+                      onClick={() => setLoginDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
+                    >
+                      Vendor (Marketplace)
+                    </Link>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      localStorage.removeItem('magari-current-user')
+                      setUserRole(null)
+                      setLoginDropdownOpen(false)
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors border-t border-cream-dark/60 mt-1"
+                  >
+                    Logout
+                  </button>
                 </div>
               </>
             )}
@@ -187,14 +258,33 @@ export default function Header() {
                   )}
                 </Link>
               ))}
-              <div className="border-t border-greige-light pt-3 mt-3">
-                <p className="text-xs text-neutral-500 mb-2">Entrar a mi perfil</p>
-                <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium">
-                  <LogIn className="w-4 h-4" /> Admin
+              <div className="border-t border-greige-light pt-3 mt-3 space-y-1">
+                <p className="text-xs text-neutral-500 mb-1">Account</p>
+                <Link
+                  to="/rewards/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium text-sm"
+                >
+                  <User className="w-4 h-4" /> Rewards Circle
                 </Link>
-                <Link to="/momade/vendor-login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium">
-                  <LogIn className="w-4 h-4" /> Vendor (Marketplace)
-                </Link>
+                {userRole === 'admin' && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium text-sm"
+                  >
+                    <LogIn className="w-4 h-4" /> Admin
+                  </Link>
+                )}
+                {userRole === 'vendor' && (
+                  <Link
+                    to="/momade/vendor-login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium text-sm"
+                  >
+                    <LogIn className="w-4 h-4" /> Vendor (Marketplace)
+                  </Link>
+                )}
               </div>
             </div>
           </motion.div>
