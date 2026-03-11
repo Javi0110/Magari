@@ -7,6 +7,7 @@ import { supabase } from '../utils/supabase'
 import { PICKUP_DISPLAY } from '../constants/shopCategories'
 
 const SHIPPING_FLAT = 6.75
+const SHIPPING_EXPEDITED = 13.65
 const DELIVERY_FLAT = 10
 
 export default function Cart() {
@@ -43,9 +44,18 @@ export default function Cart() {
 
   const subtotal = getTotal()
   const shippingCost = subtotal >= 60 || totalItemCount <= 0 ? 0 : SHIPPING_FLAT
+  const expeditedCost = subtotal >= 60 || totalItemCount <= 0 ? 0 : SHIPPING_EXPEDITED
   const deliveryCost = DELIVERY_FLAT
   const fulfillmentAmount =
-    allPickupOnly ? 0 : fulfillmentMethod === 'delivery' ? deliveryCost : fulfillmentMethod === 'shipping' ? shippingCost : 0
+    allPickupOnly
+      ? 0
+      : fulfillmentMethod === 'delivery'
+      ? deliveryCost
+      : fulfillmentMethod === 'shipping'
+      ? shippingCost
+      : fulfillmentMethod === 'expedited'
+      ? expeditedCost
+      : 0
 
   const handleApplyPromo = () => {
     if (promoCode.toLowerCase() === 'magari10') {
@@ -178,7 +188,7 @@ export default function Cart() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 flex flex-col overflow-y-hidden"
+            className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 flex flex-col"
           >
             <div className="flex items-center justify-between p-6 border-b border-neutral-200">
               <h2 className="font-serif text-2xl text-neutral-600 flex items-center">
@@ -312,6 +322,20 @@ export default function Cart() {
                           </span>
                         </label>
                       )}
+                      {canShip && (
+                        <label className="flex items-center gap-3 p-3 rounded-xl border border-greige-light hover:border-sage/50 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="fulfillment"
+                            checked={fulfillmentMethod === 'expedited'}
+                            onChange={() => setFulfillmentMethod('expedited')}
+                            className="text-sage"
+                          />
+                          <span className="text-sm">
+                            Expedited — ${SHIPPING_EXPEDITED.toFixed(2)}
+                          </span>
+                        </label>
+                      )}
                       {canDeliver && (
                         <label className="flex items-center gap-3 p-3 rounded-xl border border-greige-light hover:border-sage/50 cursor-pointer">
                           <input
@@ -342,10 +366,19 @@ export default function Cart() {
                   {fulfillmentAmount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-neutral-600">
-                        {fulfillmentMethod === 'delivery' ? 'Delivery:' : 'Shipping:'}
+                        {fulfillmentMethod === 'delivery'
+                          ? 'Delivery:'
+                          : fulfillmentMethod === 'expedited'
+                          ? 'Expedited shipping:'
+                          : 'Shipping:'}
                       </span>
                       <span className="text-neutral-700">${fulfillmentAmount.toFixed(2)}</span>
                     </div>
+                  )}
+                  {subtotal >= 60 && (
+                    <p className="text-xs text-sage pt-1">
+                      You&apos;ve unlocked free shipping on this order.
+                    </p>
                   )}
                   <div className="flex justify-between items-center pt-2 border-t border-neutral-200">
                     <span className="font-semibold text-neutral-700">Total:</span>

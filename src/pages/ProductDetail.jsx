@@ -148,7 +148,7 @@ export default function ProductDetailPage() {
   const averageRating =
     reviews.length > 0
       ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
-      : null
+      : 0
 
   return (
     <div className="min-h-screen bg-cream">
@@ -248,33 +248,33 @@ export default function ProductDetailPage() {
                 {product.category}
               </p>
             )}
+            <div className="mt-1 flex items-center gap-2 text-sm text-neutral-600">
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={`w-4 h-4 ${
+                      star <= Math.round(averageRating)
+                        ? 'fill-taupe text-taupe'
+                        : 'text-neutral-300'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs">
+                {reviews.length === 0
+                  ? 'No reviews yet'
+                  : `${averageRating.toFixed(1)} · ${reviews.length} ${
+                      reviews.length === 1 ? 'review' : 'reviews'
+                    }`}
+              </span>
+            </div>
             <h1 className="font-serif text-3xl md:text-4xl text-neutral-800">
               {product.title}
             </h1>
             <p className="text-2xl font-semibold text-sage">
               ${product.price}
             </p>
-
-            {averageRating && (
-              <div className="flex items-center gap-2 text-sm text-neutral-600">
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`w-4 h-4 ${
-                        star <= Math.round(averageRating)
-                          ? 'fill-taupe text-taupe'
-                          : 'text-neutral-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span>
-                  {averageRating.toFixed(1)} · {reviews.length}{' '}
-                  {reviews.length === 1 ? 'review' : 'reviews'}
-                </span>
-              </div>
-            )}
 
             <p className="text-neutral-700 text-sm leading-relaxed">
               {product.description}
