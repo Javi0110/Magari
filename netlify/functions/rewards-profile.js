@@ -22,10 +22,15 @@ exports.handler = async (event) => {
     process.env.SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !serviceKey) {
+    const hint =
+      'Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Netlify → Site settings → Environment variables (get the service_role key in Supabase → Project settings → API). Redeploy.'
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Supabase server keys are not configured' }),
+      body: JSON.stringify({
+        error: 'Supabase server keys are not configured',
+        hint,
+      }),
     }
   }
 

@@ -43,7 +43,8 @@ export default function RewardsDashboardPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error || 'Could not load rewards right now.')
+        const msg = data.hint ? `${data.error}. ${data.hint}` : (data.error || 'Could not load rewards right now.')
+        throw new Error(msg)
       }
       setUser(data.user)
       setLedger(data.ledger || [])
