@@ -1,14 +1,22 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Gift, Star, Users, ArrowRight } from 'lucide-react'
 
 export default function RewardsPage() {
   const [email, setEmail] = useState('')
+  const [searchParams] = useSearchParams()
+  const refCode = searchParams.get('ref')
 
   useEffect(() => {
     const stored = localStorage.getItem('magari-rewards-email')
     if (stored) setEmail(stored)
   }, [])
+
+  useEffect(() => {
+    if (refCode) {
+      sessionStorage.setItem('magari-referral-ref', refCode)
+    }
+  }, [refCode])
 
   return (
     <div className="min-h-screen bg-cream">
@@ -42,8 +50,16 @@ export default function RewardsPage() {
           <p className="text-sm md:text-base text-neutral-600 mb-6">
             Earn points · Refer friends · Unlock exclusive rewards.
           </p>
+          {refCode && (
+            <p className="text-sage font-medium mb-4">
+              You were invited — join below to get started.
+            </p>
+          )}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link to="/rewards/dashboard" className="btn-primary">
+            <Link
+              to={refCode ? `/rewards/dashboard?ref=${encodeURIComponent(refCode)}` : '/rewards/dashboard'}
+              className="btn-primary"
+            >
               Join / View my rewards
             </Link>
           </div>

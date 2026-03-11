@@ -200,7 +200,7 @@ export default function RewardsDashboardPage() {
               <div className="card">
                 <p className="text-sm text-neutral-500 mb-1">Referral link</p>
                 <p className="text-xs text-neutral-700 break-all mb-2">
-                  {`${window.location.origin}/shop?ref=${user.referral_code}`}
+                  {`${window.location.origin}/rewards?ref=${user.referral_code}`}
                 </p>
               </div>
             </section>
