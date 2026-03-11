@@ -18,6 +18,8 @@ export default function RewardsDashboardPage() {
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState(null)
   const [ledger, setLedger] = useState([])
+  const [orders, setOrders] = useState([])
+  const [coupons, setCoupons] = useState([])
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -59,6 +61,22 @@ export default function RewardsDashboardPage() {
         .order('created_at', { ascending: false })
       if (ledgerErr) throw ledgerErr
       setLedger(ledgerRows || [])
+
+      const { data: orderRows, error: ordersErr } = await supabase
+        .from('shop_orders')
+        .select('*')
+        .eq('customer_email', trimmed)
+        .order('created_at', { ascending: false })
+      if (ordersErr) throw ordersErr
+      setOrders(orderRows || [])
+
+      const { data: couponRows, error: couponsErr } = await supabase
+        .from('rewards_coupons')
+        .select('*')
+        .eq('user_id', userRow.id)
+        .order('created_at', { ascending: false })
+      if (couponsErr) throw couponsErr
+      setCoupons(couponRows || [])
     } catch (err) {
       console.error('Error loading rewards:', err)
       setError(err.message || 'Could not load rewards right now.')
@@ -106,9 +124,12 @@ export default function RewardsDashboardPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-8">
         <section className="card">
-          <h1 className="font-serif text-2xl md:text-3xl text-neutral-800 mb-4">
-            Magari Rewards Dashboard
+          <h1 className="font-serif text-2xl md:text-3xl text-neutral-800 mb-1">
+            Magari Rewards Circle
           </h1>
+          <p className="text-sm text-neutral-600 mb-4">
+            Join the Magari Rewards Circle — earn points, refer friends, and unlock exclusive rewards.
+          </p>
           <form onSubmit={handleLoad} className="flex flex-col md:flex-row gap-3 md:items-end">
             <div className="flex-1">
               <label className="form-label">Email used for your orders</label>
@@ -209,6 +230,66 @@ export default function RewardsDashboardPage() {
                           }`}
                         >
                           {entry.points > 0 ? `+${entry.points}` : entry.points}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </section>
+
+            <section className="grid lg:grid-cols-2 gap-6">
+              <div className="card">
+                <h2 className="font-serif text-xl text-neutral-800 mb-3">Your orders</h2>
+                {orders.length === 0 ? (
+                  <p className="text-sm text-neutral-600">
+                    When you place orders with this email, they&apos;ll appear here.
+                  </p>
+                ) : (
+                  <ul className="text-sm text-neutral-700 space-y-2 max-h-60 overflow-y-auto">
+                    {orders.map((order) => (
+                      <li
+                        key={order.id}
+                        className="flex items-center justify-between border-b border-cream-dark/40 pb-1 last:border-0"
+                      >
+                        <div>
+                          <p className="font-medium text-neutral-800">Order #{order.id}</p>
+                          {order.created_at && (
+                            <p className="text-[11px] text-neutral-500">
+                              {new Date(order.created_at).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-sm font-semibold text-neutral-800">
+                          ${Number(order.total || 0).toFixed(2)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div className="card">
+                <h2 className="font-serif text-xl text-neutral-800 mb-3">Reward coupons</h2>
+                {coupons.length === 0 ? (
+                  <p className="text-sm text-neutral-600">
+                    Once you redeem points, your reward coupons will appear here.
+                  </p>
+                ) : (
+                  <ul className="text-sm text-neutral-700 space-y-2 max-h-60 overflow-y-auto">
+                    {coupons.map((c) => (
+                      <li
+                        key={c.id}
+                        className="flex items-center justify-between border-b border-cream-dark/40 pb-1 last:border-0"
+                      >
+                        <div>
+                          <p className="font-mono text-xs">{c.code}</p>
+                          <p className="text-[11px] text-neutral-500">
+                            {c.status} · {c.points_spent} pts → ${Number(c.discount_amount).toFixed(2)}
+                          </p>
+                        </div>
+                        <span className="text-xs text-neutral-600">
+                          Used {c.uses}/{c.max_uses}
                         </span>
                       </li>
                     ))}

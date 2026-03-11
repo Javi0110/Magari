@@ -87,7 +87,7 @@ export default function Header() {
               to="/rewards/dashboard"
               className="text-xs font-medium text-sage hover:text-sage-dark px-3 py-1.5 rounded-full border border-sage/40 bg-white"
             >
-              Magari Rewards
+              Magari Rewards Circle
             </Link>
             <button
               onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}

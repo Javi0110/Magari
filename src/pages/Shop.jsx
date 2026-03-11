@@ -260,6 +260,16 @@ export default function ShopPage() {
               Shop All Products
             </button>
           </div>
+          <p className="mt-4 text-sm text-neutral-600">
+            Earn points with <button
+              type="button"
+              onClick={() => navigate('/rewards')}
+              className="underline underline-offset-2 hover:text-sage"
+            >
+              Magari Rewards Circle
+            </button>{' '}
+            every time you shop.
+          </p>
         </div>
 
         {/* Best sellers + New arrivals */}

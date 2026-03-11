@@ -19,7 +19,7 @@ export default function RewardsPage() {
               Home
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-neutral-700">Magari Rewards</span>
+            <span className="text-neutral-700">Magari Rewards Circle</span>
           </nav>
           <Link
             to="/rewards/dashboard"
@@ -34,11 +34,13 @@ export default function RewardsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
         <section className="text-center max-w-3xl mx-auto">
           <h1 className="font-serif text-4xl md:text-5xl text-neutral-700 mb-4">
-            Magari Rewards
+            Magari Rewards Circle
           </h1>
-          <p className="text-lg text-neutral-600 mb-6">
-            Earn points every time you style your home with Magari &amp; Co. Then turn them into
-            discounts, perks, and little surprises for your space.
+          <p className="text-lg text-neutral-600 mb-2">
+            Join the Magari Rewards Circle
+          </p>
+          <p className="text-sm md:text-base text-neutral-600 mb-6">
+            Earn points · Refer friends · Unlock exclusive rewards.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/rewards/dashboard" className="btn-primary">
