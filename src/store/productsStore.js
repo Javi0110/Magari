@@ -65,8 +65,8 @@ export const useProductsStore = create((set, get) => ({
       set({ initialized: true })
       return
     }
-    // Clear any stale local products while we load fresh data from Supabase
-    set({ loading: true, error: null, products: [] })
+    // Keep showing cached/previous products while fetching; only replace when fetch completes
+    set({ loading: true, error: null })
     const { data, error } = await supabase
       .from('shop_products')
       .select('*')

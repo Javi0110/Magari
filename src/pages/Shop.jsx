@@ -626,10 +626,17 @@ export default function ShopPage() {
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
               <div>
                 <p className="text-sm text-neutral-600">
-                  {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
+                  {loading && allProducts.length === 0 ? (
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Loading products…
+                    </span>
+                  ) : (
+                    <>{filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found</>
+                  )}
                 </p>
                 <p className="text-xs text-neutral-500">
-                  Use filters above to find the right piece faster.
+                  {loading && allProducts.length > 0 ? 'Updating…' : 'Use filters above to find the right piece faster.'}
                 </p>
               </div>
               <div className="flex items-center gap-2 justify-end">
@@ -649,7 +656,18 @@ export default function ShopPage() {
             </div>
 
             {/* Product Grid */}
-            {displayedProducts.length === 0 ? (
+            {loading && allProducts.length === 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <div key={i} className="card animate-pulse">
+                    <div className="aspect-square bg-neutral-200 rounded-2xl mb-4" />
+                    <div className="h-4 bg-neutral-200 rounded w-3/4 mb-2" />
+                    <div className="h-3 bg-neutral-100 rounded w-1/2 mb-2" />
+                    <div className="h-5 bg-neutral-200 rounded w-1/4" />
+                  </div>
+                ))}
+              </div>
+            ) : displayedProducts.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-neutral-600 mb-4">No products match your filters.</p>
                 <button onClick={clearFilters} className="btn-outline">
