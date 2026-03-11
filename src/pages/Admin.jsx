@@ -229,6 +229,7 @@ export default function AdminPage() {
             { id: 'dashboard', icon: <TrendingUp className="w-4 h-4" />, label: 'Dashboard' },
             { id: 'products', icon: <Package className="w-4 h-4" />, label: 'Products' },
             { id: 'orders', icon: <ShoppingBag className="w-4 h-4" />, label: 'Orders' },
+            { id: 'payouts', icon: <DollarSign className="w-4 h-4" />, label: 'Payouts' },
             { id: 'vendors', icon: <Users className="w-4 h-4" />, label: 'Vendors' },
             { id: 'services', icon: <Settings className="w-4 h-4" />, label: 'Services' },
             { id: 'reviews', icon: <MessageSquare className="w-4 h-4" />, label: 'Reviews' },
@@ -253,6 +254,7 @@ export default function AdminPage() {
         {activeTab === 'dashboard' && <DashboardView />}
         {activeTab === 'products' && <ProductsView />}
         {activeTab === 'orders' && <OrdersView />}
+        {activeTab === 'payouts' && <PayoutsView />}
         {activeTab === 'services' && <ServicesView />}
         {activeTab === 'vendors' && (
           <VendorsView
@@ -1026,6 +1028,367 @@ function OrdersView() {
             </p>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+// Payouts View – resumen por vendor + historial
+function PayoutsView() {
+  const [vendors, setVendors] = useState([])
+  const [payouts, setPayouts] = useState([])
+  const [balances, setBalances] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [filterVendorId, setFilterVendorId] = useState('all')
+  const [filterFrom, setFilterFrom] = useState('')
+  const [filterTo, setFilterTo] = useState('')
+  const [form, setForm] = useState({
+    vendorId: '',
+    amount: '',
+    paymentMethod: '',
+    paymentReference: '',
+    notes: '',
+  })
+
+  useEffect(() => {
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
+    const load = async () => {
+      // Vendors + preferred payout info (via application)
+      const { data: vendorsData } = await supabase.from('vendors').select('id, business_name, application_id, email')
+      const vendors = vendorsData || []
+      let payoutPrefs = {}
+      const appIds = vendors.map(v => v.application_id).filter(Boolean)
+      if (appIds.length > 0) {
+        const { data: apps } = await supabase
+          .from('vendor_applications')
+          .select('id, payout_method, payout_email')
+          .in('id', appIds)
+        payoutPrefs = (apps || []).reduce((acc, a) => ({ ...acc, [a.id]: a }), {})
+      }
+
+      // Payout history
+      const { data: payoutsData } = await supabase
+        .from('vendor_payouts')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      // Earnings per vendor (orders * 0.88)
+      const { data: itemsData } = await supabase
+        .from('order_items')
+        .select('vendor_id, quantity, price, orders!inner(status)')
+        .eq('orders.status', 'paid')
+
+      const earningsByVendor = {}
+      ;(itemsData || []).forEach((row) => {
+        const vid = row.vendor_id
+        if (!vid) return
+        const gross = Number(row.price || 0) * (Number(row.quantity) || 1)
+        const vendorShare = gross * 0.88
+        earningsByVendor[vid] = (earningsByVendor[vid] || 0) + vendorShare
+      })
+
+      const paidByVendor = {}
+      ;(payoutsData || []).forEach((p) => {
+        if (p.status !== 'cancelled') {
+          paidByVendor[p.vendor_id] = (paidByVendor[p.vendor_id] || 0) + Number(p.amount || 0)
+        }
+      })
+
+      const balancesMap = {}
+      vendors.forEach((v) => {
+        const earned = earningsByVendor[v.id] || 0
+        const paid = paidByVendor[v.id] || 0
+        balancesMap[v.id] = {
+          earned,
+          paid,
+          owed: Math.max(0, earned - paid),
+          payout_method: payoutPrefs[v.application_id]?.payout_method || '',
+          payout_email: payoutPrefs[v.application_id]?.payout_email || '',
+        }
+      })
+
+      setVendors(vendors)
+      setPayouts(payoutsData || [])
+      setBalances(balancesMap)
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  const handleCreatePayout = async (e) => {
+    e.preventDefault()
+    if (!supabase) return
+    const vendorId = Number(form.vendorId) || 0
+    const amount = Number(form.amount)
+    if (!vendorId || !amount || amount <= 0) {
+      alert('Selecciona un vendor y un monto válido.')
+      return
+    }
+    try {
+      setSaving(true)
+      const now = new Date()
+      const { data, error } = await supabase
+        .from('vendor_payouts')
+        .insert({
+          vendor_id: vendorId,
+          amount,
+          status: 'paid',
+          payment_method: form.paymentMethod || balances[vendorId]?.payout_method || '',
+          payment_reference: form.paymentReference || '',
+          notes: form.notes || '',
+          period_start: filterFrom ? new Date(filterFrom).toISOString() : null,
+          period_end: filterTo ? new Date(filterTo).toISOString() : null,
+          paid_at: now.toISOString(),
+        })
+        .select('*')
+        .single()
+      if (error) throw error
+      setPayouts((prev) => [data, ...prev])
+      // Update balances locally
+      setBalances((prev) => {
+        const current = prev[vendorId] || { earned: 0, paid: 0, owed: 0 }
+        const paid = current.paid + amount
+        const owed = Math.max(0, current.earned - paid)
+        return { ...prev, [vendorId]: { ...current, paid, owed } }
+      })
+      setForm({ vendorId: '', amount: '', paymentMethod: '', paymentReference: '', notes: '' })
+      alert('Payout registrado.')
+    } catch (err) {
+      console.error('Error creating payout:', err)
+      alert('No se pudo registrar el payout. Intenta más tarde.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const filteredPayouts = payouts.filter((p) => {
+    if (filterVendorId !== 'all' && String(p.vendor_id) !== String(filterVendorId)) return false
+    if (filterFrom && new Date(p.created_at) < new Date(filterFrom)) return false
+    if (filterTo && new Date(p.created_at) > new Date(filterTo)) return false
+    return true
+  })
+
+  if (loading) return <div className="card p-6"><p className="text-neutral-600">Cargando payouts…</p></div>
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div>
+          <h2 className="font-serif text-2xl text-neutral-700 mb-1">Vendor payouts</h2>
+          <p className="text-sm text-neutral-600">
+            Track how much you owe each vendor, record payments, and keep a searchable history.
+          </p>
+        </div>
+        <form onSubmit={handleCreatePayout} className="card p-4 flex flex-col md:flex-row gap-3 items-end">
+          <div>
+            <label className="block text-xs font-medium text-neutral-600 mb-1">Vendor</label>
+            <select
+              value={form.vendorId}
+              onChange={(e) => {
+                const vid = e.target.value
+                setForm((f) => ({
+                  ...f,
+                  vendorId: vid,
+                  amount: vid && balances[vid] ? balances[vid].owed.toFixed(2) : '',
+                  paymentMethod: balances[vid]?.payout_method || '',
+                }))
+              }}
+              className="input-field text-sm"
+            >
+              <option value="">Select vendor…</option>
+              {vendors.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.business_name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-neutral-600 mb-1">Amount</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={form.amount}
+              onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
+              className="input-field text-sm w-28"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-neutral-600 mb-1">Payment method</label>
+            <input
+              type="text"
+              value={form.paymentMethod}
+              onChange={(e) => setForm((f) => ({ ...f, paymentMethod: e.target.value }))}
+              placeholder="PayPal, bank, Zelle…"
+              className="input-field text-sm w-40"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-neutral-600 mb-1">Reference</label>
+            <input
+              type="text"
+              value={form.paymentReference}
+              onChange={(e) => setForm((f) => ({ ...f, paymentReference: e.target.value }))}
+              placeholder="Txn ID, memo…"
+              className="input-field text-sm w-40"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={saving}
+            className="btn-primary text-sm px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? 'Saving…' : 'Record payout'}
+          </button>
+        </form>
+      </div>
+
+      {/* Summary by vendor */}
+      <div className="card p-4">
+        <h3 className="font-semibold text-neutral-700 mb-3">Summary by vendor</h3>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-wide text-neutral-500 border-b border-neutral-200">
+                <th className="py-2 pr-4">Vendor</th>
+                <th className="py-2 pr-4">Preferred payout</th>
+                <th className="py-2 pr-4 text-right">Earned (88%)</th>
+                <th className="py-2 pr-4 text-right">Paid</th>
+                <th className="py-2 pr-4 text-right">Owed</th>
+              </tr>
+            </thead>
+            <tbody>
+              {vendors.map((v) => {
+                const b = balances[v.id] || { earned: 0, paid: 0, owed: 0 }
+                return (
+                  <tr key={v.id} className="border-b border-neutral-100 last:border-0">
+                    <td className="py-2 pr-4">
+                      <p className="font-medium text-neutral-800">{v.business_name}</p>
+                      <p className="text-xs text-neutral-500">{v.email}</p>
+                    </td>
+                    <td className="py-2 pr-4 text-xs text-neutral-600">
+                      {b.payout_method || '—'}
+                      {b.payout_email && (
+                        <>
+                          <br />
+                          <span className="text-neutral-500">{b.payout_email}</span>
+                        </>
+                      )}
+                    </td>
+                    <td className="py-2 pr-4 text-right text-neutral-700">
+                      ${b.earned.toFixed(2)}
+                    </td>
+                    <td className="py-2 pr-4 text-right text-neutral-700">
+                      ${b.paid.toFixed(2)}
+                    </td>
+                    <td className="py-2 pr-4 text-right font-semibold text-sage">
+                      ${b.owed.toFixed(2)}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* History */}
+      <div className="card p-4">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-4">
+          <h3 className="font-semibold text-neutral-700">Payout history</h3>
+          <div className="flex flex-wrap gap-2 items-end">
+            <div>
+              <label className="block text-xs font-medium text-neutral-600 mb-1">Vendor</label>
+              <select
+                value={filterVendorId}
+                onChange={(e) => setFilterVendorId(e.target.value)}
+                className="input-field text-xs"
+              >
+                <option value="all">All vendors</option>
+                {vendors.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.business_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-neutral-600 mb-1">From</label>
+              <input
+                type="date"
+                value={filterFrom}
+                onChange={(e) => setFilterFrom(e.target.value)}
+                className="input-field text-xs"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-neutral-600 mb-1">To</label>
+              <input
+                type="date"
+                value={filterTo}
+                onChange={(e) => setFilterTo(e.target.value)}
+                className="input-field text-xs"
+              />
+            </div>
+          </div>
+        </div>
+
+        {filteredPayouts.length === 0 ? (
+          <p className="text-sm text-neutral-500">No payout records for the selected filters.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wide text-neutral-500 border-b border-neutral-200">
+                  <th className="py-2 pr-4">Date</th>
+                  <th className="py-2 pr-4">Vendor</th>
+                  <th className="py-2 pr-4 text-right">Amount</th>
+                  <th className="py-2 pr-4">Method</th>
+                  <th className="py-2 pr-4">Reference</th>
+                  <th className="py-2 pr-4">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredPayouts.map((p) => {
+                  const vendor = vendors.find((v) => v.id === p.vendor_id)
+                  return (
+                    <tr key={p.id} className="border-b border-neutral-100 last:border-0">
+                      <td className="py-2 pr-4 text-xs text-neutral-600">
+                        {p.paid_at
+                          ? new Date(p.paid_at).toLocaleString('es-PR')
+                          : p.created_at
+                          ? new Date(p.created_at).toLocaleString('es-PR')
+                          : ''}
+                      </td>
+                      <td className="py-2 pr-4">
+                        <p className="font-medium text-neutral-800 text-sm">
+                          {vendor ? vendor.business_name : `Vendor #${p.vendor_id}`}
+                        </p>
+                      </td>
+                      <td className="py-2 pr-4 text-right font-semibold text-neutral-800">
+                        ${Number(p.amount || 0).toFixed(2)}
+                      </td>
+                      <td className="py-2 pr-4 text-xs text-neutral-600">
+                        {p.payment_method || '—'}
+                      </td>
+                      <td className="py-2 pr-4 text-xs text-neutral-600">
+                        {p.payment_reference || '—'}
+                      </td>
+                      <td className="py-2 pr-4 text-xs text-neutral-600 max-w-xs truncate">
+                        {p.notes || '—'}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   )

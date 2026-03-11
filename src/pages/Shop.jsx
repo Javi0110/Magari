@@ -383,7 +383,7 @@ export default function ShopPage() {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
+                    className="w-full px-3 py-2 rounded-xl border border-greige-light bg-white text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 appearance-none"
                   >
                     {categories.map(cat => (
                       <option key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</option>
@@ -412,7 +412,7 @@ export default function ShopPage() {
                   <select
                     value={availability}
                     onChange={(e) => setAvailability(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
+                    className="w-full px-3 py-2 rounded-xl border border-greige-light bg-white text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 appearance-none"
                   >
                     <option value="all">All Products</option>
                     <option value="in-stock">In Stock</option>
@@ -426,7 +426,7 @@ export default function ShopPage() {
                   <select
                     value={selectedColor}
                     onChange={(e) => setSelectedColor(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
+                    className="w-full px-3 py-2 rounded-xl border border-greige-light bg-white text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 appearance-none"
                   >
                     {colors.map(color => (
                       <option key={color} value={color}>{color === 'all' ? 'All Colors' : color}</option>
@@ -440,7 +440,7 @@ export default function ShopPage() {
                   <select
                     value={selectedMaterial}
                     onChange={(e) => setSelectedMaterial(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
+                    className="w-full px-3 py-2 rounded-xl border border-greige-light bg-white text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 appearance-none"
                   >
                     {materials.map(material => (
                       <option key={material} value={material}>{material === 'all' ? 'All Materials' : material}</option>
@@ -454,7 +454,7 @@ export default function ShopPage() {
                   <select
                     value={selectedShipping}
                     onChange={(e) => setSelectedShipping(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
+                    className="w-full px-3 py-2 rounded-xl border border-greige-light bg-white text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 appearance-none"
                   >
                     {shippingOptions.map(option => (
                       <option key={option} value={option}>{option === 'all' ? 'All Shipping' : option}</option>
@@ -490,7 +490,7 @@ export default function ShopPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="px-4 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+                  className="px-4 py-2 rounded-xl border border-greige-light bg-white text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 appearance-none"
                 >
                   <option value="featured">Featured</option>
                   <option value="newest">Newest</option>

@@ -1280,25 +1280,47 @@ function VendorOrdersTab({ vendorId }) {
 
 function VendorAnalyticsTab({ vendorId }) {
   const [stats, setStats] = useState({ totalSales: 0, productsSold: 0 })
+  const [payoutSummary, setPayoutSummary] = useState({ paid: 0, owed: 0 })
   const [loading, setLoading] = useState(!!vendorId)
   useEffect(() => {
     if (!supabase || !vendorId) {
       setLoading(false)
       return
     }
-    supabase.from('order_items').select('quantity, price').eq('vendor_id', vendorId)
-      .then(({ data }) => {
-        const items = data || []
-        const productsSold = items.reduce((s, i) => s + (Number(i.quantity) || 0), 0)
-        const totalSales = items.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.quantity) || 0), 0)
-        setStats({ totalSales, productsSold })
-        setLoading(false)
+    const load = async () => {
+      const { data: itemsData } = await supabase
+        .from('order_items')
+        .select('quantity, price, orders!inner(status)')
+        .eq('vendor_id', vendorId)
+        .eq('orders.status', 'paid')
+      const items = itemsData || []
+      const productsSold = items.reduce((s, i) => s + (Number(i.quantity) || 0), 0)
+      const totalSales = items.reduce(
+        (s, i) => s + (Number(i.price) || 0) * (Number(i.quantity) || 0),
+        0
+      )
+      setStats({ totalSales, productsSold })
+
+      const { data: payoutsData } = await supabase
+        .from('vendor_payouts')
+        .select('amount, status')
+        .eq('vendor_id', vendorId)
+      const totalPaid = (payoutsData || [])
+        .filter((p) => p.status !== 'cancelled')
+        .reduce((s, p) => s + Number(p.amount || 0), 0)
+      const earnings = totalSales * 0.88
+      setPayoutSummary({
+        paid: totalPaid,
+        owed: Math.max(0, earnings - totalPaid),
       })
+      setLoading(false)
+    }
+    load()
   }, [vendorId])
   const earnings = stats.totalSales * 0.88
   if (loading) return <div className="card p-8 text-center"><p className="text-neutral-600">Cargando…</p></div>
   return (
-    <div className="grid md:grid-cols-3 gap-6">
+    <div className="grid md:grid-cols-4 gap-6">
       <div className="card">
         <p className="text-neutral-600 mb-2">Total Sales</p>
         <p className="text-4xl font-bold text-sage">${stats.totalSales.toFixed(2)}</p>
@@ -1313,6 +1335,16 @@ function VendorAnalyticsTab({ vendorId }) {
         <p className="text-neutral-600 mb-2">Your Earnings</p>
         <p className="text-4xl font-bold text-taupe">${earnings.toFixed(2)}</p>
         <p className="text-sm text-neutral-500 mt-1">88% después de comisión</p>
+      </div>
+      <div className="card">
+        <p className="text-neutral-600 mb-2">Payout status</p>
+        <p className="text-sm text-neutral-600">
+          <span className="block">Paid: <span className="font-semibold text-neutral-800">${payoutSummary.paid.toFixed(2)}</span></span>
+          <span className="block mt-1">Owed: <span className="font-semibold text-sage">${payoutSummary.owed.toFixed(2)}</span></span>
+        </p>
+        <p className="text-xs text-neutral-500 mt-2">
+          Payouts are processed manually by Magari. This view helps you track what has been recorded as paid.
+        </p>
       </div>
     </div>
   )
