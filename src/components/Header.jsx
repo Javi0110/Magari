@@ -130,35 +130,33 @@ export default function Header() {
                   >
                     Rewards Circle
                   </Link>
-                  {userRole === 'admin' && (
-                    <Link
-                      to="/admin"
-                      onClick={() => setLoginDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
-                    >
-                      Admin
-                    </Link>
-                  )}
-                  {userRole === 'vendor' && (
-                    <Link
-                      to="/momade/vendor-login"
-                      onClick={() => setLoginDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
-                    >
-                      Vendor (Marketplace)
-                    </Link>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      localStorage.removeItem('magari-current-user')
-                      setUserRole(null)
-                      setLoginDropdownOpen(false)
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors border-t border-cream-dark/60 mt-1"
+                  <Link
+                    to="/admin"
+                    onClick={() => setLoginDropdownOpen(false)}
+                    className="block px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
                   >
-                    Logout
-                  </button>
+                    Admin login
+                  </Link>
+                  <Link
+                    to="/momade/vendor-login"
+                    onClick={() => setLoginDropdownOpen(false)}
+                    className="block px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
+                  >
+                    Vendor login
+                  </Link>
+                  {userRole && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        localStorage.removeItem('magari-current-user')
+                        setUserRole(null)
+                        setLoginDropdownOpen(false)
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors border-t border-cream-dark/60 mt-1"
+                    >
+                      Logout
+                    </button>
+                  )}
                 </div>
               </>
             )}
