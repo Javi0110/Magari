@@ -65,7 +65,8 @@ export const useProductsStore = create((set, get) => ({
       set({ initialized: true })
       return
     }
-    set({ loading: true, error: null })
+    // Clear any stale local products while we load fresh data from Supabase
+    set({ loading: true, error: null, products: [] })
     const { data, error } = await supabase
       .from('shop_products')
       .select('*')
