@@ -200,8 +200,25 @@ export default function RewardsDashboardPage() {
               <div className="card">
                 <p className="text-sm text-neutral-500 mb-1">Referral link</p>
                 <p className="text-xs text-neutral-700 break-all mb-2">
-                  {`${window.location.origin}/rewards?ref=${user.referral_code}`}
+                  <a
+                    href={`${typeof window !== 'undefined' ? window.location.origin : ''}/rewards?ref=${user.referral_code}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sage hover:underline"
+                  >
+                    {typeof window !== 'undefined' ? `${window.location.origin}/rewards?ref=${user.referral_code}` : ''}
+                  </a>
                 </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = `${window.location.origin}/rewards?ref=${user.referral_code}`
+                    navigator.clipboard?.writeText(url).then(() => alert('Link copied!'), () => {})
+                  }}
+                  className="text-xs text-sage hover:underline"
+                >
+                  Copy link
+                </button>
               </div>
             </section>
 
