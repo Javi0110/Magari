@@ -104,12 +104,6 @@ export default function Header() {
 
           {/* Profile / login dropdown (desktop) */}
           <div className="hidden lg:flex items-center gap-4 relative">
-            <Link
-              to="/rewards/dashboard"
-              className="text-xs font-medium text-sage hover:text-sage-dark px-3 py-1.5 rounded-full border border-sage/40 bg-white"
-            >
-              Magari Rewards Circle
-            </Link>
             <button
               onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
               className="flex items-center justify-center text-stone hover:text-sage transition-colors"
@@ -128,7 +122,7 @@ export default function Header() {
                     onClick={() => setLoginDropdownOpen(false)}
                     className="block px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
                   >
-                    Rewards Circle
+                    Magari Rewards Program
                   </Link>
                   <Link
                     to="/admin"
@@ -235,7 +229,7 @@ export default function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium text-sm"
                 >
-                  <User className="w-4 h-4" /> Rewards Circle
+                  <User className="w-4 h-4" /> Magari Rewards Program
                 </Link>
                 {userRole === 'admin' && (
                   <Link
