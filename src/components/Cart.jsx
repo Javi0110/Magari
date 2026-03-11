@@ -204,13 +204,15 @@ export default function Cart() {
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 overscroll-contain max-w-4xl w-full mx-auto">
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain max-w-4xl w-full mx-auto">
+              <div className="p-4 sm:p-6 pb-8">
               {items.length === 0 ? (
                 <div className="text-center py-12">
                   <ShoppingBag className="w-16 h-16 mx-auto text-neutral-300 mb-4" />
                   <p className="text-neutral-500">Your cart is empty</p>
                 </div>
               ) : (
+                <>
                 <div className="space-y-4">
                   {items.map((item) => (
                     <motion.div
@@ -266,11 +268,8 @@ export default function Cart() {
                     </motion.div>
                   ))}
                 </div>
-              )}
-            </div>
 
-            {items.length > 0 && (
-              <div className="flex-shrink-0 border-t border-neutral-200 p-4 sm:p-6 space-y-4 max-w-4xl w-full mx-auto">
+                <div className="mt-8 pt-6 border-t border-neutral-200 space-y-4">
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <input
@@ -495,8 +494,11 @@ export default function Cart() {
                   Continue shopping
                   <ArrowRight className="w-4 h-4 inline-block ml-1" />
                 </Link>
+                </div>
+                </>
+              )}
               </div>
-            )}
+            </div>
         </motion.div>
       )}
     </AnimatePresence>
