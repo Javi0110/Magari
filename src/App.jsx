@@ -11,6 +11,8 @@ import Cart from './components/Cart'
 import HomePage from './pages/Home'
 import ShopPage from './pages/Shop'
 import ProductDetailPage from './pages/ProductDetail'
+import RewardsPage from './pages/Rewards'
+import RewardsDashboardPage from './pages/RewardsDashboard'
 import DesignServicesPage from './pages/DesignServices'
 import HomeStagingAustinPage from './pages/HomeStagingAustin'
 import InteriorDesignAustinPage from './pages/InteriorDesignAustin'
@@ -102,6 +104,16 @@ const pageMeta = {
     description: 'Admin portal for Magari & Co.'
   },
   '/casa-magari': {
+  '/rewards': {
+    title: 'Magari Rewards — Loyalty & Referrals',
+    description:
+      'Join Magari Rewards to earn points on every purchase, unlock tiers, and redeem exclusive perks.'
+  },
+  '/rewards/dashboard': {
+    title: 'Magari Rewards Dashboard — Magari & Co.',
+    description:
+      'View your Magari Rewards points, tier progress, and referral benefits in one place.'
+  },
     title: 'Casa Magari — A Future Design-Forward Stay by Magari & Co.',
     description: 'Follow the behind-the-scenes journey of Casa Magari, a future Airbnb-style stay curated with mom-made pieces, local art, and slow, beautiful living.'
   }
@@ -246,6 +258,8 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/shop/:id" element={<ProductDetailPage />} />
+          <Route path="/rewards" element={<RewardsPage />} />
+          <Route path="/rewards/dashboard" element={<RewardsDashboardPage />} />
           <Route path="/design-services" element={<DesignServicesPage />} />
           {/* SEO landing pages for design services */}
           <Route path="/home-staging-austin" element={<HomeStagingAustinPage />} />

@@ -82,7 +82,13 @@ export default function Header() {
           </div>
 
           {/* Profile / login dropdown (desktop) */}
-          <div className="hidden lg:block relative">
+          <div className="hidden lg:flex items-center gap-4 relative">
+            <Link
+              to="/rewards/dashboard"
+              className="text-xs font-medium text-sage hover:text-sage-dark px-3 py-1.5 rounded-full border border-sage/40 bg-white"
+            >
+              Magari Rewards
+            </Link>
             <button
               onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
               className="flex items-center justify-center text-stone hover:text-sage transition-colors"
