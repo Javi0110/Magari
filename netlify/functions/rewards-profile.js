@@ -43,23 +43,45 @@ exports.handler = async (event) => {
 
     const supabase = createClient(supabaseUrl, serviceKey)
 
-    // Upsert rewards user with stable referral code
-    const referralCode = `MG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
-    const { data: userRow, error: userErr } = await supabase
+    // Get or create rewards user (keep existing referral_code)
+    let userRow = null
+    const { data: existing, error: selectErr } = await supabase
       .from('rewards_users')
-      .upsert(
-        { email, referral_code: referralCode },
-        { onConflict: 'email' }
-      )
       .select('*')
-      .single()
-    if (userErr) {
-      console.error('rewards-profile upsert error:', userErr)
+      .eq('email', email)
+      .maybeSingle()
+
+    if (selectErr) {
+      console.error('rewards-profile select error:', selectErr)
+      const msg = selectErr.code === '42P01'
+        ? 'Rewards tables are missing. Run the rewards migrations in Supabase (SQL Editor): 20260129000000_rewards_schema.sql and 20260129020000_rewards_rls_lockdown.sql'
+        : (selectErr.message || 'Could not load rewards profile.')
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: 'Could not load rewards profile' }),
+        body: JSON.stringify({ error: msg }),
       }
+    }
+
+    if (existing) {
+      userRow = existing
+    } else {
+      const referralCode = `MG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
+      const { data: inserted, error: insertErr } = await supabase
+        .from('rewards_users')
+        .insert({ email, referral_code: referralCode })
+        .select('*')
+        .single()
+      if (insertErr) {
+        console.error('rewards-profile insert error:', insertErr)
+        const msg = insertErr.code === '42P01' ? 'Rewards tables missing. Run the rewards migrations in Supabase SQL Editor.' : (insertErr.message || 'Could not create rewards profile.')
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: msg }),
+        }
+      }
+      userRow = inserted
     }
 
     const [{ data: ledgerRows, error: ledgerErr }, { data: orderRows, error: ordersErr }, { data: couponRows, error: couponsErr }] =
@@ -83,11 +105,7 @@ exports.handler = async (event) => {
 
     if (ledgerErr || ordersErr || couponsErr) {
       console.error('rewards-profile load errors:', { ledgerErr, ordersErr, couponsErr })
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ error: 'Could not load rewards data' }),
-      }
+      // Still return success with empty lists so the profile loads; frontend can show partial data
     }
 
     return {
