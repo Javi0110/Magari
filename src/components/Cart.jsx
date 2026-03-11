@@ -43,6 +43,12 @@ export default function Cart() {
     }
   }, [needsAddress, canShip, canDeliver, fulfillmentMethod])
 
+  useEffect(() => {
+    if (subtotal >= 60 && (fulfillmentMethod === 'expedited' || fulfillmentMethod === 'delivery')) {
+      setFulfillmentMethod('shipping')
+    }
+  }, [subtotal, fulfillmentMethod])
+
   // Lock body scroll when cart is open so only the cart panel scrolls
   useEffect(() => {
     if (!isOpen) return
@@ -321,52 +327,69 @@ export default function Cart() {
                 )}
                 {needsAddress && (canShip || canDeliver) && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-neutral-700 flex items-center gap-1">
-                      <Truck className="w-3.5 h-3.5" />
-                      Shipping or delivery
-                    </p>
-                    <div className="space-y-2">
-                      {canShip && (
-                        <label className="flex items-center gap-3 p-3 rounded-xl border border-greige-light hover:border-sage/50 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="fulfillment"
-                            checked={fulfillmentMethod === 'shipping'}
-                            onChange={() => setFulfillmentMethod('shipping')}
-                            className="text-sage"
-                          />
-                          <span className="text-sm">
-                            Shipping — ${SHIPPING_FLAT.toFixed(2)} flat, free over $60
-                          </span>
-                        </label>
-                      )}
-                      {canShip && (
-                        <label className="flex items-center gap-3 p-3 rounded-xl border border-greige-light hover:border-sage/50 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="fulfillment"
-                            checked={fulfillmentMethod === 'expedited'}
-                            onChange={() => setFulfillmentMethod('expedited')}
-                            className="text-sage"
-                          />
-                          <span className="text-sm">
-                            Expedited — ${SHIPPING_EXPEDITED.toFixed(2)}
-                          </span>
-                        </label>
-                      )}
-                      {canDeliver && (
-                        <label className="flex items-center gap-3 p-3 rounded-xl border border-greige-light hover:border-sage/50 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="fulfillment"
-                            checked={fulfillmentMethod === 'delivery'}
-                            onChange={() => setFulfillmentMethod('delivery')}
-                            className="text-sage"
-                          />
-                          <span className="text-sm">Delivery — ${deliveryCost} flat (within 30 miles)</span>
-                        </label>
-                      )}
-                    </div>
+                    {subtotal >= 60 ? (
+                      <div className="rounded-xl bg-sage/15 border-2 border-sage/40 p-4 text-center">
+                        <p className="font-semibold text-sage-dark text-base flex items-center justify-center gap-2">
+                          <Truck className="w-5 h-5" />
+                          ¡Llegaste a envío gratis!
+                        </p>
+                        <p className="text-sm text-neutral-700 mt-1">
+                          Tu pedido de $60+ se envía sin costo. ¡A celebrar!
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium text-neutral-700 flex items-center gap-1">
+                          <Truck className="w-3.5 h-3.5" />
+                          Shipping or delivery
+                        </p>
+                        <div className="space-y-2">
+                          {canShip && (
+                            <label className="flex items-center gap-3 p-3 rounded-xl border border-greige-light hover:border-sage/50 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="fulfillment"
+                                checked={fulfillmentMethod === 'shipping'}
+                                onChange={() => setFulfillmentMethod('shipping')}
+                                className="text-sage"
+                              />
+                              <span className="text-sm">
+                                Shipping — ${SHIPPING_FLAT.toFixed(2)} flat, free over $60
+                              </span>
+                            </label>
+                          )}
+                          {canShip && (
+                            <label className="flex items-center gap-3 p-3 rounded-xl border border-greige-light hover:border-sage/50 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="fulfillment"
+                                checked={fulfillmentMethod === 'expedited'}
+                                onChange={() => setFulfillmentMethod('expedited')}
+                                className="text-sage"
+                              />
+                              <span className="text-sm">
+                                Expedited — ${SHIPPING_EXPEDITED.toFixed(2)}
+                              </span>
+                            </label>
+                          )}
+                          {canDeliver && (
+                            <label className="flex items-center gap-3 p-3 rounded-xl border border-greige-light hover:border-sage/50 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="fulfillment"
+                                checked={fulfillmentMethod === 'delivery'}
+                                onChange={() => setFulfillmentMethod('delivery')}
+                                className="text-sage"
+                              />
+                              <span className="text-sm">Delivery — ${deliveryCost} flat (within 30 miles)</span>
+                            </label>
+                          )}
+                        </div>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          Add ${(60 - subtotal).toFixed(2)} more for free shipping!
+                        </p>
+                      </>
+                    )}
                   </div>
                 )}
 
