@@ -1985,65 +1985,126 @@ function VendorsView({ highlightedApplicationId = null, onClearHighlight }) {
   )
 }
 
-// Reviews View
+// Reviews View – product_reviews from Supabase; approve awards 20 Magari Rewards pts
 function ReviewsView() {
-  const [reviews, setReviews] = useState(
-    sampleTestimonials.map(t => ({ ...t, status: t.approved ? 'approved' : 'pending' }))
-  )
+  const [reviews, setReviews] = useState([])
+  const [reviewsLoading, setReviewsLoading] = useState(true)
+  const [approvingId, setApprovingId] = useState(null)
 
-  const handleApproveReview = (reviewId) => {
-    setReviews(reviews.map(r => 
-      r.id === reviewId ? { ...r, approved: true, status: 'approved' } : r
-    ))
-    // 🔌 INTEGRATION: PATCH /api/testimonials/:id with { approved: true }
+  useEffect(() => {
+    if (!supabase) {
+      setReviewsLoading(false)
+      return
+    }
+    const load = async () => {
+      const { data, error } = await supabase
+        .from('product_reviews')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (!error) setReviews(data || [])
+      setReviewsLoading(false)
+    }
+    load()
+  }, [])
+
+  const handleApproveReview = async (reviewId) => {
+    setApprovingId(reviewId)
+    try {
+      if (supabase) {
+        await supabase
+          .from('product_reviews')
+          .update({ status: 'approved' })
+          .eq('id', reviewId)
+      }
+      setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, status: 'approved' } : r))
+
+      const res = await fetch('/.netlify/functions/rewards-award-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewId }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (data.ok && data.points) {
+        alert(`Review approved. ${data.points} Magari Rewards points awarded to ${data.email || 'the reviewer'}.`)
+      }
+    } catch (err) {
+      console.error('Approve review error:', err)
+    } finally {
+      setApprovingId(null)
+    }
   }
 
-  const handleRejectReview = (reviewId) => {
-    setReviews(reviews.filter(r => r.id !== reviewId))
-    // 🔌 INTEGRATION: DELETE /api/testimonials/:id
+  const handleRejectReview = async (reviewId) => {
+    if (supabase) {
+      await supabase
+        .from('product_reviews')
+        .update({ status: 'rejected' })
+        .eq('id', reviewId)
+    }
+    setReviews(prev => prev.filter(r => r.id !== reviewId))
+  }
+
+  if (reviewsLoading) {
+    return (
+      <div>
+        <h2 className="font-serif text-2xl text-neutral-700 mb-6">Review Moderation</h2>
+        <p className="text-neutral-600">Loading reviews…</p>
+      </div>
+    )
   }
 
   return (
     <div>
       <h2 className="font-serif text-2xl text-neutral-700 mb-6">Review Moderation</h2>
+      <p className="text-sm text-neutral-600 mb-4">
+        Approving a review awards 20 Magari Rewards points to the reviewer&apos;s email (if provided).
+      </p>
 
       <div className="space-y-4">
-        {reviews.map(review => (
-          <div key={review.id} className="card">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="font-medium text-neutral-700">{review.name}</p>
-                <div className="flex gap-1 my-1">
-                  {[...Array(review.rating)].map((_, i) => (
-                    <span key={i} className="text-taupe">★</span>
-                  ))}
+        {reviews.length === 0 ? (
+          <p className="text-neutral-600">No product reviews yet.</p>
+        ) : (
+          reviews.map(review => (
+            <div key={review.id} className="card">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <p className="font-medium text-neutral-700">{review.name}</p>
+                  {review.email && (
+                    <p className="text-xs text-neutral-500 mt-0.5">{review.email}</p>
+                  )}
+                  <div className="flex gap-1 my-1">
+                    {[...Array(review.rating || 0)].map((_, i) => (
+                      <span key={i} className="text-taupe">★</span>
+                    ))}
+                  </div>
                 </div>
+                <span className={`badge ${review.status === 'approved' ? 'badge-handmade' : review.status === 'rejected' ? 'bg-neutral-200 text-neutral-600' : 'bg-earth/20 text-earth-dark'}`}>
+                  {review.status || 'pending'}
+                </span>
               </div>
-              <span className={`badge ${review.status === 'approved' ? 'badge-handmade' : 'bg-earth/20 text-earth-dark'}`}>
-                {review.status}
-              </span>
+
+              <p className="text-neutral-600 mb-4">&quot;{review.text}&quot;</p>
+
+              {(review.status === 'pending' || !review.status) && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleApproveReview(review.id)}
+                    disabled={approvingId === review.id}
+                    className="btn-primary py-2 px-4 text-sm disabled:opacity-50"
+                  >
+                    {approvingId === review.id ? 'Approving…' : 'Approve'}
+                  </button>
+                  <button
+                    onClick={() => handleRejectReview(review.id)}
+                    className="btn-outline py-2 px-4 text-sm"
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
             </div>
-
-            <p className="text-neutral-600 mb-4">"{review.text}"</p>
-
-            {review.status === 'pending' && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleApproveReview(review.id)}
-                  className="btn-primary py-2 px-4 text-sm"
-                >
-                  Approve
-                </button>
-                <button
-                  onClick={() => handleRejectReview(review.id)}
-                  className="btn-outline py-2 px-4 text-sm"
-                >
-                  Reject
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   )

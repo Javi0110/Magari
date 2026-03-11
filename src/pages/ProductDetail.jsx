@@ -27,6 +27,7 @@ export default function ProductDetailPage() {
   const [submitting, setSubmitting] = useState(false)
   const [reviewForm, setReviewForm] = useState({
     name: '',
+    email: '',
     rating: 5,
     text: '',
   })
@@ -57,7 +58,8 @@ export default function ProductDetailPage() {
         setReviewsError('Could not load reviews right now.')
         setReviews([])
       } else {
-        setReviews(data || [])
+        const approved = (data || []).filter((r) => r.status === 'approved')
+        setReviews(approved)
       }
       setReviewsLoading(false)
     }
@@ -88,12 +90,19 @@ export default function ProductDetailPage() {
     e.preventDefault()
     if (!product) return
     if (!reviewForm.name.trim() || !reviewForm.text.trim()) return
+    const email = reviewForm.email.trim().toLowerCase()
+    if (!email || !email.includes('@')) {
+      alert('Please enter your email so we can award your Magari Rewards points when the review is approved.')
+      return
+    }
 
     const payload = {
       product_id: product.id,
       name: reviewForm.name.trim(),
+      email,
       rating: reviewForm.rating,
       text: reviewForm.text.trim(),
+      status: 'pending',
     }
 
     try {
@@ -105,7 +114,7 @@ export default function ProductDetailPage() {
           .select('*')
           .single()
         if (error) throw error
-        setReviews((prev) => [data, ...prev])
+        alert('Thank you! Your review will appear here after we approve it. You’ll earn 20 Magari Rewards points once it’s approved.')
       } else {
         // Fallback: local-only
         const localReview = {
@@ -115,7 +124,7 @@ export default function ProductDetailPage() {
         }
         setReviews((prev) => [localReview, ...prev])
       }
-      setReviewForm({ name: '', rating: 5, text: '' })
+      setReviewForm({ name: '', email: '', rating: 5, text: '' })
     } catch (err) {
       console.error('Error submitting review:', err)
       alert('We could not save your review right now. Please try again later.')
@@ -426,6 +435,22 @@ export default function ProductDetailPage() {
                   className="input-field text-sm"
                   placeholder="Your name"
                 />
+              </div>
+              <div>
+                <label className="form-label">Email *</label>
+                <input
+                  type="email"
+                  required
+                  value={reviewForm.email}
+                  onChange={(e) =>
+                    setReviewForm((f) => ({ ...f, email: e.target.value }))
+                  }
+                  className="input-field text-sm"
+                  placeholder="you@email.com"
+                />
+                <p className="text-[11px] text-neutral-500 mt-1">
+                  Used for your Magari Rewards account; we award 20 pts when your review is approved.
+                </p>
               </div>
               <div>
                 <label className="form-label">Rating *</label>
