@@ -43,6 +43,16 @@ export default function Cart() {
     }
   }, [needsAddress, canShip, canDeliver, fulfillmentMethod])
 
+  // Lock body scroll when cart is open so only the cart panel scrolls
+  useEffect(() => {
+    if (!isOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [isOpen])
+
   const subtotal = getTotal()
   const shippingCost = subtotal >= 60 || totalItemCount <= 0 ? 0 : SHIPPING_FLAT
   const expeditedCost = subtotal >= 60 || totalItemCount <= 0 ? 0 : SHIPPING_EXPEDITED
@@ -183,16 +193,19 @@ export default function Cart() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeCart}
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50"
+            onWheel={(e) => e.preventDefault()}
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 touch-none"
+            style={{ touchAction: 'none' }}
+            aria-hidden
           />
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 flex flex-col min-h-0"
+            className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-[51] flex flex-col overflow-hidden"
           >
-            <div className="flex items-center justify-between p-6 border-b border-neutral-200">
+            <div className="flex-shrink-0 flex items-center justify-between p-6 border-b border-neutral-200">
               <h2 className="font-serif text-2xl text-neutral-600 flex items-center">
                 <ShoppingBag className="w-6 h-6 mr-2" />
                 Cart
@@ -202,7 +215,7 @@ export default function Cart() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6 overscroll-contain">
               {items.length === 0 ? (
                 <div className="text-center py-12">
                   <ShoppingBag className="w-16 h-16 mx-auto text-neutral-300 mb-4" />
@@ -268,7 +281,7 @@ export default function Cart() {
             </div>
 
             {items.length > 0 && (
-              <div className="border-t border-neutral-200 p-6 space-y-4">
+              <div className="flex-shrink-0 border-t border-neutral-200 p-6 space-y-4">
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <input
