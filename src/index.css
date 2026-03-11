@@ -14,7 +14,7 @@
 
 @layer components {
   .btn-primary {
-    @apply font-medium px-6 py-3 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md text-white;
+    @apply font-medium px-6 py-3 rounded-xl transition-colors duration-200 text-white;
     background-color: #6B7C70;
   }
   
@@ -23,7 +23,7 @@
   }
   
   .btn-secondary {
-    @apply font-medium px-6 py-3 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md text-white;
+    @apply font-medium px-6 py-3 rounded-xl transition-colors duration-200 text-white;
     background-color: #A0927C;
   }
   
@@ -32,7 +32,7 @@
   }
   
   .btn-outline {
-    @apply font-medium px-6 py-3 rounded-xl transition-all duration-300;
+    @apply font-medium px-6 py-3 rounded-xl transition-colors duration-200;
     border: 2px solid #B8C5BA;
     color: #6B7C70;
   }
