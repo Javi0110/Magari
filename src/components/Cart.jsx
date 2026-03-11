@@ -6,8 +6,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
 import { PICKUP_DISPLAY } from '../constants/shopCategories'
 
-const SHIPPING_BASE = 8
-const SHIPPING_PER_ITEM = 2
+const SHIPPING_FLAT = 6.75
 const DELIVERY_FLAT = 10
 
 export default function Cart() {
@@ -42,7 +41,8 @@ export default function Cart() {
     }
   }, [needsAddress, canShip, canDeliver, fulfillmentMethod])
 
-  const shippingCost = totalItemCount <= 0 ? 0 : SHIPPING_BASE + Math.max(0, totalItemCount - 1) * SHIPPING_PER_ITEM
+  const subtotal = getTotal()
+  const shippingCost = subtotal >= 60 || totalItemCount <= 0 ? 0 : SHIPPING_FLAT
   const deliveryCost = DELIVERY_FLAT
   const fulfillmentAmount =
     allPickupOnly ? 0 : fulfillmentMethod === 'delivery' ? deliveryCost : fulfillmentMethod === 'shipping' ? shippingCost : 0
@@ -133,6 +133,7 @@ export default function Cart() {
           price: i.price,
           quantity: i.quantity,
           vendorId: i.vendorId ?? i.vendor_id,
+          image: Array.isArray(i.images) && i.images.length > 0 ? i.images[0] : i.image || null,
         })),
       }
       if (needsAddress) {
@@ -177,7 +178,7 @@ export default function Cart() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 flex flex-col overflow-y-auto"
+            className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 flex flex-col overflow-y-hidden"
           >
             <div className="flex items-center justify-between p-6 border-b border-neutral-200">
               <h2 className="font-serif text-2xl text-neutral-600 flex items-center">
@@ -206,7 +207,21 @@ export default function Cart() {
                       exit={{ opacity: 0, x: -100 }}
                       className="flex gap-4 p-4 bg-cream rounded-2xl"
                     >
-                      <div className="w-20 h-20 bg-neutral-200 rounded-xl flex-shrink-0" />
+                      <div className="w-20 h-20 rounded-xl flex-shrink-0 overflow-hidden bg-neutral-200">
+                        {Array.isArray(item.images) && item.images.length > 0 ? (
+                          <img
+                            src={item.images[0]}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : item.image ? (
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : null}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-neutral-700 truncate">{item.title}</h3>
                         <p className="text-sage font-semibold mt-1">${item.price}</p>
@@ -293,7 +308,7 @@ export default function Cart() {
                             className="text-sage"
                           />
                           <span className="text-sm">
-                            Shipping — ${SHIPPING_BASE} + ${SHIPPING_PER_ITEM}/item (${shippingCost.toFixed(2)})
+                            Shipping — ${SHIPPING_FLAT.toFixed(2)} flat, free over $60
                           </span>
                         </label>
                       )}

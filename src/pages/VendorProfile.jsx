@@ -142,11 +142,19 @@ export default function VendorProfilePage() {
               className="card group cursor-pointer"
               onClick={() => setSelectedProduct(product)}
             >
-              {/* Product Image Placeholder */}
+              {/* Product Image */}
               <div className="aspect-square bg-greige-light rounded-xl mb-4 overflow-hidden">
-                <div className="w-full h-full flex items-center justify-center text-stone-light text-sm">
-                  Product Image
-                </div>
+                {Array.isArray(product.images) && product.images.length > 0 ? (
+                  <img
+                    src={product.images[0]}
+                    alt={product.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-stone-light text-sm">
+                    Product Image
+                  </div>
+                )}
               </div>
 
               {/* Tags */}

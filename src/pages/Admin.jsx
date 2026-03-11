@@ -476,8 +476,16 @@ function ProductsView() {
                 <tr key={product.id} className="border-b border-cream-dark last:border-0 hover:bg-cream/30 transition-colors">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-greige-light rounded-lg flex-shrink-0 flex items-center justify-center">
-                        <ImageIcon className="w-5 h-5 text-stone-light" />
+                      <div className="w-12 h-12 bg-greige-light rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center">
+                        {Array.isArray(product.images) && product.images.length > 0 ? (
+                          <img
+                            src={product.images[0]}
+                            alt={product.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <ImageIcon className="w-5 h-5 text-stone-light" />
+                        )}
                       </div>
                       <div>
                         <p className="font-medium text-sage-dark">{product.title}</p>
