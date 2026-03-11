@@ -216,7 +216,6 @@ export default function RewardsDashboardPage() {
                   <li>· 50 pts for creating a rewards account</li>
                   <li>· 20 pts for each approved product review</li>
                   <li>· 100 pts for each successful referral</li>
-                  <li>· 25 pts for sharing your purchase on social media</li>
                 </ul>
                 <div className="mt-4 border-t border-cream-dark/50 pt-3">
                   <p className="text-sm font-semibold text-neutral-800 mb-2">Redeem points</p>
