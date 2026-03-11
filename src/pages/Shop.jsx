@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { 
   Filter, X, ShoppingCart, Heart, Eye, ChevronDown, ChevronUp, 
   ChevronLeft, ChevronRight, Search, Star, Share2, Mail, Instagram, Loader2
@@ -21,8 +21,6 @@ export default function ShopPage() {
   const [selectedShipping, setSelectedShipping] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState('featured')
-  const [selectedProduct, setSelectedProduct] = useState(null)
-  const [detailImageIndex, setDetailImageIndex] = useState(0)
   const [displayCount, setDisplayCount] = useState(12)
   const [showNewsletter, setShowNewsletter] = useState(true)
   const [newsletterEmail, setNewsletterEmail] = useState('')
@@ -34,6 +32,7 @@ export default function ShopPage() {
   const { addItem, openCart } = useCartStore()
   const cartItems = useCartStore((s) => s.items)
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore()
+  const navigate = useNavigate()
 
   const categories = ['all', ...SHOP_MAGARI_CATEGORIES]
   const colors = ['all', 'Neutral', 'Terracotta', 'Green', 'Blue', 'Mixed']
@@ -191,14 +190,8 @@ export default function ShopPage() {
     }
   }
 
-  const handleQuickView = (product, e) => {
-    if (e) e.stopPropagation()
-    setSelectedProduct(product)
-    setDetailImageIndex(0)
-  }
   const openProductDetail = (product) => {
-    setSelectedProduct(product)
-    setDetailImageIndex(0)
+    navigate(`/shop/${product.id}`)
   }
 
   const handleLoadMore = () => {
@@ -284,7 +277,7 @@ export default function ShopPage() {
                       <button
                         key={product.id}
                         type="button"
-                        onClick={() => setSelectedProduct(product)}
+                        onClick={() => openProductDetail(product)}
                         className="w-full flex items-center gap-4 text-left hover:bg-cream rounded-2xl px-3 py-3 transition-colors"
                       >
                         <div className="w-16 h-16 rounded-xl bg-neutral-200 overflow-hidden flex-shrink-0">
@@ -324,7 +317,7 @@ export default function ShopPage() {
                       <button
                         key={product.id}
                         type="button"
-                        onClick={() => setSelectedProduct(product)}
+                        onClick={() => openProductDetail(product)}
                         className="card px-3 py-3 text-left hover:shadow-soft-lg transition-shadow"
                       >
                         <div className="w-full aspect-square rounded-xl bg-neutral-200 overflow-hidden mb-2">
@@ -570,9 +563,12 @@ export default function ShopPage() {
                           <Heart className={`w-5 h-5 ${inWishlist ? 'fill-current' : ''}`} />
                         </button>
                         <button
-                          onClick={(e) => handleQuickView(product, e)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openProductDetail(product)
+                          }}
                           className="p-2 rounded-full bg-white/90 text-neutral-600 hover:bg-white transition-colors"
-                          aria-label="Quick view"
+                          aria-label="View details"
                         >
                           <Eye className="w-5 h-5" />
                         </button>
@@ -719,155 +715,6 @@ export default function ShopPage() {
         </div>
       </div>
 
-      {/* Product detail modal – gallery + full details */}
-      <AnimatePresence>
-        {selectedProduct && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedProduct(null)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[55]"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, x: '-50%', y: '-50%' }}
-              animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
-              exit={{ opacity: 0, scale: 0.9, x: '-50%', y: '-50%' }}
-              onClick={(e) => e.stopPropagation()}
-              className="fixed left-1/2 top-1/2 w-[90%] max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl z-[60] overflow-hidden flex flex-col"
-            >
-              <button
-                onClick={() => setSelectedProduct(null)}
-                className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/90 text-neutral-500 hover:text-neutral-700 transition-colors"
-                aria-label="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="overflow-y-auto flex-1">
-                {/* Image gallery */}
-                <div className="relative bg-neutral-100">
-                  <div className="aspect-square max-h-[45vh] flex items-center justify-center overflow-hidden">
-                    {Array.isArray(selectedProduct.images) && selectedProduct.images.length > 0 ? (
-                      <>
-                        <img
-                          src={selectedProduct.images[detailImageIndex] || selectedProduct.images[0]}
-                          alt={selectedProduct.title}
-                          className="w-full h-full object-contain"
-                        />
-                        {selectedProduct.images.length > 1 && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); setDetailImageIndex((i) => (i <= 0 ? selectedProduct.images.length - 1 : i - 1)); }}
-                              className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 text-neutral-700 hover:bg-white shadow"
-                              aria-label="Previous image"
-                            >
-                              <ChevronLeft className="w-5 h-5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); setDetailImageIndex((i) => (i >= selectedProduct.images.length - 1 ? 0 : i + 1)); }}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 text-neutral-700 hover:bg-white shadow"
-                              aria-label="Next image"
-                            >
-                              <ChevronRight className="w-5 h-5" />
-                            </button>
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <div className="text-neutral-400 text-sm">No image</div>
-                    )}
-                  </div>
-                  {Array.isArray(selectedProduct.images) && selectedProduct.images.length > 1 && (
-                    <div className="flex gap-2 p-3 overflow-x-auto justify-center border-t border-neutral-200">
-                      {selectedProduct.images.map((img, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); setDetailImageIndex(i); }}
-                          className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-colors ${i === detailImageIndex ? 'border-sage ring-1 ring-sage' : 'border-transparent hover:border-neutral-300'}`}
-                        >
-                          <img src={img} alt="" className="w-full h-full object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-6 md:p-8">
-                  {selectedProduct.category && (
-                    <p className="text-xs font-medium text-sage-dark uppercase tracking-wide mb-1">{selectedProduct.category}</p>
-                  )}
-                  <div className="flex gap-2 mb-2 flex-wrap">
-                    {selectedProduct.tags?.map(tag => (
-                      <span key={tag} className="px-2.5 py-1 rounded-full text-xs font-medium bg-sage-muted/30 text-sage-dark">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-2">
-                    {selectedProduct.title}
-                  </h2>
-                  <p className="text-2xl font-semibold text-sage mb-4">
-                    ${selectedProduct.price}
-                  </p>
-                  <p className="text-neutral-600 text-sm leading-relaxed mb-4">
-                    {selectedProduct.description}
-                  </p>
-                  {selectedProduct.materials && (
-                    <p className="text-neutral-600 text-sm mb-1">
-                      <span className="font-medium text-neutral-700">Materials:</span> {selectedProduct.materials}
-                    </p>
-                  )}
-                  {selectedProduct.dimensions && (
-                    <p className="text-neutral-600 text-sm mb-1">
-                      <span className="font-medium text-neutral-700">Dimensions:</span> {selectedProduct.dimensions}
-                    </p>
-                  )}
-                  {selectedProduct.shipping && (
-                    <p className="text-neutral-600 text-sm mb-1">
-                      <span className="font-medium text-neutral-700">Shipping:</span> {selectedProduct.shipping}
-                    </p>
-                  )}
-                  {(selectedProduct.returnPolicy || selectedProduct.return_policy) && (
-                    <p className="text-neutral-600 text-sm mb-4">
-                      <span className="font-medium text-neutral-700">Returns:</span> {selectedProduct.returnPolicy || selectedProduct.return_policy}
-                    </p>
-                  )}
-                  {(selectedProduct.stock || 0) > 0 && (
-                    <p className="text-sm text-neutral-500 mb-4">
-                      In stock — {(selectedProduct.stock || 0)} available
-                    </p>
-                  )}
-                  <div className="flex gap-3 pt-4 border-t border-greige-light">
-                    <button
-                      onClick={() => {
-                        handleAddToCart(selectedProduct)
-                      }}
-                      disabled={(selectedProduct.stock || 0) === 0}
-                      className="flex-1 btn-outline py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {getCartQuantity(selectedProduct.id) > 0
-                        ? `Added (${getCartQuantity(selectedProduct.id)})`
-                        : 'Add to Cart'}
-                    </button>
-                    <button
-                      onClick={() => { handleBuyNow(selectedProduct); setSelectedProduct(null); }}
-                      disabled={(selectedProduct.stock || 0) === 0}
-                      className="flex-1 btn-primary py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Buy Now
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   )
 }

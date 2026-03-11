@@ -10,6 +10,7 @@ import Cart from './components/Cart'
 // Page Components
 import HomePage from './pages/Home'
 import ShopPage from './pages/Shop'
+import ProductDetailPage from './pages/ProductDetail'
 import DesignServicesPage from './pages/DesignServices'
 import HomeStagingAustinPage from './pages/HomeStagingAustin'
 import InteriorDesignAustinPage from './pages/InteriorDesignAustin'
@@ -244,6 +245,7 @@ function App() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<HomePage />} />
           <Route path="/shop" element={<ShopPage />} />
+          <Route path="/shop/:id" element={<ProductDetailPage />} />
           <Route path="/design-services" element={<DesignServicesPage />} />
           {/* SEO landing pages for design services */}
           <Route path="/home-staging-austin" element={<HomeStagingAustinPage />} />

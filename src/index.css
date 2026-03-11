@@ -42,8 +42,8 @@
   }
   
   .card {
-    @apply bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300;
-    border: 1px solid #EFE9E3;
+    @apply bg-white rounded-2xl p-6 transition-colors duration-200;
+    border: 1px solid #E6E0D8;
   }
   
   .input-field {
