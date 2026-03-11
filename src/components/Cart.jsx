@@ -37,28 +37,6 @@ export default function Cart() {
   })
   const needsAddress = items.length > 0 && !allPickupOnly
 
-  useEffect(() => {
-    if (needsAddress && !canShip && canDeliver && fulfillmentMethod === 'shipping') {
-      setFulfillmentMethod('delivery')
-    }
-  }, [needsAddress, canShip, canDeliver, fulfillmentMethod])
-
-  useEffect(() => {
-    if (subtotal >= 60 && (fulfillmentMethod === 'expedited' || fulfillmentMethod === 'delivery')) {
-      setFulfillmentMethod('shipping')
-    }
-  }, [subtotal, fulfillmentMethod])
-
-  // Lock body scroll when cart is open so only the cart panel scrolls
-  useEffect(() => {
-    if (!isOpen) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prev
-    }
-  }, [isOpen])
-
   const subtotal = getTotal()
   const shippingCost = subtotal >= 60 || totalItemCount <= 0 ? 0 : SHIPPING_FLAT
   const expeditedCost = subtotal >= 60 || totalItemCount <= 0 ? 0 : SHIPPING_EXPEDITED
@@ -73,6 +51,21 @@ export default function Cart() {
       : fulfillmentMethod === 'expedited'
       ? expeditedCost
       : 0
+
+  useEffect(() => {
+    if (needsAddress && !canShip && canDeliver && fulfillmentMethod === 'shipping') {
+      setFulfillmentMethod('delivery')
+    }
+  }, [needsAddress, canShip, canDeliver, fulfillmentMethod])
+
+  useEffect(() => {
+    if (!isOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [isOpen])
 
   const handleApplyPromo = () => {
     if (promoCode.toLowerCase() === 'magari10') {
@@ -149,10 +142,11 @@ export default function Cart() {
     }
     setCheckingOut(true)
     try {
+      const effectiveMethod = subtotal >= 60 ? 'shipping' : (allPickupOnly ? 'local_pickup' : fulfillmentMethod)
       const payload = {
         customerName: name,
         customerEmail: email,
-        fulfillmentMethod: allPickupOnly ? 'local_pickup' : fulfillmentMethod,
+        fulfillmentMethod: effectiveMethod,
         fulfillmentAmount: Math.round(fulfillmentAmount * 100) / 100,
         rewardCode: (rewardCode || '').trim(),
         items: items.map((i) => ({
