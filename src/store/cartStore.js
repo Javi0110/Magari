@@ -1,25 +1,40 @@
 import { create } from 'zustand'
 
+const STORAGE_KEY = 'magari-cart-storage'
+
+const canUseStorage = () =>
+  typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
+
 // Helper to save to localStorage
-const saveToStorage = (state) => {
-  localStorage.setItem('magari-cart-storage', JSON.stringify({
-    items: state.items
-  }))
+const saveToStorage = (items) => {
+  if (!canUseStorage()) return
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+  } catch {
+    // ignore storage errors
+  }
 }
 
 // Helper to load from localStorage
 const loadFromStorage = () => {
+  if (!canUseStorage()) return []
   try {
-    const stored = localStorage.getItem('magari-cart-storage')
-    return stored ? JSON.parse(stored) : { items: [] }
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (!stored) return []
+    const parsed = JSON.parse(stored)
+
+    // Support both array-only and { items: [] } formats
+    if (Array.isArray(parsed)) return parsed
+    if (parsed && Array.isArray(parsed.items)) return parsed.items
+    return []
   } catch {
-    return { items: [] }
+    return []
   }
 }
 
 // Cart store with localStorage persistence
 export const useCartStore = create((set, get) => ({
-  items: loadFromStorage().items,
+  items: loadFromStorage(),
   isOpen: false,
   
   addItem: (product) => {
@@ -33,18 +48,18 @@ export const useCartStore = create((set, get) => ({
           : item
       )
       set({ items: newItems })
-      saveToStorage({ items: newItems })
+      saveToStorage(newItems)
     } else {
       const newItems = [...items, { ...product, quantity: 1 }]
       set({ items: newItems })
-      saveToStorage({ items: newItems })
+      saveToStorage(newItems)
     }
   },
   
   removeItem: (productId) => {
     const newItems = get().items.filter(item => item.id !== productId)
     set({ items: newItems })
-    saveToStorage({ items: newItems })
+    saveToStorage(newItems)
   },
   
   updateQuantity: (productId, quantity) => {
@@ -57,12 +72,12 @@ export const useCartStore = create((set, get) => ({
       item.id === productId ? { ...item, quantity } : item
     )
     set({ items: newItems })
-    saveToStorage({ items: newItems })
+    saveToStorage(newItems)
   },
   
   clearCart: () => {
     set({ items: [] })
-    saveToStorage({ items: [] })
+    saveToStorage([])
   },
   
   toggleCart: () => set({ isOpen: !get().isOpen }),

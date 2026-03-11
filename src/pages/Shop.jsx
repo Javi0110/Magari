@@ -32,6 +32,7 @@ export default function ShopPage() {
   
   const { getAllProducts, initProducts, loading, error } = useProductsStore()
   const { addItem, openCart } = useCartStore()
+  const cartItems = useCartStore((s) => s.items)
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore()
 
   const categories = ['all', ...SHOP_MAGARI_CATEGORIES]
@@ -44,6 +45,11 @@ export default function ShopPage() {
   }, [initProducts])
 
   const allProducts = getAllProducts()
+
+  const getCartQuantity = (productId) => {
+    const item = cartItems.find((p) => p.id === productId)
+    return item ? item.quantity || 0 : 0
+  }
 
   // Filter products
   const filteredProducts = useMemo(() => {
@@ -593,12 +599,19 @@ export default function ShopPage() {
 
                     {/* Add to Cart Button */}
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleAddToCart(product)
+                      }}
                       disabled={(product.stock || 0) === 0}
                       className="w-full btn-primary py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ShoppingCart className="w-4 h-4 inline-block mr-2" />
-                      {(product.stock || 0) === 0 ? 'Sold Out' : 'Add to Cart'}
+                      {(product.stock || 0) === 0
+                        ? 'Sold Out'
+                        : getCartQuantity(product.id) > 0
+                        ? `Added (${getCartQuantity(product.id)})`
+                        : 'Add to Cart'}
                     </button>
 
                     {/* Back-in-stock Alert */}
@@ -825,15 +838,21 @@ export default function ShopPage() {
                     </p>
                   )}
                   {(selectedProduct.stock || 0) > 0 && (
-                    <p className="text-sm text-neutral-500 mb-4">In stock — {(selectedProduct.stock || 0)} available</p>
+                    <p className="text-sm text-neutral-500 mb-4">
+                      In stock — {(selectedProduct.stock || 0)} available
+                    </p>
                   )}
                   <div className="flex gap-3 pt-4 border-t border-greige-light">
                     <button
-                      onClick={() => { handleAddToCart(selectedProduct); setSelectedProduct(null); }}
+                      onClick={() => {
+                        handleAddToCart(selectedProduct)
+                      }}
                       disabled={(selectedProduct.stock || 0) === 0}
                       className="flex-1 btn-outline py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Add to Cart
+                      {getCartQuantity(selectedProduct.id) > 0
+                        ? `Added (${getCartQuantity(selectedProduct.id)})`
+                        : 'Add to Cart'}
                     </button>
                     <button
                       onClick={() => { handleBuyNow(selectedProduct); setSelectedProduct(null); }}
