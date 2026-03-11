@@ -318,21 +318,29 @@ export default function MarketplacePage() {
       setMakersLoading(true)
       const { data, error } = await supabase
         .from('vendors')
-        .select('id, business_name, name, profile_bio, profile_location, profile_instagram, profile_avatar_url, published')
+        .select('id, slug, business_name, name, profile_bio, profile_location, profile_instagram, profile_avatar_url, published')
         .eq('status', 'active')
         .eq('published', true)
         .order('created_at', { ascending: false })
       if (!error && data) {
         setMakers(
-          data.map(v => ({
-            id: v.id,
-            businessName: v.business_name,
-            name: v.name,
-            bio: v.profile_bio || '',
-            location: v.profile_location || 'Puerto Rico',
-            instagram: v.profile_instagram || '',
-            avatarUrl: v.profile_avatar_url || '',
-          }))
+          data.map(v => {
+            const fallbackSlug = (v.business_name || '')
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, '-')
+              .replace(/-+/g, '-')
+              .replace(/^-|-$/g, '')
+            return {
+              id: v.id,
+              slug: v.slug || fallbackSlug,
+              businessName: v.business_name,
+              name: v.name,
+              bio: v.profile_bio || '',
+              location: v.profile_location || 'Puerto Rico',
+              instagram: v.profile_instagram || '',
+              avatarUrl: v.profile_avatar_url || '',
+            }
+          })
         )
       }
       setMakersLoading(false)
@@ -751,8 +759,10 @@ export default function MarketplacePage() {
                   </p>
                 )}
                 {makers.map((vendor, index) => (
-                  <div
+                  <Link
                     key={vendor.id}
+                    to={vendor.slug ? `/maker/${vendor.slug}` : '/marketplace'}
+                    className="block"
                   >
                     <motion.div
                       initial={{ opacity: 0, y: 30 }}
@@ -803,7 +813,7 @@ export default function MarketplacePage() {
                         )}
                       </div>
                     </motion.div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
