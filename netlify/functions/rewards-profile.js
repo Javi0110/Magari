@@ -82,6 +82,24 @@ exports.handler = async (event) => {
         }
       }
       userRow = inserted
+
+      // Award 50 signup bonus points for new account
+      const SIGNUP_BONUS = 50
+      const { error: ledgerErr } = await supabase
+        .from('rewards_point_ledger')
+        .insert({
+          user_id: userRow.id,
+          type: 'signup',
+          points: SIGNUP_BONUS,
+          note: 'Welcome bonus',
+        })
+      if (!ledgerErr) {
+        await supabase
+          .from('rewards_users')
+          .update({ points: (userRow.points || 0) + SIGNUP_BONUS, updated_at: new Date().toISOString() })
+          .eq('id', userRow.id)
+        userRow = { ...userRow, points: (userRow.points || 0) + SIGNUP_BONUS }
+      }
     }
 
     const [{ data: ledgerRows, error: ledgerErr }, { data: orderRows, error: ordersErr }, { data: couponRows, error: couponsErr }] =
