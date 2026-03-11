@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ShoppingCart, Menu, X, LogIn } from 'lucide-react'
+import { ShoppingCart, Menu, X, LogIn, User } from 'lucide-react'
 import { useState } from 'react'
 import { useCartStore } from '../store/cartStore'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -81,16 +81,16 @@ export default function Header() {
             ))}
           </div>
 
-          {/* Login dropdown (desktop) */}
+          {/* Profile / login dropdown (desktop) */}
           <div className="hidden lg:block relative">
             <button
               onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
-              className="flex items-center gap-2 text-stone hover:text-sage transition-colors font-medium"
+              className="flex items-center justify-center text-stone hover:text-sage transition-colors"
               aria-expanded={loginDropdownOpen}
               aria-haspopup="true"
+              aria-label="Profile and login"
             >
-              <LogIn className="w-5 h-5" />
-              Login
+              <User className="w-6 h-6" />
             </button>
             {loginDropdownOpen && (
               <>

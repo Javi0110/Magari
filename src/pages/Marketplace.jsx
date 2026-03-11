@@ -301,11 +301,15 @@ export default function MarketplacePage() {
       const user = JSON.parse(raw)
       setCurrentUser(user)
       setIsLoggedIn(true)
-      setView('dashboard')
+      // Solo mostramos el dashboard automáticamente si el vendor
+      // está explícitamente en la ruta de login.
+      if (location.pathname.includes('vendor-login')) {
+        setView('dashboard')
+      }
     } catch {
       // ignore
     }
-  }, [])
+  }, [location.pathname])
 
   // Cargar makers publicados desde Supabase para la sección "Meet Our Makers"
   useEffect(() => {
