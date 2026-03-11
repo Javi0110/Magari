@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Gift, ArrowRight, Star } from 'lucide-react'
+import { Gift, ArrowRight, Star, LogOut } from 'lucide-react'
 
 const TIERS = [
   { id: 'dreamer', label: 'Dreamer', min: 0, max: 199 },
@@ -58,6 +58,16 @@ export default function RewardsDashboardPage() {
     }
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('magari-rewards-email')
+    setEmail('')
+    setUser(null)
+    setLedger([])
+    setOrders([])
+    setCoupons([])
+    setError(null)
+  }
+
   const handleRedeem = async (reward) => {
     if (!email || !user) return
     setRedeeming(true)
@@ -110,13 +120,25 @@ export default function RewardsDashboardPage() {
             <span className="mx-2">/</span>
             <span className="text-neutral-700">Dashboard</span>
           </nav>
-          <Link
-            to="/shop"
-            className="hidden sm:inline-flex items-center text-sm text-sage hover:text-sage-dark"
-          >
-            Shop now
-            <ArrowRight className="w-4 h-4 ml-1" />
-          </Link>
+          <div className="flex items-center gap-3">
+            {user && (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex items-center gap-1.5 text-sm text-neutral-600 hover:text-sage transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Log out
+              </button>
+            )}
+            <Link
+              to="/shop"
+              className="hidden sm:inline-flex items-center text-sm text-sage hover:text-sage-dark"
+            >
+              Shop now
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Link>
+          </div>
         </div>
       </div>
 
