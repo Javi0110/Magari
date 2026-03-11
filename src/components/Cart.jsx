@@ -15,6 +15,7 @@ export default function Cart() {
   const [checkingOut, setCheckingOut] = useState(false)
   const [promoCode, setPromoCode] = useState('')
   const [appliedPromo, setAppliedPromo] = useState(null)
+  const [rewardCode, setRewardCode] = useState('')
   const [customerName, setCustomerName] = useState('')
   const [customerEmail, setCustomerEmail] = useState('')
   const [shippingAddress, setShippingAddress] = useState('')
@@ -137,6 +138,7 @@ export default function Cart() {
         customerEmail: email,
         fulfillmentMethod: allPickupOnly ? 'local_pickup' : fulfillmentMethod,
         fulfillmentAmount: Math.round(fulfillmentAmount * 100) / 100,
+        rewardCode: (rewardCode || '').trim(),
         items: items.map((i) => ({
           id: i.id,
           title: i.title,
@@ -289,6 +291,21 @@ export default function Cart() {
                       Promo code &quot;{appliedPromo.code}&quot; applied! {Math.round(appliedPromo.discount * 100)}% off
                     </p>
                   )}
+                  <div className="mt-3">
+                    <label className="block text-xs font-medium text-neutral-600 mb-1">
+                      Rewards code
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter rewards coupon"
+                      value={rewardCode}
+                      onChange={(e) => setRewardCode(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
+                    />
+                    <p className="mt-1 text-[11px] text-neutral-500">
+                      Apply a code from your Magari Rewards Circle profile.
+                    </p>
+                  </div>
                 </div>
 
                 {/* Fulfillment: pickup only vs shipping/delivery */}

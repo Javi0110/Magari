@@ -3,6 +3,7 @@
 // En Netlify: Environment variables → STRIPE_SECRET_KEY (sk_test_... o sk_live_...)
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '')
+const { createClient } = require('@supabase/supabase-js')
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const FROM_EMAIL = 'Magari & Co. <hello@casamagari.com>'
@@ -108,6 +109,7 @@ exports.handler = async (event) => {
     const fulfillmentMethod = body.fulfillmentMethod || 'shipping'
     const fulfillmentAmount = Math.max(0, Number(body.fulfillmentAmount) || 0)
     const shippingAddress = body.shippingAddress || {}
+    const rewardCode = (body.rewardCode || '').trim()
 
     if (!customerEmail || items.length === 0) {
       return {
@@ -179,10 +181,65 @@ exports.handler = async (event) => {
       metadata.shipping_postal_code = (shippingAddress.postal_code || '').slice(0, 500)
     }
 
+    // Optional rewards coupon
+    let discounts = []
+    if (rewardCode) {
+      const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+      const serviceKey =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SECRET_KEY ||
+        process.env.SUPABASE_ANON_KEY
+
+      if (!supabaseUrl || !serviceKey) {
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: 'Rewards server configuration missing.' }),
+        }
+      }
+
+      const supabase = createClient(supabaseUrl, serviceKey)
+      const { data: couponRow, error: couponErr } = await supabase
+        .from('rewards_coupons')
+        .select('*')
+        .eq('code', rewardCode)
+        .eq('status', 'active')
+        .lt('uses', 'max_uses')
+        .maybeSingle()
+
+      if (couponErr || !couponRow) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: 'Invalid or expired rewards code.' }),
+        }
+      }
+
+      const amountOff = Math.round(Number(couponRow.discount_amount || 0) * 100)
+      if (amountOff > 0) {
+        const stripeCoupon = await stripe.coupons.create({
+          amount_off: amountOff,
+          currency: 'usd',
+          duration: 'once',
+        })
+        discounts = [{ coupon: stripeCoupon.id }]
+
+        const newUses = (couponRow.uses || 0) + 1
+        await supabase
+          .from('rewards_coupons')
+          .update({
+            uses: newUses,
+            status: newUses >= (couponRow.max_uses || 1) ? 'used' : 'active',
+          })
+          .eq('id', couponRow.id)
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       line_items,
+      discounts,
       customer_email: customerEmail,
       metadata,
       success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,

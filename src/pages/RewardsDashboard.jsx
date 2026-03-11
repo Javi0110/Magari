@@ -20,6 +20,7 @@ export default function RewardsDashboardPage() {
   const [orders, setOrders] = useState([])
   const [coupons, setCoupons] = useState([])
   const [error, setError] = useState(null)
+  const [redeeming, setRedeeming] = useState(false)
 
   useEffect(() => {
     const stored = localStorage.getItem('magari-rewards-email')
@@ -53,6 +54,31 @@ export default function RewardsDashboardPage() {
       setError(err.message || 'Could not load rewards right now.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleRedeem = async (reward) => {
+    if (!email || !user) return
+    setRedeeming(true)
+    setError(null)
+    try {
+      const res = await fetch('/.netlify/functions/rewards-redeem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), reward }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Could not redeem reward.')
+      }
+      // Refresh profile so points, ledger, and coupons update
+      await handleLoad()
+      alert(`Created reward coupon: ${data.coupon.code}`)
+    } catch (err) {
+      console.error('Redeem error:', err)
+      setError(err.message || 'Could not redeem reward right now.')
+    } finally {
+      setRedeeming(false)
     }
   }
 
@@ -169,6 +195,35 @@ export default function RewardsDashboardPage() {
                   <li>· 100 pts for each successful referral</li>
                   <li>· 25 pts for sharing your purchase on social media</li>
                 </ul>
+                <div className="mt-4 border-t border-cream-dark/50 pt-3">
+                  <p className="text-sm font-semibold text-neutral-800 mb-2">Redeem points</p>
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <button
+                      type="button"
+                      disabled={redeeming || points < 100}
+                      onClick={() => handleRedeem('100')}
+                      className="px-3 py-2 rounded-full border border-sage/40 text-neutral-700 hover:bg-cream disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      100 pts → $5
+                    </button>
+                    <button
+                      type="button"
+                      disabled={redeeming || points < 200}
+                      onClick={() => handleRedeem('200')}
+                      className="px-3 py-2 rounded-full border border-sage/40 text-neutral-700 hover:bg-cream disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      200 pts → $10
+                    </button>
+                    <button
+                      type="button"
+                      disabled={redeeming || points < 400}
+                      onClick={() => handleRedeem('400')}
+                      className="px-3 py-2 rounded-full border border-sage/40 text-neutral-700 hover:bg-cream disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      400 pts → $25
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <div className="card">
