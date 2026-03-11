@@ -72,7 +72,14 @@ exports.handler = async (event) => {
       const email = (session.customer_details?.email || '').toLowerCase()
       if (email) {
         const total = Number(session.amount_total || 0) / 100
-        const points = Math.floor(total)
+        let points = Math.floor(total)
+        // Guardrails: ignore clearly invalid totals and cap points per order
+        if (!Number.isFinite(points) || points <= 0 || total <= 0 || total > 10000) {
+          points = 0
+        }
+        const MAX_POINTS_PER_ORDER = 500
+        points = Math.min(points, MAX_POINTS_PER_ORDER)
+
         if (points > 0) {
           const referralCode = `MG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
           const { data: rewardsUser, error: userErr } = await supabase
@@ -84,16 +91,18 @@ exports.handler = async (event) => {
             .select('*')
             .single()
           if (!userErr && rewardsUser) {
-            await supabase.from('rewards_point_ledger').insert({
+            const { error: ledgerErr } = await supabase.from('rewards_point_ledger').insert({
               user_id: rewardsUser.id,
               type: 'purchase',
               points,
               note: `Stripe session ${sessionId}`,
             })
-            await supabase
-              .from('rewards_users')
-              .update({ points: (rewardsUser.points || 0) + points })
-              .eq('id', rewardsUser.id)
+            if (!ledgerErr) {
+              await supabase
+                .from('rewards_users')
+                .update({ points: (rewardsUser.points || 0) + points })
+                .eq('id', rewardsUser.id)
+            }
           }
         }
       }
