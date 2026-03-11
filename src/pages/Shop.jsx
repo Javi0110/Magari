@@ -20,6 +20,7 @@ export default function ShopPage() {
   const [selectedMaterial, setSelectedMaterial] = useState('all')
   const [selectedShipping, setSelectedShipping] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
+  const [openFilter, setOpenFilter] = useState('category')
   const [sortBy, setSortBy] = useState('featured')
   const [displayCount, setDisplayCount] = useState(12)
   const [showNewsletter, setShowNewsletter] = useState(true)
@@ -356,7 +357,7 @@ export default function ShopPage() {
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters - Left Column */}
-          <aside className="lg:w-64 flex-shrink-0">
+          <aside className="lg:w-72 flex-shrink-0">
             {/* Filter Toggle for Mobile */}
             <div className="lg:hidden mb-4">
               <button
@@ -369,115 +370,252 @@ export default function ShopPage() {
               </button>
             </div>
 
-            {/* Filters Sidebar */}
-            <div className={`${showFilters ? 'block' : 'hidden'} lg:block card p-6 sticky top-24`}>
-              {/* Search Bar */}
-              <div className="mb-6">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-                  <input
-                    type="text"
-                    placeholder="Search…"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                {/* Category */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Category</label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-greige-light bg-white text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 appearance-none"
+            {/* Filters Sidebar / Panel */}
+            <div
+              className={`
+                lg:block lg:static lg:translate-x-0
+                fixed inset-y-0 right-0 w-full max-w-xs bg-cream/98 backdrop-blur-md border-l border-cream-dark/40 z-40
+                transition-transform duration-300 ease-out
+                ${showFilters ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+              `}
+            >
+              <div className="h-full lg:h-auto lg:bg-transparent lg:border-none lg:p-0 flex flex-col">
+                {/* Mobile close */}
+                <div className="flex items-center justify-between px-4 py-4 border-b border-cream-dark/40 lg:hidden">
+                  <p className="font-serif text-lg text-neutral-700">Filter</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowFilters(false)}
+                    className="p-1 text-neutral-500 hover:text-neutral-800"
                   >
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</option>
-                    ))}
-                  </select>
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
 
-                {/* Price Range */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Price: ${priceRange[0]} - ${priceRange[1]}
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="500"
-                    value={priceRange[1]}
-                    onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
-                    className="w-full"
-                  />
-                </div>
+                <div className="px-4 py-4 lg:p-0 lg:pt-2 lg:pb-6 space-y-6">
+                  {/* Search Bar */}
+                  <div className="mb-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                      <input
+                        type="text"
+                        placeholder="Search pieces…"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 rounded-full border border-greige-light bg-white/80 focus:bg-white focus:border-sage focus:ring-2 focus:ring-sage/15 outline-none transition-all text-sm"
+                      />
+                    </div>
+                  </div>
 
-                {/* Availability */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Availability</label>
-                  <select
-                    value={availability}
-                    onChange={(e) => setAvailability(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-greige-light bg-white text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 appearance-none"
-                  >
-                    <option value="all">All Products</option>
-                    <option value="in-stock">In Stock</option>
-                    <option value="sold-out">Sold Out</option>
-                  </select>
-                </div>
+                  {/* Accordion filters */}
+                  <div className="space-y-4">
+                    {/* Category */}
+                    <div className="border-b border-cream-dark/50 pb-2">
+                      <button
+                        type="button"
+                        onClick={() => setOpenFilter(openFilter === 'category' ? null : 'category')}
+                        className="w-full flex items-center justify-between py-2"
+                      >
+                        <span className="font-serif text-sm tracking-[0.12em] uppercase text-neutral-700">
+                          Category
+                        </span>
+                        {openFilter === 'category' ? (
+                          <ChevronUp className="w-4 h-4 text-neutral-500" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-neutral-500" />
+                        )}
+                      </button>
+                      {openFilter === 'category' && (
+                        <div className="mt-1 space-y-1 text-sm text-neutral-700">
+                          <select
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            className="w-full px-3 py-2 rounded-full border border-greige-light bg-white/80 text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/15 appearance-none"
+                          >
+                            {categories.map((cat) => (
+                              <option key={cat} value={cat}>
+                                {cat === 'all' ? 'All Categories' : cat}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
 
-                {/* Color */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Color</label>
-                  <select
-                    value={selectedColor}
-                    onChange={(e) => setSelectedColor(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-greige-light bg-white text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 appearance-none"
-                  >
-                    {colors.map(color => (
-                      <option key={color} value={color}>{color === 'all' ? 'All Colors' : color}</option>
-                    ))}
-                  </select>
-                </div>
+                    {/* Price */}
+                    <div className="border-b border-cream-dark/50 pb-2">
+                      <button
+                        type="button"
+                        onClick={() => setOpenFilter(openFilter === 'price' ? null : 'price')}
+                        className="w-full flex items-center justify-between py-2"
+                      >
+                        <span className="font-serif text-sm tracking-[0.12em] uppercase text-neutral-700">
+                          Price
+                        </span>
+                        {openFilter === 'price' ? (
+                          <ChevronUp className="w-4 h-4 text-neutral-500" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-neutral-500" />
+                        )}
+                      </button>
+                      {openFilter === 'price' && (
+                        <div className="mt-2 space-y-2">
+                          <p className="text-xs text-neutral-500">
+                            ${priceRange[0]} – ${priceRange[1]}
+                          </p>
+                          <input
+                            type="range"
+                            min="0"
+                            max="500"
+                            value={priceRange[1]}
+                            onChange={(e) => setPriceRange([0, parseInt(e.target.value, 10)])}
+                            className="w-full accent-sage"
+                          />
+                        </div>
+                      )}
+                    </div>
 
-                {/* Material */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Material</label>
-                  <select
-                    value={selectedMaterial}
-                    onChange={(e) => setSelectedMaterial(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-greige-light bg-white text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 appearance-none"
-                  >
-                    {materials.map(material => (
-                      <option key={material} value={material}>{material === 'all' ? 'All Materials' : material}</option>
-                    ))}
-                  </select>
-                </div>
+                    {/* Availability */}
+                    <div className="border-b border-cream-dark/50 pb-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenFilter(openFilter === 'availability' ? null : 'availability')
+                        }
+                        className="w-full flex items-center justify-between py-2"
+                      >
+                        <span className="font-serif text-sm tracking-[0.12em] uppercase text-neutral-700">
+                          Availability
+                        </span>
+                        {openFilter === 'availability' ? (
+                          <ChevronUp className="w-4 h-4 text-neutral-500" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-neutral-500" />
+                        )}
+                      </button>
+                      {openFilter === 'availability' && (
+                        <div className="mt-1">
+                          <select
+                            value={availability}
+                            onChange={(e) => setAvailability(e.target.value)}
+                            className="w-full px-3 py-2 rounded-full border border-greige-light bg-white/80 text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/15 appearance-none"
+                          >
+                            <option value="all">All Products</option>
+                            <option value="in-stock">In Stock</option>
+                            <option value="sold-out">Sold Out</option>
+                          </select>
+                        </div>
+                      )}
+                    </div>
 
-                {/* Shipping */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Shipping</label>
-                  <select
-                    value={selectedShipping}
-                    onChange={(e) => setSelectedShipping(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-greige-light bg-white text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 appearance-none"
-                  >
-                    {shippingOptions.map(option => (
-                      <option key={option} value={option}>{option === 'all' ? 'All Shipping' : option}</option>
-                    ))}
-                  </select>
-                </div>
+                    {/* Color */}
+                    <div className="border-b border-cream-dark/50 pb-2">
+                      <button
+                        type="button"
+                        onClick={() => setOpenFilter(openFilter === 'color' ? null : 'color')}
+                        className="w-full flex items-center justify-between py-2"
+                      >
+                        <span className="font-serif text-sm tracking-[0.12em] uppercase text-neutral-700">
+                          Color
+                        </span>
+                        {openFilter === 'color' ? (
+                          <ChevronUp className="w-4 h-4 text-neutral-500" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-neutral-500" />
+                        )}
+                      </button>
+                      {openFilter === 'color' && (
+                        <div className="mt-1">
+                          <select
+                            value={selectedColor}
+                            onChange={(e) => setSelectedColor(e.target.value)}
+                            className="w-full px-3 py-2 rounded-full border border-greige-light bg-white/80 text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/15 appearance-none"
+                          >
+                            {colors.map((color) => (
+                              <option key={color} value={color}>
+                                {color === 'all' ? 'All Colors' : color}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
 
-                {/* Clear Filters */}
-                <button
-                  onClick={clearFilters}
-                  className="w-full btn-outline py-2 text-sm"
-                >
-                  Clear Filters
-                </button>
+                    {/* Material */}
+                    <div className="border-b border-cream-dark/50 pb-2">
+                      <button
+                        type="button"
+                        onClick={() => setOpenFilter(openFilter === 'material' ? null : 'material')}
+                        className="w-full flex items-center justify-between py-2"
+                      >
+                        <span className="font-serif text-sm tracking-[0.12em] uppercase text-neutral-700">
+                          Material
+                        </span>
+                        {openFilter === 'material' ? (
+                          <ChevronUp className="w-4 h-4 text-neutral-500" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-neutral-500" />
+                        )}
+                      </button>
+                      {openFilter === 'material' && (
+                        <div className="mt-1">
+                          <select
+                            value={selectedMaterial}
+                            onChange={(e) => setSelectedMaterial(e.target.value)}
+                            className="w-full px-3 py-2 rounded-full border border-greige-light bg-white/80 text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/15 appearance-none"
+                          >
+                            {materials.map((material) => (
+                              <option key={material} value={material}>
+                                {material === 'all' ? 'All Materials' : material}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Shipping */}
+                    <div className="border-b border-cream-dark/50 pb-2">
+                      <button
+                        type="button"
+                        onClick={() => setOpenFilter(openFilter === 'shipping' ? null : 'shipping')}
+                        className="w-full flex items-center justify-between py-2"
+                      >
+                        <span className="font-serif text-sm tracking-[0.12em] uppercase text-neutral-700">
+                          Shipping
+                        </span>
+                        {openFilter === 'shipping' ? (
+                          <ChevronUp className="w-4 h-4 text-neutral-500" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-neutral-500" />
+                        )}
+                      </button>
+                      {openFilter === 'shipping' && (
+                        <div className="mt-1">
+                          <select
+                            value={selectedShipping}
+                            onChange={(e) => setSelectedShipping(e.target.value)}
+                            className="w-full px-3 py-2 rounded-full border border-greige-light bg-white/80 text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/15 appearance-none"
+                          >
+                            {shippingOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option === 'all' ? 'All Shipping' : option}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Clear Filters */}
+                    <button
+                      onClick={clearFilters}
+                      className="w-full mt-2 text-sm font-medium px-4 py-2 rounded-full border border-sage/40 text-sage hover:bg-cream transition-colors"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </aside>
