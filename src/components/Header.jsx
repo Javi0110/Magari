@@ -123,41 +123,13 @@ export default function Header() {
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setLoginDropdownOpen(false)} aria-hidden="true" />
                 <div className="absolute right-0 top-full mt-2 w-56 py-2 bg-white border border-greige-light rounded-2xl shadow-lg shadow-black/5 z-50">
-                  <button
-                    type="button"
-                    onClick={() => setLoginDropdownOpen(false)}
-                    className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
-                  >
-                    My Account
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLoginDropdownOpen(false)}
-                    className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
-                  >
-                    Orders
-                  </button>
                   <Link
                     to="/rewards/dashboard"
                     onClick={() => setLoginDropdownOpen(false)}
                     className="block px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
                   >
-                    Rewards
+                    Rewards Circle
                   </Link>
-                  <button
-                    type="button"
-                    onClick={() => setLoginDropdownOpen(false)}
-                    className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
-                  >
-                    Referrals
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLoginDropdownOpen(false)}
-                    className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
-                  >
-                    Settings
-                  </button>
                   {userRole === 'admin' && (
                     <Link
                       to="/admin"
