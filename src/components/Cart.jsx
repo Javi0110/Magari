@@ -187,25 +187,14 @@ export default function Cart() {
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closeCart}
-            onWheel={(e) => e.preventDefault()}
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 touch-none"
-            style={{ touchAction: 'none' }}
-            aria-hidden
-          />
-          <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-[51] flex flex-col overflow-hidden"
-          >
-            <div className="flex-shrink-0 flex items-center justify-between p-6 border-b border-neutral-200">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden"
+        >
+            <div className="flex-shrink-0 flex items-center justify-between p-4 sm:p-6 border-b border-neutral-200 max-w-4xl w-full mx-auto">
               <h2 className="font-serif text-2xl text-neutral-600 flex items-center">
                 <ShoppingBag className="w-6 h-6 mr-2" />
                 Cart
@@ -215,7 +204,7 @@ export default function Cart() {
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6 overscroll-contain">
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 overscroll-contain max-w-4xl w-full mx-auto">
               {items.length === 0 ? (
                 <div className="text-center py-12">
                   <ShoppingBag className="w-16 h-16 mx-auto text-neutral-300 mb-4" />
@@ -281,7 +270,7 @@ export default function Cart() {
             </div>
 
             {items.length > 0 && (
-              <div className="flex-shrink-0 border-t border-neutral-200 p-6 space-y-4">
+              <div className="flex-shrink-0 border-t border-neutral-200 p-4 sm:p-6 space-y-4 max-w-4xl w-full mx-auto">
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <input
@@ -508,8 +497,7 @@ export default function Cart() {
                 </Link>
               </div>
             )}
-          </motion.div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   )
