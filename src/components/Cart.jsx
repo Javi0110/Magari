@@ -325,10 +325,10 @@ export default function Cart() {
                       <div className="rounded-xl bg-sage/15 border-2 border-sage/40 p-4 text-center">
                         <p className="font-semibold text-sage-dark text-base flex items-center justify-center gap-2">
                           <Truck className="w-5 h-5" />
-                          ¡Llegaste a envío gratis!
+                          You&apos;ve unlocked free shipping!
                         </p>
                         <p className="text-sm text-neutral-700 mt-1">
-                          Tu pedido de $60+ se envía sin costo. ¡A celebrar!
+                          Your $60+ order ships at no extra cost.
                         </p>
                       </div>
                     ) : (
