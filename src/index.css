@@ -95,5 +95,23 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Flatten all shadows across the site for a 2D, editorial look */
+  .shadow,
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-2xl,
+  .shadow-inner {
+    box-shadow: none !important;
+  }
+}
+
+/* Global select styling to match Shop sidebar filters */
+@layer base {
+  select {
+    @apply rounded-full border border-greige-light bg-white/80 text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/15;
+  }
 }
 
