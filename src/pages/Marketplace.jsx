@@ -319,7 +319,7 @@ export default function MarketplacePage() {
       setMakersLoading(true)
       const { data, error } = await supabase
         .from('vendors')
-        .select('id, slug, business_name, name, profile_bio, profile_location, profile_instagram, profile_avatar_url, published')
+        .select('id, business_name, name, profile_bio, profile_location, profile_instagram, profile_avatar_url, published')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
       if (error) {
