@@ -10,6 +10,7 @@ import { useCartStore } from '../store/cartStore'
 import { useWishlistStore } from '../store/wishlistStore'
 import { supabase } from '../utils/supabase'
 import { SHOP_MAGARI_CATEGORIES } from '../constants/shopCategories'
+import InlineSelect from '../components/InlineSelect'
 
 export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -427,17 +428,15 @@ export default function ShopPage() {
                       </button>
                       {openFilter === 'category' && (
                         <div className="mt-1 space-y-1 text-sm text-neutral-700">
-                          <select
+                          <InlineSelect
                             value={selectedCategory}
-                            onChange={(e) => setSelectedCategory(e.target.value)}
-                            className="w-full px-3 py-2 rounded-full border border-greige-light bg-white/80 text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/15 appearance-none"
-                          >
-                            {categories.map((cat) => (
-                              <option key={cat} value={cat}>
-                                {cat === 'all' ? 'All Categories' : cat}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={setSelectedCategory}
+                            options={categories.map((cat) => ({
+                              value: cat,
+                              label: cat === 'all' ? 'All Categories' : cat,
+                            }))}
+                            placeholder="All Categories"
+                          />
                         </div>
                       )}
                     </div>
@@ -495,15 +494,16 @@ export default function ShopPage() {
                       </button>
                       {openFilter === 'availability' && (
                         <div className="mt-1">
-                          <select
+                          <InlineSelect
                             value={availability}
-                            onChange={(e) => setAvailability(e.target.value)}
-                            className="w-full px-3 py-2 rounded-full border border-greige-light bg-white/80 text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/15 appearance-none"
-                          >
-                            <option value="all">All Products</option>
-                            <option value="in-stock">In Stock</option>
-                            <option value="sold-out">Sold Out</option>
-                          </select>
+                            onChange={setAvailability}
+                            options={[
+                              { value: 'all', label: 'All Products' },
+                              { value: 'in-stock', label: 'In Stock' },
+                              { value: 'sold-out', label: 'Sold Out' },
+                            ]}
+                            placeholder="All Products"
+                          />
                         </div>
                       )}
                     </div>
@@ -526,17 +526,15 @@ export default function ShopPage() {
                       </button>
                       {openFilter === 'color' && (
                         <div className="mt-1">
-                          <select
+                          <InlineSelect
                             value={selectedColor}
-                            onChange={(e) => setSelectedColor(e.target.value)}
-                            className="w-full px-3 py-2 rounded-full border border-greige-light bg-white/80 text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/15 appearance-none"
-                          >
-                            {colors.map((color) => (
-                              <option key={color} value={color}>
-                                {color === 'all' ? 'All Colors' : color}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={setSelectedColor}
+                            options={colors.map((color) => ({
+                              value: color,
+                              label: color === 'all' ? 'All Colors' : color,
+                            }))}
+                            placeholder="All Colors"
+                          />
                         </div>
                       )}
                     </div>
@@ -559,17 +557,15 @@ export default function ShopPage() {
                       </button>
                       {openFilter === 'material' && (
                         <div className="mt-1">
-                          <select
+                          <InlineSelect
                             value={selectedMaterial}
-                            onChange={(e) => setSelectedMaterial(e.target.value)}
-                            className="w-full px-3 py-2 rounded-full border border-greige-light bg-white/80 text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/15 appearance-none"
-                          >
-                            {materials.map((material) => (
-                              <option key={material} value={material}>
-                                {material === 'all' ? 'All Materials' : material}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={setSelectedMaterial}
+                            options={materials.map((material) => ({
+                              value: material,
+                              label: material === 'all' ? 'All Materials' : material,
+                            }))}
+                            placeholder="All Materials"
+                          />
                         </div>
                       )}
                     </div>
@@ -592,17 +588,15 @@ export default function ShopPage() {
                       </button>
                       {openFilter === 'shipping' && (
                         <div className="mt-1">
-                          <select
+                          <InlineSelect
                             value={selectedShipping}
-                            onChange={(e) => setSelectedShipping(e.target.value)}
-                            className="w-full px-3 py-2 rounded-full border border-greige-light bg-white/80 text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/15 appearance-none"
-                          >
-                            {shippingOptions.map((option) => (
-                              <option key={option} value={option}>
-                                {option === 'all' ? 'All Shipping' : option}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={setSelectedShipping}
+                            options={shippingOptions.map((option) => ({
+                              value: option,
+                              label: option === 'all' ? 'All Shipping' : option,
+                            }))}
+                            placeholder="All Shipping"
+                          />
                         </div>
                       )}
                     </div>
@@ -641,17 +635,19 @@ export default function ShopPage() {
               </div>
               <div className="flex items-center gap-2 justify-end">
                 <label className="text-sm text-neutral-600">Sort by:</label>
-                <select
+                <InlineSelect
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="px-4 py-2 rounded-xl border border-greige-light bg-white text-neutral-700 text-sm outline-none focus:border-sage focus:ring-2 focus:ring-sage/20 appearance-none"
-                >
-                  <option value="featured">Featured</option>
-                  <option value="newest">Newest</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="bestselling">Bestselling</option>
-                </select>
+                  onChange={setSortBy}
+                  options={[
+                    { value: 'featured', label: 'Featured' },
+                    { value: 'newest', label: 'Newest' },
+                    { value: 'price-low', label: 'Price: Low to High' },
+                    { value: 'price-high', label: 'Price: High to Low' },
+                    { value: 'bestselling', label: 'Bestselling' },
+                  ]}
+                  className="w-44"
+                  placeholder="Featured"
+                />
               </div>
             </div>
 

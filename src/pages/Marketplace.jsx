@@ -5,6 +5,7 @@ import { Heart, Store, TrendingUp, Upload, DollarSign, Package, BarChart3, LogIn
 import { sendVendorApplicationEmail } from '../utils/emailService'
 import { supabase } from '../utils/supabase'
 import { sampleVendors } from '../data/sampleData'
+import InlineSelect from '../components/InlineSelect'
 import { useProductsStore } from '../store/productsStore'
 import { useVendorProductsStore } from '../store/vendorProductsStore'
 import { useNotificationsStore } from '../store/notificationsStore'
@@ -484,41 +485,44 @@ export default function MarketplacePage() {
                       className="input-field pl-9"
                     />
                   </div>
-                  <select
+                  <InlineSelect
                     value={shopMakerId}
-                    onChange={(e) => {
-                      setShopMakerId(e.target.value)
+                    onChange={(val) => {
+                      setShopMakerId(val)
                       setShopDisplayCount(12)
                     }}
-                    className="input-field w-full sm:w-48"
-                  >
-                    <option value="all">All makers</option>
-                    {makers.map(m => (
-                      <option key={m.id} value={m.id}>
-                        {m.businessName}
-                      </option>
-                    ))}
-                  </select>
-                  <select
+                    options={[
+                      { value: 'all', label: 'All makers' },
+                      ...makers.map((m) => ({
+                        value: String(m.id),
+                        label: m.businessName,
+                      })),
+                    ]}
+                    className="w-full sm:w-48"
+                    placeholder="All makers"
+                  />
+                  <InlineSelect
                     value={shopCategory}
-                    onChange={(e) => {
-                      setShopCategory(e.target.value)
+                    onChange={(val) => {
+                      setShopCategory(val)
                       setShopDisplayCount(12)
                     }}
-                    className="input-field w-full sm:w-40"
-                  >
-                    <option value="all">All categories</option>
-                    <option value="Ceramics">Ceramics</option>
-                    <option value="Textiles">Textiles</option>
-                    <option value="Home Decor">Home Decor</option>
-                    <option value="Art">Art &amp; Prints</option>
-                    <option value="Stationery">Stationery &amp; Paper Goods</option>
-                    <option value="Jewelry">Jewelry</option>
-                    <option value="Gifts">Gifts</option>
-                    <option value="Beauty">Self-care &amp; Beauty</option>
-                    <option value="Food">Pantry &amp; Treats</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    options={[
+                      { value: 'all', label: 'All categories' },
+                      { value: 'Ceramics', label: 'Ceramics' },
+                      { value: 'Textiles', label: 'Textiles' },
+                      { value: 'Home Decor', label: 'Home Decor' },
+                      { value: 'Art', label: 'Art & Prints' },
+                      { value: 'Stationery', label: 'Stationery & Paper Goods' },
+                      { value: 'Jewelry', label: 'Jewelry' },
+                      { value: 'Gifts', label: 'Gifts' },
+                      { value: 'Beauty', label: 'Self-care & Beauty' },
+                      { value: 'Food', label: 'Pantry & Treats' },
+                      { value: 'Other', label: 'Other' },
+                    ]}
+                    className="w-full sm:w-40"
+                    placeholder="All categories"
+                  />
                 </div>
               </div>
 
