@@ -321,8 +321,10 @@ export default function MarketplacePage() {
         .from('vendors')
         .select('id, slug, business_name, name, profile_bio, profile_location, profile_instagram, profile_avatar_url, published')
         .eq('status', 'active')
-        .eq('published', true)
         .order('created_at', { ascending: false })
+      if (error) {
+        console.error('Error loading makers:', error)
+      }
       if (!error && data) {
         setMakers(
           data.map(v => {
