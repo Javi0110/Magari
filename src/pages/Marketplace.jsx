@@ -317,11 +317,21 @@ export default function MarketplacePage() {
     const loadMakers = async () => {
       if (!supabase) return
       setMakersLoading(true)
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('vendors')
         .select('id, business_name, name, profile_bio, profile_location, profile_instagram, profile_avatar_url, published')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
+      // Fallback for databases missing profile/published columns
+      if (error && error.code === '42703') {
+        const fallback = await supabase
+          .from('vendors')
+          .select('id, business_name, name')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+        data = fallback.data
+        error = fallback.error
+      }
       if (error) {
         console.error('Error loading makers:', error)
       }

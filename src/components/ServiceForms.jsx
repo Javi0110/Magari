@@ -740,63 +740,6 @@ export const VirtualStylingForm = ({ onClose }) => {
                         <label className="form-label">Length (ft)</label>
                         <input
                           className="input-field"
-                          placeholder="e.g., 15"
-                          value={entry.measurements.length}
-                          onChange={(event) =>
-                            handleEntryChange(area.id, entry.id, {
-                              measurements: {
-                                ...entry.measurements,
-                                length: event.target.value
-                              }
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <label className="form-label">Width (ft)</label>
-                        <input
-                          className="input-field"
-                          placeholder="e.g., 12"
-                          value={entry.measurements.width}
-                          onChange={(event) =>
-                            handleEntryChange(area.id, entry.id, {
-                              measurements: {
-                                ...entry.measurements,
-                                width: event.target.value
-                              }
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <label className="form-label">Height (ft)</label>
-                        <input
-                          className="input-field"
-                          placeholder="e.g., 9"
-                          value={entry.measurements.height}
-                          onChange={(event) =>
-                            handleEntryChange(area.id, entry.id, {
-                              measurements: {
-                                ...entry.measurements,
-                                height: event.target.value
-                              }
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-                    <MediaDropzone
-                      label={`${entryLabel} media uploads`}
-                      description="Sube al menos una foto o video corto (máx. 1 min) para este ambiente."
-                      inputId={`${area.id}-${entry.id}-decorating`}
-                      files={entry.media}
-                      onFilesChange={(files) => handleEntryMediaChange(area.id, entry.id, files)}
-                    />
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="form-label">Length (ft)</label>
-                        <input
-                          className="input-field"
                           value={entry.measurements.length}
                           onChange={(event) =>
                             handleEntryChange(area.id, entry.id, {

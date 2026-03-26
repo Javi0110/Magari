@@ -42,6 +42,22 @@ const SHOP_PRODUCT_SELECT = [
   'return_policy',
   'vendor_id',
 ].join(', ')
+
+const fetchShopProducts = async () => {
+  let result = await supabase
+    .from('shop_products')
+    .select(SHOP_PRODUCT_SELECT)
+    .order('created_at', { ascending: false })
+
+  // Fallback for older schemas missing one or more selected columns.
+  if (result.error && result.error.code === '42703') {
+    result = await supabase
+      .from('shop_products')
+      .select('*')
+      .order('created_at', { ascending: false })
+  }
+  return result
+}
 function toDb(product) {
   const out = {}
   for (const key of SHOP_PRODUCT_KEYS) {
@@ -88,10 +104,7 @@ export const useProductsStore = create((set, get) => ({
     }
     // Clear products so we never show stale/partial cache (e.g. one product); skeletons show while loading
     set({ loading: true, error: null, products: [] })
-    const { data, error } = await supabase
-      .from('shop_products')
-      .select(SHOP_PRODUCT_SELECT)
-      .order('created_at', { ascending: false })
+    const { data, error } = await fetchShopProducts()
     
     if (error) {
       console.error('initProducts error:', error)
@@ -139,7 +152,7 @@ export const useProductsStore = create((set, get) => ({
     const { data, error } = await supabase
       .from('shop_products')
       .insert(payload)
-      .select(SHOP_PRODUCT_SELECT)
+      .select('*')
       .single()
     
     if (error) {
@@ -170,7 +183,7 @@ export const useProductsStore = create((set, get) => ({
       .from('shop_products')
       .update(payload)
       .eq('id', id)
-      .select(SHOP_PRODUCT_SELECT)
+      .select('*')
       .single()
     
     if (error) {
