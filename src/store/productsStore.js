@@ -21,6 +21,27 @@ const SHOP_PRODUCT_KEYS = [
   'slug', 'title', 'description', 'price', 'category', 'room', 'materials',
   'dimensions', 'images', 'tags', 'badge', 'stock', 'is_active', 'shipping', 'fulfillment'
 ]
+const SHOP_PRODUCT_SELECT = [
+  'id',
+  'slug',
+  'title',
+  'description',
+  'price',
+  'category',
+  'room',
+  'materials',
+  'dimensions',
+  'images',
+  'tags',
+  'badge',
+  'stock',
+  'is_active',
+  'created_at',
+  'shipping',
+  'fulfillment',
+  'return_policy',
+  'vendor_id',
+].join(', ')
 function toDb(product) {
   const out = {}
   for (const key of SHOP_PRODUCT_KEYS) {
@@ -69,10 +90,11 @@ export const useProductsStore = create((set, get) => ({
     set({ loading: true, error: null, products: [] })
     const { data, error } = await supabase
       .from('shop_products')
-      .select('*')
+      .select(SHOP_PRODUCT_SELECT)
       .order('created_at', { ascending: false })
     
     if (error) {
+      console.error('initProducts error:', error)
       set({ loading: false, error: error.message, initialized: true })
       return
     }
@@ -117,7 +139,7 @@ export const useProductsStore = create((set, get) => ({
     const { data, error } = await supabase
       .from('shop_products')
       .insert(payload)
-      .select('*')
+      .select(SHOP_PRODUCT_SELECT)
       .single()
     
     if (error) {
@@ -148,7 +170,7 @@ export const useProductsStore = create((set, get) => ({
       .from('shop_products')
       .update(payload)
       .eq('id', id)
-      .select('*')
+      .select(SHOP_PRODUCT_SELECT)
       .single()
     
     if (error) {
