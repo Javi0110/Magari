@@ -15,13 +15,7 @@ export const SHIPPING_OPTIONS = [
   'Digital product – no shipping',
 ]
 
-// Fulfillment: what options this product supports. Drives checkout (address required, shipping vs delivery cost).
-export const FULFILLMENT_OPTIONS = [
-  { value: 'local_pickup_only', label: 'Local pickup only (Georgetown, TX)' },
-  { value: 'shipping', label: 'Shipping' },
-  { value: 'delivery', label: 'Delivery (within 30 miles)' },
-  { value: 'shipping_and_delivery', label: 'Shipping & delivery' },
-]
+// Product fulfillment is multi-select in Admin; stored as JSON array in shop_products.fulfillment — see src/utils/fulfillment.js
 
 export const PICKUP_ADDRESS = '75 Jan Ln, Georgetown, TX'
 export const PICKUP_DISPLAY = 'Pickup in Georgetown, TX. Full address (75 Jan Ln, Georgetown, TX) will be provided after payment.'

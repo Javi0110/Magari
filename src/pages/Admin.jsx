@@ -22,7 +22,13 @@ import {
 import { sampleTestimonials } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
 import { supabase } from '../utils/supabase'
-import { SHOP_MAGARI_CATEGORIES, SHIPPING_OPTIONS, RETURN_POLICY_OPTIONS, FULFILLMENT_OPTIONS } from '../constants/shopCategories'
+import { SHOP_MAGARI_CATEGORIES, SHIPPING_OPTIONS, RETURN_POLICY_OPTIONS } from '../constants/shopCategories'
+import {
+  parseFulfillmentModes,
+  serializeFulfillmentModes,
+  FULFILLMENT_MODE_KEYS,
+  FULFILLMENT_MODE_LABELS,
+} from '../utils/fulfillment'
 import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailRelay'
 import { useNotificationsStore } from '../store/notificationsStore'
 
@@ -586,7 +592,7 @@ function ProductForm({ product, onClose }) {
     shipping: product?.shipping || SHIPPING_OPTIONS[0],
     returnPolicy: product?.returnPolicy || RETURN_POLICY_OPTIONS[0],
     stock: product?.stock ?? 0,
-    fulfillment: product?.fulfillment || 'shipping',
+    fulfillmentModes: parseFulfillmentModes(product?.fulfillment),
   })
 
   // Handle image file uploads
@@ -663,13 +669,20 @@ function ProductForm({ product, onClose }) {
     // Get image URLs from uploaded files
     const imageUrls = await getImageUrls()
     
+    if (!formData.fulfillmentModes?.length) {
+      alert('Choose at least one fulfillment option (pickup, shipping, and/or delivery).')
+      return
+    }
+
     const productData = {
       ...formData,
       price: parseFloat(formData.price),
       stock: Math.max(0, parseInt(formData.stock, 10) || 0),
       images: imageUrls.length > 0 ? imageUrls : formData.images.split(',').map(img => img.trim()).filter(img => img),
       tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+      fulfillment: serializeFulfillmentModes(formData.fulfillmentModes),
     }
+    delete productData.fulfillmentModes
 
     if (product) {
       updateProduct(product.id, productData)
@@ -911,20 +924,36 @@ function ProductForm({ product, onClose }) {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sage-dark font-medium mb-2">
-                  Fulfillment
+                  Fulfillment (choose any that apply)
                 </label>
-                <select
-                  value={formData.fulfillment}
-                  onChange={(e) => setFormData({ ...formData, fulfillment: e.target.value })}
-                  className="input-field"
-                >
-                  {FULFILLMENT_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <div className="space-y-2 rounded-xl border border-greige-light p-3 bg-cream/30">
+                  {FULFILLMENT_MODE_KEYS.map((key) => (
+                    <label key={key} className="flex items-start gap-3 cursor-pointer text-sm text-neutral-700">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 text-sage rounded border-greige-light"
+                        checked={formData.fulfillmentModes.includes(key)}
+                        onChange={() => {
+                          const set = new Set(formData.fulfillmentModes)
+                          if (set.has(key)) {
+                            set.delete(key)
+                            if (set.size === 0) set.add('shipping')
+                          } else {
+                            set.add(key)
+                          }
+                          const next = FULFILLMENT_MODE_KEYS.filter((k) => set.has(k))
+                          setFormData({ ...formData, fulfillmentModes: next })
+                        }}
+                      />
+                      <span>{FULFILLMENT_MODE_LABELS[key]}</span>
+                    </label>
                   ))}
-                </select>
-                <p className="text-xs text-neutral-500 mt-1">Local pickup is at 75 Jan Ln, Georgetown, TX (address shown after payment).</p>
+                </div>
+                <p className="text-xs text-neutral-500 mt-1">
+                  Customers only see checkout options that match what you enable. Delivery is limited to 30 miles from 75 Jan Ln, Georgetown, TX.
+                </p>
               </div>
               <div>
                 <label className="block text-sage-dark font-medium mb-2">

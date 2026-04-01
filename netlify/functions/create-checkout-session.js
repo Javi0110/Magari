@@ -4,6 +4,7 @@
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '')
 const { createClient } = require('@supabase/supabase-js')
+const { checkDeliveryWithinRadius } = require('./deliveryRadiusUtils')
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const FROM_EMAIL = 'Magari & Co. <hello@casamagari.com>'
@@ -125,6 +126,24 @@ exports.handler = async (event) => {
         body: JSON.stringify({
           error: 'Please enter a valid email address (e.g. you@email.com).',
         }),
+      }
+    }
+
+    if (fulfillmentMethod === 'delivery') {
+      const deliveryCheck = await checkDeliveryWithinRadius({
+        line1: shippingAddress.line1,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        postal_code: shippingAddress.postal_code,
+      })
+      if (!deliveryCheck.ok) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            error: deliveryCheck.error || 'Delivery is not available to this address.',
+          }),
+        }
       }
     }
 

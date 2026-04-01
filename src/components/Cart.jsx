@@ -5,6 +5,11 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
 import { PICKUP_DISPLAY } from '../constants/shopCategories'
+import {
+  cartAllPickupOnly,
+  cartCanShip,
+  cartCanDeliver,
+} from '../utils/fulfillment'
 
 const SHIPPING_FLAT = 6.75
 const SHIPPING_EXPEDITED = 13.65
@@ -26,15 +31,9 @@ export default function Cart() {
   const [abandonedStatus, setAbandonedStatus] = useState(null)
 
   const totalItemCount = items.reduce((sum, i) => sum + (i.quantity || 1), 0)
-  const allPickupOnly = items.length > 0 && items.every((i) => (i.fulfillment || 'shipping') === 'local_pickup_only')
-  const canShip = items.some((i) => {
-    const f = i.fulfillment || 'shipping'
-    return f === 'shipping' || f === 'shipping_and_delivery'
-  })
-  const canDeliver = items.some((i) => {
-    const f = i.fulfillment || 'shipping'
-    return f === 'delivery' || f === 'shipping_and_delivery'
-  })
+  const allPickupOnly = cartAllPickupOnly(items)
+  const canShip = cartCanShip(items)
+  const canDeliver = cartCanDeliver(items)
   const needsAddress = items.length > 0 && !allPickupOnly
 
   const subtotal = getTotal()
@@ -135,13 +134,51 @@ export default function Cart() {
         alert('Please complete the shipping address (street, city, state, and ZIP code).')
         return
       }
-      if (fulfillmentMethod !== 'shipping' && fulfillmentMethod !== 'delivery') {
-        alert('Please select Shipping or Delivery.')
-        return
+      if (subtotal < 60) {
+        if (canShip && canDeliver) {
+          if (!['shipping', 'expedited', 'delivery'].includes(fulfillmentMethod)) {
+            alert('Please select shipping, expedited, or delivery.')
+            return
+          }
+        } else if (canShip && !canDeliver) {
+          if (fulfillmentMethod !== 'shipping' && fulfillmentMethod !== 'expedited') {
+            alert('Please select shipping or expedited.')
+            return
+          }
+        } else if (!canShip && canDeliver) {
+          if (fulfillmentMethod !== 'delivery') {
+            alert('Please select delivery.')
+            return
+          }
+        }
       }
     }
     setCheckingOut(true)
     try {
+      if (
+        needsAddress &&
+        fulfillmentMethod === 'delivery' &&
+        subtotal < 60
+      ) {
+        const vres = await fetch('/.netlify/functions/validate-delivery-radius', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            address: {
+              line1: (shippingAddress || '').trim(),
+              city: (shippingCity || '').trim(),
+              state: (shippingState || '').trim(),
+              postal_code: (shippingZip || '').trim(),
+            },
+          }),
+        })
+        const vdata = await vres.json().catch(() => ({}))
+        if (!vdata.ok) {
+          alert(vdata.error || 'Delivery is not available to this address.')
+          setCheckingOut(false)
+          return
+        }
+      }
       const effectiveMethod = subtotal >= 60 ? 'shipping' : (allPickupOnly ? 'local_pickup' : fulfillmentMethod)
       const payload = {
         customerName: name,

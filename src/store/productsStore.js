@@ -1,16 +1,19 @@
 import { create } from 'zustand'
 import { supabase } from '../utils/supabase'
+import { parseFulfillmentModes } from '../utils/fulfillment'
 
 // Mapear fila de Supabase (snake_case) a objeto app (camelCase)
 function fromDb(row) {
   if (!row) return null
   const { return_policy, created_at, vendor_id, ...rest } = row
+  const fulfillmentRaw = row.fulfillment || 'shipping'
   return {
     ...rest,
     returnPolicy: return_policy ?? rest.returnPolicy,
     createdAt: created_at ?? rest.createdAt,
     vendorId: vendor_id ?? rest.vendorId,
-    fulfillment: row.fulfillment || 'shipping',
+    fulfillment: fulfillmentRaw,
+    fulfillmentModes: parseFulfillmentModes(fulfillmentRaw),
     images: Array.isArray(row.images) ? row.images : (row.images ? (typeof row.images === 'string' ? JSON.parse(row.images || '[]') : []) : []),
     tags: Array.isArray(row.tags) ? row.tags : (row.tags ? (typeof row.tags === 'string' ? JSON.parse(row.tags || '[]') : []) : ['magari']),
   }
