@@ -9,6 +9,7 @@ import {
   cartAllPickupOnly,
   cartCanShip,
   cartCanDeliver,
+  buildDeliveryValidationPayload,
 } from '../utils/fulfillment'
 
 const SHIPPING_FLAT = 6.75
@@ -160,16 +161,27 @@ export default function Cart() {
         fulfillmentMethod === 'delivery' &&
         subtotal < 60
       ) {
+        const addr = {
+          line1: (shippingAddress || '').trim(),
+          city: (shippingCity || '').trim(),
+          state: (shippingState || '').trim(),
+          postal_code: (shippingZip || '').trim(),
+        }
+        const dv = buildDeliveryValidationPayload(items)
+        if (dv.badVendorConfig) {
+          alert(
+            'A seller product in your cart offers local delivery but is missing a valid pickup/delivery address or delivery radius. Remove that item or contact the seller.'
+          )
+          setCheckingOut(false)
+          return
+        }
         const vres = await fetch('/.netlify/functions/validate-delivery-radius', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            address: {
-              line1: (shippingAddress || '').trim(),
-              city: (shippingCity || '').trim(),
-              state: (shippingState || '').trim(),
-              postal_code: (shippingZip || '').trim(),
-            },
+            address: addr,
+            requireMagariDeliveryCheck: dv.requireMagari,
+            vendorDeliveryChecks: dv.vendorChecks,
           }),
         })
         const vdata = await vres.json().catch(() => ({}))
@@ -180,12 +192,19 @@ export default function Cart() {
         }
       }
       const effectiveMethod = subtotal >= 60 ? 'shipping' : (allPickupOnly ? 'local_pickup' : fulfillmentMethod)
+      const dvCheckout =
+        effectiveMethod === 'delivery' && subtotal < 60
+          ? buildDeliveryValidationPayload(items)
+          : { requireMagari: false, vendorChecks: [], badVendorConfig: false }
+
       const payload = {
         customerName: name,
         customerEmail: email,
         fulfillmentMethod: effectiveMethod,
         fulfillmentAmount: Math.round(fulfillmentAmount * 100) / 100,
         rewardCode: (rewardCode || '').trim(),
+        requireMagariDeliveryCheck: dvCheckout.requireMagari,
+        vendorDeliveryChecks: dvCheckout.vendorChecks,
         items: items.map((i) => ({
           id: i.id,
           title: i.title,

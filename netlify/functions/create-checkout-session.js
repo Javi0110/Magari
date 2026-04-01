@@ -4,7 +4,7 @@
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '')
 const { createClient } = require('@supabase/supabase-js')
-const { checkDeliveryWithinRadius } = require('./deliveryRadiusUtils')
+const { validateAllDeliveryChecks, checkDeliveryWithinRadius } = require('./deliveryRadiusUtils')
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const FROM_EMAIL = 'Magari & Co. <hello@casamagari.com>'
@@ -130,12 +130,18 @@ exports.handler = async (event) => {
     }
 
     if (fulfillmentMethod === 'delivery') {
-      const deliveryCheck = await checkDeliveryWithinRadius({
+      const requireMagari = body.requireMagariDeliveryCheck === true
+      const vendorChecks = Array.isArray(body.vendorDeliveryChecks) ? body.vendorDeliveryChecks : []
+      const addr = {
         line1: shippingAddress.line1,
         city: shippingAddress.city,
         state: shippingAddress.state,
         postal_code: shippingAddress.postal_code,
-      })
+      }
+      const deliveryCheck =
+        requireMagari || vendorChecks.length > 0
+          ? await validateAllDeliveryChecks(addr, { requireMagari, vendorChecks })
+          : await checkDeliveryWithinRadius(addr)
       if (!deliveryCheck.ok) {
         return {
           statusCode: 400,

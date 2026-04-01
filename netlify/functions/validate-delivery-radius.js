@@ -1,4 +1,8 @@
-const { checkDeliveryWithinRadius, MAX_DELIVERY_MILES } = require('./deliveryRadiusUtils')
+const {
+  checkDeliveryWithinRadius,
+  validateAllDeliveryChecks,
+  MAX_DELIVERY_MILES,
+} = require('./deliveryRadiusUtils')
 
 exports.handler = async (event) => {
   const headers = {
@@ -22,7 +26,19 @@ exports.handler = async (event) => {
   try {
     const body = JSON.parse(event.body || '{}')
     const address = body.address || {}
-    const result = await checkDeliveryWithinRadius(address)
+    const requireMagari = body.requireMagariDeliveryCheck === true
+    const vendorChecks = Array.isArray(body.vendorDeliveryChecks) ? body.vendorDeliveryChecks : []
+
+    let result
+    if (requireMagari || vendorChecks.length > 0) {
+      result = await validateAllDeliveryChecks(address, {
+        requireMagari,
+        vendorChecks,
+      })
+    } else {
+      result = await checkDeliveryWithinRadius(address)
+    }
+
     return {
       statusCode: 200,
       headers,

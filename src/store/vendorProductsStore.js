@@ -74,6 +74,11 @@ export const useVendorProductsStore = create((set, get) => ({
     const vendorProducts = (all[vendorSlug] || []).filter(p => p.id !== productId)
     saveVendorProducts(vendorSlug, vendorProducts)
   },
+
+  /** Replace the full product list for a slug (e.g. after Supabase sync). */
+  setVendorProductsList: (vendorSlug, products) => {
+    saveVendorProducts(vendorSlug, products)
+  },
   
   // Get vendor stats
   getVendorStats: (vendorSlug) => {

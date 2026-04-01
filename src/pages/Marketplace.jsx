@@ -1,15 +1,16 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, Store, TrendingUp, Upload, DollarSign, Package, BarChart3, LogIn, UserPlus, MapPin, Edit, Trash2, Plus, Search, X, Image as ImageIcon, Trash2 as DeleteIcon, Bell, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react'
 import { sendVendorApplicationEmail } from '../utils/emailService'
 import { supabase } from '../utils/supabase'
-import { sampleVendors } from '../data/sampleData'
 import InlineSelect from '../components/InlineSelect'
 import { useProductsStore } from '../store/productsStore'
 import { useVendorProductsStore } from '../store/vendorProductsStore'
 import { useNotificationsStore } from '../store/notificationsStore'
 import { useCartStore } from '../store/cartStore'
+import { normalizeMarketplaceProductForCart } from '../utils/fulfillment'
+import { isLikelySupabaseProductId, rowToVendorProduct, vendorProductToDbRow } from '../utils/marketplaceProductDb'
 
 export default function MarketplacePage() {
   const location = useLocation()
@@ -361,28 +362,37 @@ export default function MarketplacePage() {
     loadMakers()
   }, [])
 
-  // Cargar productos del marketplace (productos con vendor asignado)
-  useEffect(() => {
-    const loadMarketplaceProducts = async () => {
-      if (!supabase) return
-      setMarketplaceLoading(true)
-      setMarketplaceError('')
-      const { data, error } = await supabase
+  const refreshMarketplaceProducts = useCallback(async () => {
+    if (!supabase) return
+    setMarketplaceLoading(true)
+    setMarketplaceError('')
+    let { data, error } = await supabase
+      .from('products')
+      .select('id, title, price, category, images, description, stock, vendor_id, created_at, shipping_options, shipping')
+      .not('vendor_id', 'is', null)
+      .order('created_at', { ascending: false })
+    if (error && error.code === '42703') {
+      const fb = await supabase
         .from('products')
-        .select('id, title, price, category, images, description, stock, vendor_id, created_at')
+        .select('id, title, price, category, images, description, stock, vendor_id, created_at, shipping')
         .not('vendor_id', 'is', null)
         .order('created_at', { ascending: false })
-      if (error) {
-        console.error('Error loading marketplace products:', error)
-        setMarketplaceError('Could not load marketplace products. Please try again later.')
-        setMarketplaceProducts([])
-      } else {
-        setMarketplaceProducts(data || [])
-      }
-      setMarketplaceLoading(false)
+      data = fb.data
+      error = fb.error
     }
-    loadMarketplaceProducts()
+    if (error) {
+      console.error('Error loading marketplace products:', error)
+      setMarketplaceError('Could not load marketplace products. Please try again later.')
+      setMarketplaceProducts([])
+    } else {
+      setMarketplaceProducts(data || [])
+    }
+    setMarketplaceLoading(false)
   }, [])
+
+  useEffect(() => {
+    refreshMarketplaceProducts()
+  }, [refreshMarketplaceProducts])
 
   // Map makers by id for quick lookup
   const makersById = useMemo(() => {
@@ -416,7 +426,7 @@ export default function MarketplacePage() {
   const hasMoreMarketplace = shopDisplayCount < filteredMarketplaceProducts.length
 
   const handleShopAddToCart = (product) => {
-    addToCart(product)
+    addToCart(normalizeMarketplaceProductForCart(product))
   }
 
   const scrollToShop = () => {
@@ -1246,12 +1256,13 @@ export default function MarketplacePage() {
         )}
 
         {view === 'dashboard' && isLoggedIn && (
-          <VendorDashboard 
-            onLogout={() => { 
-              setIsLoggedIn(false); 
-              setView('landing');
-              localStorage.removeItem('magari-current-user');
-            }} 
+          <VendorDashboard
+            onLogout={() => {
+              setIsLoggedIn(false)
+              setView('landing')
+              localStorage.removeItem('magari-current-user')
+            }}
+            onMarketplaceProductsSynced={refreshMarketplaceProducts}
           />
         )}
       </div>
@@ -1417,7 +1428,7 @@ function VendorNotificationsDropdown({ notifications, onMarkAsRead, onMarkAllAsR
 }
 
 // Vendor Dashboard Component
-function VendorDashboard({ onLogout }) {
+function VendorDashboard({ onLogout, onMarketplaceProductsSynced }) {
   const [activeTab, setActiveTab] = useState('settings')
   const [activeSection, setActiveSection] = useState('marketplace')
   const [currentUser, setCurrentUser] = useState(null)
@@ -1437,6 +1448,30 @@ function VendorDashboard({ onLogout }) {
   useEffect(() => {
     if (currentUser?.vendorId) fetchForVendor(currentUser.vendorId)
   }, [currentUser?.vendorId, fetchForVendor])
+
+  // Cargar productos del vendor desde Supabase al abrir el dashboard (y mantener borradores locales v-…)
+  useEffect(() => {
+    if (!supabase || !currentUser?.vendorId || currentUser?.isMagariAccount) return
+    let cancelled = false
+    const slug = currentUser.vendorSlug || 'default'
+    const vid = currentUser.vendorId
+    ;(async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('vendor_id', vid)
+        .order('created_at', { ascending: false })
+      if (cancelled || error) return
+      const remote = (data || []).map(rowToVendorProduct)
+      const { getVendorProducts, setVendorProductsList } = useVendorProductsStore.getState()
+      const local = getVendorProducts(slug)
+      const localsOnly = local.filter((p) => !isLikelySupabaseProductId(p.id))
+      setVendorProductsList(slug, [...remote, ...localsOnly])
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [currentUser?.vendorId, currentUser?.vendorSlug, currentUser?.isMagariAccount])
 
   const isMagariAccount = currentUser?.isMagariAccount
   const vendorSlug = currentUser?.vendorSlug || 'default'
@@ -1528,6 +1563,7 @@ function VendorDashboard({ onLogout }) {
           isMagariAccount={isMagariAccount}
           activeSection={activeSection}
           vendorSlug={vendorSlug}
+          vendorNumericId={currentUser?.vendorId}
           onAddProduct={(type) => {
             setFormType(type)
             setShowProductForm(true)
@@ -1538,6 +1574,7 @@ function VendorDashboard({ onLogout }) {
             setEditingProduct(product)
             setShowProductForm(true)
           }}
+          onMarketplaceProductsSynced={onMarketplaceProductsSynced}
         />
       )}
 
@@ -1547,6 +1584,8 @@ function VendorDashboard({ onLogout }) {
           product={editingProduct}
           type={formType}
           vendorSlug={vendorSlug}
+          vendorNumericId={currentUser?.vendorId}
+          onMarketplaceProductsSynced={onMarketplaceProductsSynced}
           onClose={() => {
             setShowProductForm(false)
             setEditingProduct(null)
@@ -1570,7 +1609,15 @@ function VendorDashboard({ onLogout }) {
 }
 
 // Products Section Component
-function ProductsSection({ isMagariAccount, activeSection, vendorSlug, onAddProduct, onEditProduct }) {
+function ProductsSection({
+  isMagariAccount,
+  activeSection,
+  vendorSlug,
+  vendorNumericId,
+  onAddProduct,
+  onEditProduct,
+  onMarketplaceProductsSynced,
+}) {
   const { getAllProducts, deleteProduct, getInventoryStats } = useProductsStore()
   const { getVendorProducts, deleteVendorProduct, getVendorStats } = useVendorProductsStore()
   const [searchTerm, setSearchTerm] = useState('')
@@ -1607,14 +1654,22 @@ function ProductsSection({ isMagariAccount, activeSection, vendorSlug, onAddProd
     categories = ['all', ...new Set(vendorProducts.map(p => p.category))]
   }
 
-  const handleDelete = (product) => {
-    if (confirm(`Delete "${product.title}"? This cannot be undone.`)) {
-      if (isShowingMagariShop) {
-        deleteProduct(product.id)
-      } else {
-        deleteVendorProduct(vendorSlug, product.id)
-      }
+  const handleDelete = async (product) => {
+    if (!confirm(`Delete "${product.title}"? This cannot be undone.`)) return
+    if (isShowingMagariShop) {
+      deleteProduct(product.id)
+      return
     }
+    if (supabase && vendorNumericId && isLikelySupabaseProductId(product.id)) {
+      const { error } = await supabase.from('products').delete().eq('id', product.id)
+      if (error) {
+        console.error(error)
+        alert(`Could not delete from database: ${error.message}`)
+        return
+      }
+      onMarketplaceProductsSynced?.()
+    }
+    deleteVendorProduct(vendorSlug, product.id)
   }
 
   return (
@@ -2093,57 +2148,23 @@ function VendorProfileSettings({ vendorId, currentUser }) {
 }
 
 // Vendor Product Form Component
-function VendorProductForm({ product, type, vendorSlug, onClose }) {
+function VendorProductForm({ product, type, vendorSlug, vendorNumericId, onMarketplaceProductsSynced, onClose }) {
   const { addProduct, updateProduct } = useProductsStore()
-  const { addVendorProduct, updateVendorProduct } = useVendorProductsStore()
+  const { addVendorProduct, updateVendorProduct, getVendorProducts, setVendorProductsList } = useVendorProductsStore()
   const isMagariShop = type === 'magari-shop'
-  
-  // Get vendor location from sampleVendors
-  const vendor = !isMagariShop ? sampleVendors.find(v => v.slug === vendorSlug) : null
-  const vendorLocation = vendor?.location || 'San Juan, PR'
-  
-  // Helper function to generate shipping info based on vendor location
-  const generateShippingInfo = (location, shippingOptions) => {
-    if (!location) return 'Ships from San Juan, PR to USA & PR'
-    
-    // Parse location (e.g., "San Juan, PR" or "New York, NY, USA")
-    const locationParts = location.split(',').map(p => p.trim())
-    const city = locationParts[0]
-    const stateOrCountry = locationParts[1] || ''
-    const country = locationParts[2] || (stateOrCountry.includes('PR') || stateOrCountry === 'PR' ? 'PR' : stateOrCountry)
-    
-    // Determine shipping destinations based on location
-    let destinations = []
-    if (location.includes('PR') || location.includes('Puerto Rico') || stateOrCountry === 'PR') {
-      destinations = ['USA & PR']
-    } else if (location.includes('USA') || location.includes('United States')) {
-      destinations = ['USA']
-    } else if (country && country !== 'PR' && !country.includes('PR')) {
-      destinations = ['USA & International']
-    } else {
-      destinations = ['USA & PR']
+
+  const parseShippingOptionsFromProduct = (p) => {
+    let so = p?.shipping_options
+    if (typeof so === 'string') {
+      try {
+        so = JSON.parse(so)
+      } catch {
+        so = {}
+      }
     }
-    
-    // Build shipping info string
-    let info = `Ships from ${city}`
-    
-    // Add state/country if different from city
-    if (stateOrCountry && stateOrCountry !== city && !stateOrCountry.includes('PR')) {
-      info += `, ${stateOrCountry}`
-    }
-    
-    // Add country if different from state
-    if (country && country !== stateOrCountry && country !== city && !country.includes('PR')) {
-      info += `, ${country}`
-    }
-    
-    // Add destinations
-    if (destinations.length > 0) {
-      info += ` to ${destinations.join(' & ')}`
-    }
-    
-    return info
+    return so && typeof so === 'object' ? so : {}
   }
+  const soFromProduct = parseShippingOptionsFromProduct(product)
   
   const [uploadedImages, setUploadedImages] = useState(() => {
     // Convert existing image URLs to preview format
@@ -2169,44 +2190,25 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
     images: product?.images?.join(', ') || '',
     tags: product?.tags?.join(', ') || (isMagariShop ? 'magari' : 'maker'),
     shippingOptions: product?.shippingOptions || {
-      delivery: false,
-      pickup: false,
-      shipping: false
+      delivery: !!soFromProduct.delivery,
+      pickup: !!soFromProduct.pickup,
+      shipping: !!soFromProduct.shipping,
     },
-    shippingPrices: product?.shippingPrices || {
+    shippingPrices: product?.shippingPrices || soFromProduct.prices || {
       delivery: 0,
       pickup: 0,
       shipping: 0
     },
-    shipping: product?.shipping || generateShippingInfo(vendorLocation, product?.shippingOptions || { delivery: false, pickup: false, shipping: false }),
+    shipping:
+      product?.shipping ||
+      (isMagariShop ? 'Ships from San Juan, PR to USA & PR' : ''),
+    pickupLocation: product?.pickupLocation ?? soFromProduct.pickupLocation ?? '',
+    deliveryOriginAddress: product?.deliveryOriginAddress ?? soFromProduct.deliveryOriginAddress ?? '',
+    deliveryRadiusMiles:
+      product?.deliveryRadiusMiles ?? soFromProduct.deliveryRadiusMiles ?? '',
     returnPolicy: product?.returnPolicy || '30-day returns accepted',
     stock: product?.stock || 0,
   })
-  
-  // Update shipping info when shipping options change
-  const updateShippingInfo = (newShippingOptions) => {
-    const newShippingInfo = generateShippingInfo(vendorLocation, newShippingOptions)
-    setFormData(prev => ({
-      ...prev,
-      shipping: newShippingInfo
-    }))
-  }
-  
-  // Update shipping info on mount or when vendor changes (only if shipping info is default or missing)
-  useEffect(() => {
-    if (!product?.shipping || product.shipping === 'Ships from San Juan, PR to USA & PR') {
-      const options = product?.shippingOptions || {
-        delivery: false,
-        pickup: false,
-        shipping: false
-      }
-      const initialShippingInfo = generateShippingInfo(vendorLocation, options)
-      setFormData(prev => ({
-        ...prev,
-        shipping: initialShippingInfo
-      }))
-    }
-  }, [vendorLocation, product?.shipping, product?.shippingOptions])
 
   // Handle image file uploads
   const handleImageUpload = (files) => {
@@ -2278,10 +2280,46 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
   
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
+    if (!isMagariShop) {
+      const opts = formData.shippingOptions || {}
+      if (opts.delivery) {
+        const miles = parseFloat(String(formData.deliveryRadiusMiles ?? '').replace(/,/g, ''))
+        const pickupAddr = (formData.pickupLocation || '').trim()
+        const deliverFrom = (formData.deliveryOriginAddress || '').trim()
+        const originOk = opts.pickup ? pickupAddr.length >= 5 : deliverFrom.length >= 5
+        if (!Number.isFinite(miles) || miles <= 0) {
+          alert('If you offer delivery, enter a maximum delivery distance greater than 0 (miles).')
+          return
+        }
+        if (!originOk) {
+          alert(
+            opts.pickup
+              ? 'Enter a pickup address (at least 5 characters). That address is used to measure delivery distance.'
+              : 'Enter the address you deliver from (at least 5 characters), or enable Pickup and enter a pickup address.'
+          )
+          return
+        }
+      }
+      if (opts.pickup && (formData.pickupLocation || '').trim().length < 5) {
+        alert('Enter where buyers can pick up the item (address or instructions, at least 5 characters).')
+        return
+      }
+    }
+
     // Get image URLs from uploaded files
     const imageUrls = await getImageUrls()
-    
+
+    const shippingPrices = {
+      delivery: parseFloat(formData.shippingPrices.delivery) || 0,
+      pickup: parseFloat(formData.shippingPrices.pickup) || 0,
+      shipping: parseFloat(formData.shippingPrices.shipping) || 0,
+    }
+    const deliveryRadiusNum =
+      !isMagariShop && formData.shippingOptions?.delivery
+        ? parseFloat(String(formData.deliveryRadiusMiles ?? '').replace(/,/g, '')) || 0
+        : 0
+
     const productData = {
       ...formData,
       price: parseFloat(formData.price),
@@ -2289,12 +2327,20 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
       tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
       stock: isMagariShop ? undefined : parseInt(formData.stock) || 0,
       shippingOptions: formData.shippingOptions,
-      shippingPrices: {
-        delivery: parseFloat(formData.shippingPrices.delivery) || 0,
-        pickup: parseFloat(formData.shippingPrices.pickup) || 0,
-        shipping: parseFloat(formData.shippingPrices.shipping) || 0,
-      },
-      shipping: formData.shipping, // Auto-generated based on vendor location
+      shippingPrices,
+      shipping: formData.shipping,
+      pickupLocation: !isMagariShop ? (formData.pickupLocation || '').trim() : formData.pickupLocation,
+      deliveryOriginAddress: !isMagariShop ? (formData.deliveryOriginAddress || '').trim() : formData.deliveryOriginAddress,
+      deliveryRadiusMiles: !isMagariShop ? deliveryRadiusNum : undefined,
+      shipping_options: !isMagariShop
+        ? {
+            ...formData.shippingOptions,
+            prices: shippingPrices,
+            pickupLocation: (formData.pickupLocation || '').trim(),
+            deliveryOriginAddress: (formData.deliveryOriginAddress || '').trim(),
+            deliveryRadiusMiles: deliveryRadiusNum,
+          }
+        : undefined,
     }
 
     if (isMagariShop) {
@@ -2303,14 +2349,50 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
       } else {
         addProduct(productData)
       }
-    } else {
-      if (product) {
-        updateVendorProduct(vendorSlug, product.id, productData)
-      } else {
-        addVendorProduct(vendorSlug, productData)
+      onClose()
+      return
+    }
+
+    // MOMade vendor: guardar en Supabase cuando hay sesión de vendor
+    if (supabase && vendorNumericId) {
+      try {
+        const dbRow = vendorProductToDbRow(productData, vendorNumericId, vendorSlug)
+        let row
+        if (product && isLikelySupabaseProductId(product.id)) {
+          const { data, error } = await supabase.from('products').update(dbRow).eq('id', product.id).select('*').single()
+          if (error) throw error
+          row = data
+        } else {
+          const { data, error } = await supabase.from('products').insert(dbRow).select('*').single()
+          if (error) throw error
+          row = data
+        }
+        const local = rowToVendorProduct(row)
+        const prev = getVendorProducts(vendorSlug)
+        const next = [
+          local,
+          ...prev.filter(
+            (p) => String(p.id) !== String(product?.id) && String(p.id) !== String(local.id)
+          ),
+        ]
+        setVendorProductsList(vendorSlug, next)
+        onMarketplaceProductsSynced?.()
+        onClose()
+        return
+      } catch (err) {
+        console.error(err)
+        alert(
+          `No se pudo guardar en Supabase: ${err.message || err}. Ejecuta el SQL del archivo supabase/APPLY_IN_DASHBOARD_ONE_FILE.sql en el SQL Editor y vuelve a intentar.`
+        )
+        return
       }
     }
-    
+
+    if (product) {
+      updateVendorProduct(vendorSlug, product.id, productData)
+    } else {
+      addVendorProduct(vendorSlug, productData)
+    }
     onClose()
   }
 
@@ -2530,30 +2612,65 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
                           ...formData,
                           shippingOptions: newOptions
                         })
-                        updateShippingInfo(newOptions)
                       }}
                       className="w-4 h-4 text-sage focus:ring-sage"
                     />
                     <span className="text-sm font-medium text-neutral-700">Delivery</span>
                   </label>
                   {formData.shippingOptions?.delivery && (
-                    <div className="flex-1">
-                      <label className="block text-xs text-neutral-600 mb-1">Delivery Price ($)</label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={formData.shippingPrices?.delivery || 0}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          shippingPrices: {
-                            ...formData.shippingPrices,
-                            delivery: e.target.value
-                          }
-                        })}
-                        className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
-                        placeholder="0.00"
-                      />
+                    <div className="flex-1 space-y-2">
+                      <div>
+                        <label className="block text-xs text-neutral-600 mb-1">Delivery Price ($)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={formData.shippingPrices?.delivery || 0}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            shippingPrices: {
+                              ...formData.shippingPrices,
+                              delivery: e.target.value
+                            }
+                          })}
+                          className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      {!isMagariShop && (
+                        <>
+                          <div>
+                            <label className="block text-xs text-neutral-600 mb-1">Max delivery distance (miles) *</label>
+                            <input
+                              type="number"
+                              min="1"
+                              step="1"
+                              value={formData.deliveryRadiusMiles}
+                              onChange={(e) => setFormData({ ...formData, deliveryRadiusMiles: e.target.value })}
+                              className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
+                              placeholder="e.g. 15"
+                            />
+                            <p className="text-[11px] text-neutral-500 mt-1">
+                              Checkout allows delivery only if the buyer&apos;s address is within this radius of your pickup or delivery origin.
+                            </p>
+                          </div>
+                          {!formData.shippingOptions?.pickup && (
+                            <div>
+                              <label className="block text-xs text-neutral-600 mb-1">Deliver from (full address) *</label>
+                              <input
+                                type="text"
+                                value={formData.deliveryOriginAddress}
+                                onChange={(e) => setFormData({ ...formData, deliveryOriginAddress: e.target.value })}
+                                className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
+                                placeholder="Street, city, state, ZIP"
+                              />
+                              <p className="text-[11px] text-neutral-500 mt-1">
+                                Used to measure distance. If you enable Pickup below, the pickup address is used instead.
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
@@ -2573,30 +2690,43 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
                           ...formData,
                           shippingOptions: newOptions
                         })
-                        updateShippingInfo(newOptions)
                       }}
                       className="w-4 h-4 text-sage focus:ring-sage"
                     />
                     <span className="text-sm font-medium text-neutral-700">Pickup</span>
                   </label>
                   {formData.shippingOptions?.pickup && (
-                    <div className="flex-1">
-                      <label className="block text-xs text-neutral-600 mb-1">Pickup Price ($)</label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={formData.shippingPrices?.pickup || 0}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          shippingPrices: {
-                            ...formData.shippingPrices,
-                            pickup: e.target.value
-                          }
-                        })}
-                        className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
-                        placeholder="0.00"
-                      />
+                    <div className="flex-1 space-y-2">
+                      <div>
+                        <label className="block text-xs text-neutral-600 mb-1">Pickup Price ($)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={formData.shippingPrices?.pickup || 0}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            shippingPrices: {
+                              ...formData.shippingPrices,
+                              pickup: e.target.value
+                            }
+                          })}
+                          className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      {!isMagariShop && (
+                        <div>
+                          <label className="block text-xs text-neutral-600 mb-1">Pickup location *</label>
+                          <input
+                            type="text"
+                            value={formData.pickupLocation}
+                            onChange={(e) => setFormData({ ...formData, pickupLocation: e.target.value })}
+                            className="w-full px-3 py-2 rounded-xl border border-greige-light focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm"
+                            placeholder="Address or instructions for buyers"
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -2616,7 +2746,6 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
                           ...formData,
                           shippingOptions: newOptions
                         })
-                        updateShippingInfo(newOptions)
                       }}
                       className="w-4 h-4 text-sage focus:ring-sage"
                     />
@@ -2646,24 +2775,19 @@ function VendorProductForm({ product, type, vendorSlug, onClose }) {
               </div>
             </div>
 
-            {/* Shipping Info (Auto-generated) */}
+            {/* Shipping Info — vendors edit freely (shown on product / shop) */}
             <div>
-              <label className="block text-sage-dark font-medium mb-2">
-                Shipping Info
-                <span className="text-xs text-neutral-500 ml-2">(Auto-generated based on vendor location)</span>
-              </label>
+              <label className="block text-sage-dark font-medium mb-2">Shipping Info</label>
               <input
                 type="text"
                 value={formData.shipping}
-                readOnly
-                className="input-field bg-cream cursor-not-allowed"
-                title="This field is automatically generated based on your vendor location"
+                onChange={(e) => setFormData({ ...formData, shipping: e.target.value })}
+                className="input-field"
+                placeholder='e.g. Ships from Austin, TX to USA'
               />
-              {!isMagariShop && vendor && (
-                <p className="text-xs text-neutral-500 mt-1">
-                  Based on vendor location: {vendorLocation}
-                </p>
-              )}
+              <p className="text-xs text-neutral-500 mt-1">
+                Describe where the item ships from and where you send to (buyers see this on the product).
+              </p>
             </div>
 
             {/* Return Policy Dropdown */}
