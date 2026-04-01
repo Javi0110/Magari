@@ -5,6 +5,19 @@ import { parseFulfillmentModes } from '../utils/fulfillment'
 const SUPABASE_REQUIRED_MSG =
   'Supabase no está configurado (VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env). Reinicia npm run dev tras guardar .env.'
 
+/** PostgREST when a column exists in app but not in DB (migration not applied). */
+function isMissingFulfillmentColumnError(error) {
+  if (!error) return false
+  const m = String(error.message || '').toLowerCase()
+  return m.includes('fulfillment') && (m.includes('schema cache') || m.includes('could not find'))
+}
+
+function omitFulfillmentFromPayload(payload) {
+  if (!payload || typeof payload !== 'object') return payload
+  const { fulfillment: _f, ...rest } = payload
+  return rest
+}
+
 function parseJsonbArray(value, fallback) {
   if (value == null) return fallback
   if (Array.isArray(value)) return value
@@ -69,8 +82,11 @@ const fetchShopProducts = async () => {
     .select(SHOP_PRODUCT_SELECT)
     .order('created_at', { ascending: false })
 
-  // Fallback for older schemas missing one or more selected columns.
-  if (result.error && result.error.code === '42703') {
+  // Fallback when DB is missing columns (Postgres 42703 or PostgREST schema cache for fulfillment, etc.)
+  if (
+    result.error &&
+    (result.error.code === '42703' || isMissingFulfillmentColumnError(result.error))
+  ) {
     result = await supabase
       .from('shop_products')
       .select('*')
@@ -158,11 +174,23 @@ export const useProductsStore = create((set, get) => ({
       images: product.images && Array.isArray(product.images) ? product.images : (product.images ? [product.images] : []),
     })
 
-    const { data, error } = await supabase.from('shop_products').insert(payload).select('*')
+    let { data, error } = await supabase.from('shop_products').insert(payload).select('*')
+
+    if (error && isMissingFulfillmentColumnError(error) && payload.fulfillment !== undefined) {
+      const retry = await supabase
+        .from('shop_products')
+        .insert(omitFulfillmentFromPayload(payload))
+        .select('*')
+      data = retry.data
+      error = retry.error
+    }
 
     if (error) {
       console.error('shop_products insert error:', error)
-      throw new Error(error.message || String(error.code || 'Could not save product to the database.'))
+      const hint = isMissingFulfillmentColumnError(error)
+        ? ' Ejecuta en Supabase → SQL Editor: alter table public.shop_products add column if not exists fulfillment text not null default \'shipping\';'
+        : ''
+      throw new Error((error.message || String(error.code || 'Could not save product to the database.')) + hint)
     }
 
     const row = Array.isArray(data) ? data[0] : data
@@ -186,15 +214,28 @@ export const useProductsStore = create((set, get) => ({
     }
 
     const payload = toDb(updates)
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('shop_products')
       .update(payload)
       .eq('id', id)
       .select('*')
 
+    if (error && isMissingFulfillmentColumnError(error) && payload.fulfillment !== undefined) {
+      const retry = await supabase
+        .from('shop_products')
+        .update(omitFulfillmentFromPayload(payload))
+        .eq('id', id)
+        .select('*')
+      data = retry.data
+      error = retry.error
+    }
+
     if (error) {
       console.error('shop_products update error:', error)
-      throw new Error(error.message || String(error.code || 'Could not update product.'))
+      const hint = isMissingFulfillmentColumnError(error)
+        ? ' Ejecuta en Supabase → SQL Editor: alter table public.shop_products add column if not exists fulfillment text not null default \'shipping\';'
+        : ''
+      throw new Error((error.message || String(error.code || 'Could not update product.')) + hint)
     }
 
     const row = Array.isArray(data) ? data[0] : data
