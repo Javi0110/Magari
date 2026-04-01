@@ -29,6 +29,16 @@ import {
   FULFILLMENT_MODE_KEYS,
   FULFILLMENT_MODE_LABELS,
 } from '../utils/fulfillment'
+
+function slugify(title) {
+  const s = String(title || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return s || `product-${Date.now()}`
+}
 import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailRelay'
 import { useNotificationsStore } from '../store/notificationsStore'
 
@@ -565,6 +575,7 @@ function ProductsView() {
 // Product Form Component
 function ProductForm({ product, onClose }) {
   const { addProduct, updateProduct } = useProductsStore()
+  const [saving, setSaving] = useState(false)
   const [uploadedImages, setUploadedImages] = useState(() => {
     // Convert existing image URLs to preview format
     if (product?.images) {
@@ -665,32 +676,63 @@ function ProductForm({ product, onClose }) {
   
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    // Get image URLs from uploaded files
-    const imageUrls = await getImageUrls()
-    
+    if (saving) return
+
     if (!formData.fulfillmentModes?.length) {
       alert('Choose at least one fulfillment option (pickup, shipping, and/or delivery).')
       return
     }
 
-    const productData = {
-      ...formData,
-      price: parseFloat(formData.price),
-      stock: Math.max(0, parseInt(formData.stock, 10) || 0),
-      images: imageUrls.length > 0 ? imageUrls : formData.images.split(',').map(img => img.trim()).filter(img => img),
-      tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-      fulfillment: serializeFulfillmentModes(formData.fulfillmentModes),
+    const priceRaw = String(formData.price ?? '').replace(/,/g, '').trim()
+    const priceNum = parseFloat(priceRaw)
+    if (!Number.isFinite(priceNum) || priceNum < 0) {
+      alert('Enter a valid price (0 or greater).')
+      return
     }
-    delete productData.fulfillmentModes
 
-    if (product) {
-      updateProduct(product.id, productData)
-    } else {
-      addProduct(productData)
+    if (!(formData.title || '').trim()) {
+      alert('Enter a product title.')
+      return
     }
-    
-    onClose()
+
+    setSaving(true)
+    try {
+      const imageUrls = await getImageUrls()
+
+      const productData = {
+        ...formData,
+        title: (formData.title || '').trim(),
+        price: priceNum,
+        stock: Math.max(0, parseInt(formData.stock, 10) || 0),
+        images: imageUrls.length > 0 ? imageUrls : formData.images.split(',').map((img) => img.trim()).filter(Boolean),
+        tags: formData.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+        fulfillment: serializeFulfillmentModes(formData.fulfillmentModes),
+      }
+      delete productData.fulfillmentModes
+
+      if (!product) {
+        productData.slug = `${slugify(formData.title)}-${Date.now().toString(36)}`
+      }
+
+      if (product) {
+        await updateProduct(product.id, productData)
+      } else {
+        await addProduct(productData)
+      }
+
+      onClose()
+    } catch (err) {
+      console.error('Save product failed:', err)
+      const msg =
+        err?.message ||
+        err?.error_description ||
+        err?.details ||
+        (typeof err === 'string' ? err : null) ||
+        'Could not save. Check your connection and Supabase configuration.'
+      alert(msg)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -995,9 +1037,10 @@ function ProductForm({ product, onClose }) {
               </button>
               <button
                 type="submit"
-                className="flex-1 btn-primary"
+                disabled={saving}
+                className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {product ? 'Update Product' : 'Add Product'}
+                {saving ? 'Saving…' : product ? 'Update Product' : 'Add Product'}
               </button>
             </div>
           </form>

@@ -2,6 +2,20 @@ import { create } from 'zustand'
 import { supabase } from '../utils/supabase'
 import { parseFulfillmentModes } from '../utils/fulfillment'
 
+function parseJsonbArray(value, fallback) {
+  if (value == null) return fallback
+  if (Array.isArray(value)) return value
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value || '[]')
+      return Array.isArray(parsed) ? parsed : fallback
+    } catch {
+      return fallback
+    }
+  }
+  return fallback
+}
+
 // Mapear fila de Supabase (snake_case) a objeto app (camelCase)
 function fromDb(row) {
   if (!row) return null
@@ -14,8 +28,8 @@ function fromDb(row) {
     vendorId: vendor_id ?? rest.vendorId,
     fulfillment: fulfillmentRaw,
     fulfillmentModes: parseFulfillmentModes(fulfillmentRaw),
-    images: Array.isArray(row.images) ? row.images : (row.images ? (typeof row.images === 'string' ? JSON.parse(row.images || '[]') : []) : []),
-    tags: Array.isArray(row.tags) ? row.tags : (row.tags ? (typeof row.tags === 'string' ? JSON.parse(row.tags || '[]') : []) : ['magari']),
+    images: parseJsonbArray(row.images, []),
+    tags: parseJsonbArray(row.tags, ['magari']),
   }
 }
 
@@ -159,7 +173,8 @@ export const useProductsStore = create((set, get) => ({
       .single()
     
     if (error) {
-      throw error
+      console.error('shop_products insert error:', error)
+      throw new Error(error.message || String(error.code || 'Could not save product to the database.'))
     }
     
     const newProduct = fromDb(data)
@@ -190,7 +205,8 @@ export const useProductsStore = create((set, get) => ({
       .single()
     
     if (error) {
-      throw error
+      console.error('shop_products update error:', error)
+      throw new Error(error.message || String(error.code || 'Could not update product.'))
     }
     
     const updatedProduct = fromDb(data)
