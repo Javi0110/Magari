@@ -29,6 +29,8 @@ import {
   FULFILLMENT_MODE_KEYS,
   FULFILLMENT_MODE_LABELS,
 } from '../utils/fulfillment'
+import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailRelay'
+import { useNotificationsStore } from '../store/notificationsStore'
 
 function slugify(title) {
   const s = String(title || '')
@@ -39,8 +41,6 @@ function slugify(title) {
     .replace(/^-+|-+$/g, '')
   return s || `product-${Date.now()}`
 }
-import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailRelay'
-import { useNotificationsStore } from '../store/notificationsStore'
 
 function AdminNotificationsDropdown({ notifications, error, onMarkAsRead, onMarkAllAsRead, onClose, onNotificationClick }) {
   return (
@@ -403,6 +403,17 @@ function ProductsView() {
 
   return (
     <div>
+      {!supabase && (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          <strong className="font-semibold">Supabase no está conectado.</strong>{' '}
+          Los productos del Shop Magari se guardan en la tabla{' '}
+          <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">shop_products</code>. Define{' '}
+          <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">VITE_SUPABASE_URL</code> y{' '}
+          <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">VITE_SUPABASE_ANON_KEY</code> en{' '}
+          <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">.env</code>, guarda el archivo y reinicia{' '}
+          <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">npm run dev</code>.
+        </div>
+      )}
       {/* Header with Stats */}
       <div className="grid md:grid-cols-4 gap-4 mb-6">
         <div className="card">
@@ -695,6 +706,13 @@ function ProductForm({ product, onClose }) {
       return
     }
 
+    if (!supabase) {
+      alert(
+        'Supabase no está conectado. Añade VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en tu archivo .env (en la raíz del proyecto), guarda y reinicia el servidor con npm run dev. Sin eso, el producto no se puede guardar en la base de datos.'
+      )
+      return
+    }
+
     setSaving(true)
     try {
       const imageUrls = await getImageUrls()
@@ -736,19 +754,31 @@ function ProductForm({ product, onClose }) {
   }
 
   return (
-    <>
+      <>
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[55]"
-        onClick={onClose}
+        onClick={() => {
+          if (!saving) onClose()
+        }}
+        aria-hidden="true"
       />
-      <div className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-3xl md:max-h-[90vh] bg-white rounded-2xl shadow-2xl z-[60] overflow-y-auto">
+      <div
+        className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-3xl md:max-h-[90vh] bg-white rounded-2xl shadow-2xl z-[60] overflow-y-auto"
+        onMouseDown={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="product-form-title"
+      >
         <div className="p-6 md:p-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-serif text-2xl text-sage-dark">
+            <h2 id="product-form-title" className="font-serif text-2xl text-sage-dark">
               {product ? 'Edit Product' : 'Add New Product'}
             </h2>
             <button
-              onClick={onClose}
+              type="button"
+              onClick={() => {
+                if (!saving) onClose()
+              }}
               className="text-stone hover:text-sage-dark"
             >
               <X className="w-6 h-6" />

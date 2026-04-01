@@ -2,6 +2,9 @@ import { create } from 'zustand'
 import { supabase } from '../utils/supabase'
 import { parseFulfillmentModes } from '../utils/fulfillment'
 
+const SUPABASE_REQUIRED_MSG =
+  'Supabase no está configurado (VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env). Reinicia npm run dev tras guardar .env.'
+
 function parseJsonbArray(value, fallback) {
   if (value == null) return fallback
   if (Array.isArray(value)) return value
@@ -144,20 +147,9 @@ export const useProductsStore = create((set, get) => ({
   
   addProduct: async (product) => {
     if (!supabase) {
-      const products = get().products
-      const newId = Math.max(...products.map(p => p.id || 0), 0) + 1
-      const newProduct = {
-        ...product,
-        id: newId,
-        vendor: 'magari',
-        tags: product.tags || ['magari'],
-      }
-      const updatedProducts = [...products, newProduct]
-      set({ products: updatedProducts })
-      saveToStorage(updatedProducts)
-      return newProduct
+      throw new Error(SUPABASE_REQUIRED_MSG)
     }
-    
+
     const tags = product.tags && Array.isArray(product.tags) ? product.tags : (product.tags ? (typeof product.tags === 'string' ? product.tags.split(',').map(t => t.trim()).filter(Boolean) : []) : ['magari'])
     const payload = toDb({
       ...product,
@@ -165,19 +157,22 @@ export const useProductsStore = create((set, get) => ({
       tags,
       images: product.images && Array.isArray(product.images) ? product.images : (product.images ? [product.images] : []),
     })
-    
-    const { data, error } = await supabase
-      .from('shop_products')
-      .insert(payload)
-      .select('*')
-      .single()
-    
+
+    const { data, error } = await supabase.from('shop_products').insert(payload).select('*')
+
     if (error) {
       console.error('shop_products insert error:', error)
       throw new Error(error.message || String(error.code || 'Could not save product to the database.'))
     }
-    
-    const newProduct = fromDb(data)
+
+    const row = Array.isArray(data) ? data[0] : data
+    if (!row) {
+      throw new Error(
+        'El insert no devolvió filas. Comprueba en Supabase que exista la tabla public.shop_products y que las políticas RLS permitan INSERT y SELECT.'
+      )
+    }
+
+    const newProduct = fromDb(row)
     const products = get().products
     const updatedProducts = [...products, newProduct]
     set({ products: updatedProducts, initialized: false })
@@ -187,29 +182,29 @@ export const useProductsStore = create((set, get) => ({
   
   updateProduct: async (id, updates) => {
     if (!supabase) {
-      const products = get().products
-      const updatedProducts = products.map(product =>
-        product.id === id ? { ...product, ...updates } : product
-      )
-      set({ products: updatedProducts })
-      saveToStorage(updatedProducts)
-      return updatedProducts.find(p => p.id === id)
+      throw new Error(SUPABASE_REQUIRED_MSG)
     }
-    
+
     const payload = toDb(updates)
     const { data, error } = await supabase
       .from('shop_products')
       .update(payload)
       .eq('id', id)
       .select('*')
-      .single()
-    
+
     if (error) {
       console.error('shop_products update error:', error)
       throw new Error(error.message || String(error.code || 'Could not update product.'))
     }
-    
-    const updatedProduct = fromDb(data)
+
+    const row = Array.isArray(data) ? data[0] : data
+    if (!row) {
+      throw new Error(
+        'No se pudo leer el producto actualizado. Comprueba el id y las políticas RLS de shop_products.'
+      )
+    }
+
+    const updatedProduct = fromDb(row)
     const products = get().products
     const updatedProducts = products.map(product =>
       product.id === id ? updatedProduct : product
@@ -220,14 +215,15 @@ export const useProductsStore = create((set, get) => ({
   },
   
   deleteProduct: async (id) => {
-    if (supabase) {
-      const { error } = await supabase
-        .from('shop_products')
-        .delete()
-        .eq('id', id)
-      if (error) {
-        throw error
-      }
+    if (!supabase) {
+      throw new Error(SUPABASE_REQUIRED_MSG)
+    }
+    const { error } = await supabase
+      .from('shop_products')
+      .delete()
+      .eq('id', id)
+    if (error) {
+      throw new Error(error.message || String(error.code || 'Could not delete product.'))
     }
     const products = get().products.filter(p => p.id !== id)
     set({ products })
