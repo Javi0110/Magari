@@ -132,29 +132,36 @@ export const useProductsStore = create((set, get) => ({
   error: null,
   initialized: false,
   
-  initProducts: async () => {
-    if (get().initialized) return
+  initProducts: async (opts) => {
+    const force = opts?.force === true
+    if (get().initialized && !force) return
     if (!supabase) {
       set({ initialized: true })
       return
     }
-    // Clear products so we never show stale/partial cache (e.g. one product); skeletons show while loading
     set({ loading: true, error: null, products: [] })
     const { data, error } = await fetchShopProducts()
-    
+
     if (error) {
       console.error('initProducts error:', error)
-      set({ loading: false, error: error.message, initialized: true })
+      const cached = loadFromStorage()
+      set({
+        loading: false,
+        error: error.message,
+        initialized: true,
+        products: Array.isArray(cached) && cached.length > 0 ? cached : [],
+      })
       return
     }
-    
+
     const products = (Array.isArray(data) ? data : []).map(fromDb)
-    set({ products, loading: false, initialized: true })
+    set({ products, loading: false, initialized: true, error: null })
     saveToStorage(products)
   },
-  
+
+  /** All rows from shop_products (this store is only Magari shop). Hide only if is_active === false. */
   getAllProducts: () => {
-    return get().products.filter(p => p.vendor === 'magari' || !p.vendor)
+    return get().products.filter((p) => p.is_active !== false)
   },
   
   getProductById: (id) => {

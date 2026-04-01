@@ -10,7 +10,7 @@ import { supabase } from '../utils/supabase'
 export default function ProductDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getAllProducts } = useProductsStore()
+  const { getAllProducts, initProducts } = useProductsStore()
   const { addItem, openCart } = useCartStore()
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore()
 
@@ -19,6 +19,10 @@ export default function ProductDetailPage() {
     () => products.find((p) => String(p.id) === String(id)),
     [products, id]
   )
+
+  useEffect(() => {
+    initProducts({ force: true }).catch(() => {})
+  }, [initProducts])
 
   const [imageIndex, setImageIndex] = useState(0)
   const [reviews, setReviews] = useState([])

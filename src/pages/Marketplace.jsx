@@ -371,10 +371,10 @@ export default function MarketplacePage() {
       .select('id, title, price, category, images, description, stock, vendor_id, created_at, shipping_options, shipping')
       .not('vendor_id', 'is', null)
       .order('created_at', { ascending: false })
-    if (error && error.code === '42703') {
+    if (error) {
       const fb = await supabase
         .from('products')
-        .select('id, title, price, category, images, description, stock, vendor_id, created_at, shipping')
+        .select('*')
         .not('vendor_id', 'is', null)
         .order('created_at', { ascending: false })
       data = fb.data
