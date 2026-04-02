@@ -159,9 +159,9 @@ export const useProductsStore = create((set, get) => ({
     saveToStorage(products)
   },
 
-  /** All rows from shop_products (this store is only Magari shop). Hide only if is_active === false. */
+  /** All rows from shop_products (Shop Magari should show full catalog). */
   getAllProducts: () => {
-    return get().products.filter((p) => p.is_active !== false)
+    return get().products
   },
   
   getProductById: (id) => {
