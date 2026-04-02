@@ -14,3 +14,20 @@ alter table public.products
 -- (Opcional) Si products no tuviera vendor_id aún:
 alter table public.products
   add column if not exists vendor_id bigint references public.vendors(id);
+
+-- -----------------------------------------------------------------------------
+-- HARDENING SHOP_PRODUCTS (evita timeouts y asegura lectura pública para Shop)
+-- -----------------------------------------------------------------------------
+
+-- Index para order by created_at desc (usado por la tienda/admin)
+create index if not exists idx_shop_products_created_at_desc
+  on public.shop_products (created_at desc);
+
+-- RLS de lectura pública simple (rápida y predecible)
+alter table public.shop_products enable row level security;
+drop policy if exists "Allow public read shop_products" on public.shop_products;
+create policy "Allow public read shop_products"
+  on public.shop_products
+  for select
+  to anon, authenticated
+  using (true);
