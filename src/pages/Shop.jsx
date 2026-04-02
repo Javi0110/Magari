@@ -12,10 +12,13 @@ import { supabase } from '../utils/supabase'
 import { SHOP_MAGARI_CATEGORIES } from '../constants/shopCategories'
 import InlineSelect from '../components/InlineSelect'
 
+/** Default + slider max; previously 500 hid everything above $500 */
+const SHOP_PRICE_FILTER_MAX = 50000
+
 export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [priceRange, setPriceRange] = useState([0, 500])
+  const [priceRange, setPriceRange] = useState([0, SHOP_PRICE_FILTER_MAX])
   const [availability, setAvailability] = useState('all')
   const [selectedColor, setSelectedColor] = useState('all')
   const [selectedMaterial, setSelectedMaterial] = useState('all')
@@ -71,10 +74,12 @@ export default function ShopPage() {
       filtered = filtered.filter(product => product.category === selectedCategory)
     }
     
-    // Price range filter
-    filtered = filtered.filter(product => 
-      product.price >= priceRange[0] && product.price <= priceRange[1]
-    )
+    // Price range filter (coerce: DB may return string)
+    filtered = filtered.filter((product) => {
+      const price = Number(product.price)
+      if (!Number.isFinite(price)) return true
+      return price >= priceRange[0] && price <= priceRange[1]
+    })
     
     // Availability filter
     if (availability === 'in-stock') {
@@ -165,7 +170,7 @@ export default function ShopPage() {
   const clearFilters = () => {
     setSearchQuery('')
     setSelectedCategory('all')
-    setPriceRange([0, 500])
+    setPriceRange([0, SHOP_PRICE_FILTER_MAX])
     setAvailability('all')
     setSelectedColor('all')
     setSelectedMaterial('all')
@@ -465,7 +470,8 @@ export default function ShopPage() {
                           <input
                             type="range"
                             min="0"
-                            max="500"
+                            max={SHOP_PRICE_FILTER_MAX}
+                            step={100}
                             value={priceRange[1]}
                             onChange={(e) => setPriceRange([0, parseInt(e.target.value, 10)])}
                             className="w-full accent-sage"
