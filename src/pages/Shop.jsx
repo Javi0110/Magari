@@ -32,6 +32,7 @@ export default function ShopPage() {
   const [newsletterStatus, setNewsletterStatus] = useState(null)
   const [abandonedEmail, setAbandonedEmail] = useState('')
   const [abandonedStatus, setAbandonedStatus] = useState(null)
+  const [rescueProducts, setRescueProducts] = useState([])
   
   const { getAllProducts, initProducts, loading, error } = useProductsStore()
   const { addItem, openCart } = useCartStore()
@@ -48,7 +49,50 @@ export default function ShopPage() {
     initProducts({ force: true }).catch(() => {})
   }, [initProducts])
 
-  const allProducts = getAllProducts()
+  const storeProducts = getAllProducts()
+
+  useEffect(() => {
+    const shouldRescue = !loading && Array.isArray(storeProducts) && storeProducts.length === 0 && !!supabase
+    if (!shouldRescue) return
+    let cancelled = false
+
+    const parseJsonArray = (value) => {
+      if (Array.isArray(value)) return value
+      if (typeof value === 'string') {
+        try {
+          const parsed = JSON.parse(value)
+          return Array.isArray(parsed) ? parsed : []
+        } catch {
+          return []
+        }
+      }
+      return []
+    }
+
+    supabase
+      .from('shop_products')
+      .select('id,slug,title,description,price,category,room,materials,dimensions,images,tags,badge,stock,shipping,created_at')
+      .order('created_at', { ascending: false })
+      .limit(500)
+      .then(({ data, error: rescueError }) => {
+        if (cancelled || rescueError) return
+        const rows = Array.isArray(data) ? data : []
+        const mapped = rows.map((row) => ({
+          ...row,
+          createdAt: row.created_at,
+          images: parseJsonArray(row.images),
+          tags: parseJsonArray(row.tags),
+        }))
+        setRescueProducts(mapped)
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [loading, storeProducts])
+
+  const allProducts = storeProducts.length > 0 ? storeProducts : rescueProducts
 
   const getCartQuantity = (productId) => {
     const item = cartItems.find((p) => p.id === productId)
