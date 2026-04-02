@@ -14,8 +14,22 @@ function isMissingFulfillmentColumnError(error) {
 
 function isStatementTimeoutError(error) {
   if (!error) return false
+  if (String(error.code || '') === '57014') return true
   const m = String(error.message || '').toLowerCase()
   return m.includes('statement timeout') || m.includes('canceling statement due to statement timeout')
+}
+
+/** PostgREST/Postgres: column missing, bad select list, schema cache. */
+function isRecoverableSelectListError(error) {
+  if (!error) return false
+  const c = String(error.code || '')
+  const m = String(error.message || '').toLowerCase()
+  if (c === '42703') return true
+  if (c === 'PGRST204') return true
+  if (isMissingFulfillmentColumnError(error)) return true
+  if (m.includes('does not exist') && m.includes('column')) return true
+  if (m.includes('could not find') && m.includes('column')) return true
+  return false
 }
 
 function omitFulfillmentFromPayload(payload) {
@@ -81,6 +95,25 @@ const SHOP_PRODUCT_SELECT = [
   'return_policy',
   'vendor_id',
 ].join(', ')
+
+/** Solo columnas del esquema base de shop_products (evita 400 si faltan columnas nuevas). */
+const SHOP_PRODUCT_SELECT_MINIMAL = [
+  'id',
+  'slug',
+  'title',
+  'description',
+  'price',
+  'category',
+  'room',
+  'materials',
+  'dimensions',
+  'images',
+  'tags',
+  'badge',
+  'stock',
+  'is_active',
+  'created_at',
+].join(', ')
 const SHOP_PRODUCTS_FETCH_LIMIT = 500
 
 const sortProductsByCreatedAtDesc = (rows) =>
@@ -95,20 +128,42 @@ const sortProductsByCreatedAtDesc = (rows) =>
  * idx on created_at, heavy jsonb rows, or strict pool limits).
  */
 async function runShopProductsSelect(selectList) {
+  // id primero: usa el índice de la PK; created_at sin índice puede disparar timeout.
   const attempts = [
-    (q) => q.order('created_at', { ascending: false }).limit(SHOP_PRODUCTS_FETCH_LIMIT),
     (q) => q.order('id', { ascending: false }).limit(SHOP_PRODUCTS_FETCH_LIMIT),
+    (q) => q.order('created_at', { ascending: false }).limit(SHOP_PRODUCTS_FETCH_LIMIT),
     (q) => q.limit(SHOP_PRODUCTS_FETCH_LIMIT),
     (q) => q.limit(200),
+    (q) => q.limit(80),
   ]
 
   let result
   for (const finish of attempts) {
     const base = supabase.from('shop_products').select(selectList)
     result = await finish(base)
-    if (!result.error || !isStatementTimeoutError(result.error)) break
+    if (!result.error) return result
+    if (!isStatementTimeoutError(result.error)) return result
   }
   return result
+}
+
+async function fetchShopProductsViaRpc() {
+  const limits = [250, 150, 80]
+  let last
+  for (const p_limit of limits) {
+    const r = await supabase.rpc('get_shop_products_catalog', { p_limit })
+    last = r
+    if (!r.error && Array.isArray(r.data)) return r
+    const msg = String(r.error?.message || '').toLowerCase()
+    if (
+      msg.includes('could not find the function') ||
+      msg.includes('function public.get_shop_products_catalog') ||
+      String(r.error?.code || '') === '42883'
+    ) {
+      return r
+    }
+  }
+  return last
 }
 
 export const fetchShopProducts = async () => {
@@ -116,14 +171,25 @@ export const fetchShopProducts = async () => {
     return { data: null, error: new Error(SUPABASE_REQUIRED_MSG) }
   }
 
-  let result = await runShopProductsSelect(SHOP_PRODUCT_SELECT)
+  const selectVariants = [SHOP_PRODUCT_SELECT, SHOP_PRODUCT_SELECT_MINIMAL, '*']
 
-  // Fallback when DB is missing columns (Postgres 42703 or PostgREST schema cache for fulfillment, etc.)
-  if (
-    result.error &&
-    (result.error.code === '42703' || isMissingFulfillmentColumnError(result.error))
-  ) {
-    result = await runShopProductsSelect('*')
+  let result
+  for (const selectList of selectVariants) {
+    result = await runShopProductsSelect(selectList)
+    if (!result.error) {
+      return { ...result, data: sortProductsByCreatedAtDesc(result.data) }
+    }
+    if (isRecoverableSelectListError(result.error) || isStatementTimeoutError(result.error)) {
+      continue
+    }
+    break
+  }
+
+  if (result?.error && isStatementTimeoutError(result.error)) {
+    const rpcResult = await fetchShopProductsViaRpc()
+    if (!rpcResult.error && Array.isArray(rpcResult.data)) {
+      return { ...rpcResult, data: sortProductsByCreatedAtDesc(rpcResult.data) }
+    }
   }
 
   if (!result.error && Array.isArray(result.data)) {
