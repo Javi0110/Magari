@@ -39,7 +39,7 @@ function parseJsonbArray(value, fallback) {
 }
 
 // Mapear fila de Supabase (snake_case) a objeto app (camelCase)
-function fromDb(row) {
+export function fromDb(row) {
   if (!row) return null
   const { return_policy, created_at, vendor_id, ...rest } = row
   const fulfillmentRaw = row.fulfillment || 'shipping'
@@ -90,39 +90,40 @@ const sortProductsByCreatedAtDesc = (rows) =>
       new Date(a?.created_at || a?.createdAt || 0).getTime()
   )
 
-const fetchShopProducts = async () => {
-  let result = await supabase
-    .from('shop_products')
-    .select(SHOP_PRODUCT_SELECT)
-    .order('created_at', { ascending: false })
-    .limit(SHOP_PRODUCTS_FETCH_LIMIT)
+/**
+ * Runs progressively cheaper reads when Postgres hits statement_timeout (common without
+ * idx on created_at, heavy jsonb rows, or strict pool limits).
+ */
+async function runShopProductsSelect(selectList) {
+  const attempts = [
+    (q) => q.order('created_at', { ascending: false }).limit(SHOP_PRODUCTS_FETCH_LIMIT),
+    (q) => q.order('id', { ascending: false }).limit(SHOP_PRODUCTS_FETCH_LIMIT),
+    (q) => q.limit(SHOP_PRODUCTS_FETCH_LIMIT),
+    (q) => q.limit(200),
+  ]
 
-  // Some projects hit statement timeout on ORDER BY. Retry without ordering.
-  if (result.error && isStatementTimeoutError(result.error)) {
-    result = await supabase
-      .from('shop_products')
-      .select(SHOP_PRODUCT_SELECT)
-      .limit(SHOP_PRODUCTS_FETCH_LIMIT)
+  let result
+  for (const finish of attempts) {
+    const base = supabase.from('shop_products').select(selectList)
+    result = await finish(base)
+    if (!result.error || !isStatementTimeoutError(result.error)) break
   }
+  return result
+}
+
+export const fetchShopProducts = async () => {
+  if (!supabase) {
+    return { data: null, error: new Error(SUPABASE_REQUIRED_MSG) }
+  }
+
+  let result = await runShopProductsSelect(SHOP_PRODUCT_SELECT)
 
   // Fallback when DB is missing columns (Postgres 42703 or PostgREST schema cache for fulfillment, etc.)
   if (
     result.error &&
     (result.error.code === '42703' || isMissingFulfillmentColumnError(result.error))
   ) {
-    result = await supabase
-      .from('shop_products')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(SHOP_PRODUCTS_FETCH_LIMIT)
-  }
-
-  // Last retry path for timeout on fallback queries.
-  if (result.error && isStatementTimeoutError(result.error)) {
-    result = await supabase
-      .from('shop_products')
-      .select('*')
-      .limit(SHOP_PRODUCTS_FETCH_LIMIT)
+    result = await runShopProductsSelect('*')
   }
 
   if (!result.error && Array.isArray(result.data)) {

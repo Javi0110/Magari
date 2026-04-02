@@ -5,7 +5,7 @@ import {
   Filter, X, ShoppingCart, Heart, Eye, ChevronDown, ChevronUp, 
   ChevronLeft, ChevronRight, Search, Star, Share2, Mail, Instagram, Loader2
 } from 'lucide-react'
-import { useProductsStore } from '../store/productsStore'
+import { useProductsStore, fetchShopProducts, fromDb } from '../store/productsStore'
 import { useCartStore } from '../store/cartStore'
 import { useWishlistStore } from '../store/wishlistStore'
 import { supabase } from '../utils/supabase'
@@ -56,34 +56,11 @@ export default function ShopPage() {
     if (!shouldRescue) return
     let cancelled = false
 
-    const parseJsonArray = (value) => {
-      if (Array.isArray(value)) return value
-      if (typeof value === 'string') {
-        try {
-          const parsed = JSON.parse(value)
-          return Array.isArray(parsed) ? parsed : []
-        } catch {
-          return []
-        }
-      }
-      return []
-    }
-
-    supabase
-      .from('shop_products')
-      .select('id,slug,title,description,price,category,room,materials,dimensions,images,tags,badge,stock,shipping,created_at')
-      .order('created_at', { ascending: false })
-      .limit(500)
-      .then(({ data, error: rescueError }) => {
-        if (cancelled || rescueError) return
-        const rows = Array.isArray(data) ? data : []
-        const mapped = rows.map((row) => ({
-          ...row,
-          createdAt: row.created_at,
-          images: parseJsonArray(row.images),
-          tags: parseJsonArray(row.tags),
-        }))
-        setRescueProducts(mapped)
+    fetchShopProducts()
+      .then((result) => {
+        if (cancelled || result.error) return
+        const rows = Array.isArray(result.data) ? result.data : []
+        setRescueProducts(rows.map(fromDb))
       })
       .catch(() => {})
 
