@@ -638,6 +638,11 @@ export default function ShopPage() {
                 <p className="text-xs text-neutral-500">
                   {loading && allProducts.length > 0 ? 'Updating…' : 'Use filters above to find the right piece faster.'}
                 </p>
+                {error && (
+                  <p className="mt-1 text-xs text-red-600">
+                    Error loading products: {error}
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-2 justify-end">
                 <label className="text-sm text-neutral-600">Sort by:</label>

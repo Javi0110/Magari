@@ -12,6 +12,12 @@ function isMissingFulfillmentColumnError(error) {
   return m.includes('fulfillment') && (m.includes('schema cache') || m.includes('could not find'))
 }
 
+function isStatementTimeoutError(error) {
+  if (!error) return false
+  const m = String(error.message || '').toLowerCase()
+  return m.includes('statement timeout') || m.includes('canceling statement due to statement timeout')
+}
+
 function omitFulfillmentFromPayload(payload) {
   if (!payload || typeof payload !== 'object') return payload
   const { fulfillment: _f, ...rest } = payload
@@ -75,12 +81,29 @@ const SHOP_PRODUCT_SELECT = [
   'return_policy',
   'vendor_id',
 ].join(', ')
+const SHOP_PRODUCTS_FETCH_LIMIT = 500
+
+const sortProductsByCreatedAtDesc = (rows) =>
+  [...rows].sort(
+    (a, b) =>
+      new Date(b?.created_at || b?.createdAt || 0).getTime() -
+      new Date(a?.created_at || a?.createdAt || 0).getTime()
+  )
 
 const fetchShopProducts = async () => {
   let result = await supabase
     .from('shop_products')
     .select(SHOP_PRODUCT_SELECT)
     .order('created_at', { ascending: false })
+    .limit(SHOP_PRODUCTS_FETCH_LIMIT)
+
+  // Some projects hit statement timeout on ORDER BY. Retry without ordering.
+  if (result.error && isStatementTimeoutError(result.error)) {
+    result = await supabase
+      .from('shop_products')
+      .select(SHOP_PRODUCT_SELECT)
+      .limit(SHOP_PRODUCTS_FETCH_LIMIT)
+  }
 
   // Fallback when DB is missing columns (Postgres 42703 or PostgREST schema cache for fulfillment, etc.)
   if (
@@ -91,6 +114,19 @@ const fetchShopProducts = async () => {
       .from('shop_products')
       .select('*')
       .order('created_at', { ascending: false })
+      .limit(SHOP_PRODUCTS_FETCH_LIMIT)
+  }
+
+  // Last retry path for timeout on fallback queries.
+  if (result.error && isStatementTimeoutError(result.error)) {
+    result = await supabase
+      .from('shop_products')
+      .select('*')
+      .limit(SHOP_PRODUCTS_FETCH_LIMIT)
+  }
+
+  if (!result.error && Array.isArray(result.data)) {
+    return { ...result, data: sortProductsByCreatedAtDesc(result.data) }
   }
   return result
 }
@@ -139,17 +175,23 @@ export const useProductsStore = create((set, get) => ({
       set({ initialized: true })
       return
     }
-    set({ loading: true, error: null, products: [] })
+    set({ loading: true, error: null })
     const { data, error } = await fetchShopProducts()
 
     if (error) {
       console.error('initProducts error:', error)
       const cached = loadFromStorage()
+      const previous = get().products
       set({
         loading: false,
         error: error.message,
         initialized: true,
-        products: Array.isArray(cached) && cached.length > 0 ? cached : [],
+        products:
+          Array.isArray(cached) && cached.length > 0
+            ? cached
+            : Array.isArray(previous)
+              ? previous
+              : [],
       })
       return
     }
