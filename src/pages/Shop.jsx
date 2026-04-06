@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useLayoutEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { 
@@ -34,7 +34,7 @@ export default function ShopPage() {
   const [abandonedStatus, setAbandonedStatus] = useState(null)
   const [rescueProducts, setRescueProducts] = useState([])
   
-  const { getAllProducts, initProducts, loading, error } = useProductsStore()
+  const { getAllProducts, initProducts, loading, error, catalogFetchPending } = useProductsStore()
   const { addItem, openCart } = useCartStore()
   const cartItems = useCartStore((s) => s.items)
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore()
@@ -45,6 +45,14 @@ export default function ShopPage() {
   const materials = ['all', 'Clay', 'Paper', 'Fabric', 'Wood']
   const shippingOptions = ['all', 'PR only', 'USA', 'Both']
 
+  useLayoutEffect(() => {
+    if (!supabase) return
+    const { initialized } = useProductsStore.getState()
+    if (!initialized) {
+      useProductsStore.setState({ catalogFetchPending: true })
+    }
+  }, [])
+
   useEffect(() => {
     initProducts().catch(() => {})
   }, [initProducts])
@@ -52,7 +60,12 @@ export default function ShopPage() {
   const storeProducts = getAllProducts()
 
   useEffect(() => {
-    const shouldRescue = !loading && Array.isArray(storeProducts) && storeProducts.length === 0 && !!supabase
+    const shouldRescue =
+      !loading &&
+      !catalogFetchPending &&
+      Array.isArray(storeProducts) &&
+      storeProducts.length === 0 &&
+      !!supabase
     if (!shouldRescue) return
     let cancelled = false
 
@@ -67,7 +80,7 @@ export default function ShopPage() {
     return () => {
       cancelled = true
     }
-  }, [loading, storeProducts])
+  }, [loading, catalogFetchPending, storeProducts])
 
   const allProducts = storeProducts.length > 0 ? storeProducts : rescueProducts
 
@@ -647,17 +660,24 @@ export default function ShopPage() {
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
               <div>
                 <p className="text-sm text-neutral-600">
-                  {loading && allProducts.length === 0 ? (
+                  {catalogFetchPending && allProducts.length === 0 ? (
                     <span className="inline-flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       Loading products…
+                    </span>
+                  ) : catalogFetchPending && allProducts.length > 0 ? (
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Syncing full catalog…
                     </span>
                   ) : (
                     <>{filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found</>
                   )}
                 </p>
                 <p className="text-xs text-neutral-500">
-                  {loading && allProducts.length > 0 ? 'Updating…' : 'Use filters above to find the right piece faster.'}
+                  {catalogFetchPending && allProducts.length > 0
+                    ? 'Almost there — loading every piece from the shop.'
+                    : 'Use filters above to find the right piece faster.'}
                 </p>
                 {error && (
                   <p className="mt-1 text-xs text-red-600">
@@ -684,7 +704,7 @@ export default function ShopPage() {
             </div>
 
             {/* Product Grid */}
-            {loading && allProducts.length === 0 ? (
+            {catalogFetchPending && allProducts.length === 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                 {Array.from({ length: 9 }).map((_, i) => (
                   <div key={i} className="card animate-pulse">

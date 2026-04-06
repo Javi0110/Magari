@@ -234,44 +234,51 @@ export const useProductsStore = create((set, get) => ({
   loading: false,
   error: null,
   initialized: false,
-  
+  /** True while the shop catalog request is in flight (avoids showing a stale product count). */
+  catalogFetchPending: false,
+
   initProducts: async (opts) => {
     const force = opts?.force === true
     if (get().initialized && !force) return
     if (!supabase) {
-      set({ initialized: true })
+      set({ initialized: true, catalogFetchPending: false })
       return
     }
     const hadProducts = Array.isArray(get().products) && get().products.length > 0
     // Con datos en memoria/localStorage: refrescar sin pantalla de carga bloqueante
     if (force || !hadProducts) {
-      set({ loading: true, error: null })
+      set({ loading: true, error: null, catalogFetchPending: true })
     } else {
-      set({ error: null })
-    }
-    const { data, error } = await fetchShopProducts()
-
-    if (error) {
-      console.error('initProducts error:', error)
-      const cached = loadFromStorage()
-      const previous = get().products
-      set({
-        loading: false,
-        error: error.message,
-        initialized: true,
-        products:
-          Array.isArray(cached) && cached.length > 0
-            ? cached
-            : Array.isArray(previous)
-              ? previous
-              : [],
-      })
-      return
+      set({ error: null, catalogFetchPending: true })
     }
 
-    const products = (Array.isArray(data) ? data : []).map(fromDb)
-    set({ products, loading: false, initialized: true, error: null })
-    saveToStorage(products)
+    try {
+      const { data, error } = await fetchShopProducts()
+
+      if (error) {
+        console.error('initProducts error:', error)
+        const cached = loadFromStorage()
+        const previous = get().products
+        set({
+          loading: false,
+          error: error.message,
+          initialized: true,
+          products:
+            Array.isArray(cached) && cached.length > 0
+              ? cached
+              : Array.isArray(previous)
+                ? previous
+                : [],
+        })
+        return
+      }
+
+      const products = (Array.isArray(data) ? data : []).map(fromDb)
+      set({ products, loading: false, initialized: true, error: null })
+      saveToStorage(products)
+    } finally {
+      set({ catalogFetchPending: false })
+    }
   },
 
   /** All rows from shop_products (Shop Magari should show full catalog). */
