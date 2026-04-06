@@ -21,7 +21,7 @@ export default function ProductDetailPage() {
   )
 
   useEffect(() => {
-    initProducts({ force: true }).catch(() => {})
+    initProducts().catch(() => {})
   }, [initProducts])
 
   const [imageIndex, setImageIndex] = useState(0)

@@ -242,7 +242,13 @@ export const useProductsStore = create((set, get) => ({
       set({ initialized: true })
       return
     }
-    set({ loading: true, error: null })
+    const hadProducts = Array.isArray(get().products) && get().products.length > 0
+    // Con datos en memoria/localStorage: refrescar sin pantalla de carga bloqueante
+    if (force || !hadProducts) {
+      set({ loading: true, error: null })
+    } else {
+      set({ error: null })
+    }
     const { data, error } = await fetchShopProducts()
 
     if (error) {

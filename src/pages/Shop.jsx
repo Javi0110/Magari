@@ -46,7 +46,7 @@ export default function ShopPage() {
   const shippingOptions = ['all', 'PR only', 'USA', 'Both']
 
   useEffect(() => {
-    initProducts({ force: true }).catch(() => {})
+    initProducts().catch(() => {})
   }, [initProducts])
 
   const storeProducts = getAllProducts()
