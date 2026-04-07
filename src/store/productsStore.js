@@ -123,18 +123,25 @@ const sortProductsByCreatedAtDesc = (rows) =>
       new Date(a?.created_at || a?.createdAt || 0).getTime()
   )
 
+function isRpcCatalogMissingError(error) {
+  if (!error) return false
+  const msg = String(error.message || '').toLowerCase()
+  return (
+    msg.includes('could not find the function') ||
+    msg.includes('function public.get_shop_products_catalog') ||
+    String(error.code || '') === '42883'
+  )
+}
+
 /**
- * Runs progressively cheaper reads when Postgres hits statement_timeout (common without
- * idx on created_at, heavy jsonb rows, or strict pool limits).
+ * RPC primero: en DB usa ORDER BY id (PK) y statement_timeout más alto (ver migración).
+ * PostgREST solo como respaldo; reintentos solo con ORDER BY id para no encadenar timeouts por created_at.
  */
 async function runShopProductsSelect(selectList) {
-  // id primero: usa el índice de la PK; created_at sin índice puede disparar timeout.
   const attempts = [
     (q) => q.order('id', { ascending: false }).limit(SHOP_PRODUCTS_FETCH_LIMIT),
-    (q) => q.order('created_at', { ascending: false }).limit(SHOP_PRODUCTS_FETCH_LIMIT),
-    (q) => q.limit(SHOP_PRODUCTS_FETCH_LIMIT),
-    (q) => q.limit(200),
-    (q) => q.limit(80),
+    (q) => q.order('id', { ascending: false }).limit(200),
+    (q) => q.order('id', { ascending: false }).limit(100),
   ]
 
   let result
@@ -148,22 +155,21 @@ async function runShopProductsSelect(selectList) {
 }
 
 async function fetchShopProductsViaRpc() {
-  const limits = [250, 150, 80]
+  const limits = [SHOP_PRODUCTS_FETCH_LIMIT, 200, 100]
   let last
   for (const p_limit of limits) {
     const r = await supabase.rpc('get_shop_products_catalog', { p_limit })
     last = r
     if (!r.error && Array.isArray(r.data)) return r
-    const msg = String(r.error?.message || '').toLowerCase()
-    if (
-      msg.includes('could not find the function') ||
-      msg.includes('function public.get_shop_products_catalog') ||
-      String(r.error?.code || '') === '42883'
-    ) {
+    if (isRpcCatalogMissingError(r.error)) {
       return r
     }
   }
   return last
+}
+
+async function fetchShopProductsPrimaryRpc() {
+  return supabase.rpc('get_shop_products_catalog', { p_limit: SHOP_PRODUCTS_FETCH_LIMIT })
 }
 
 export const fetchShopProducts = async () => {
@@ -171,9 +177,17 @@ export const fetchShopProducts = async () => {
     return { data: null, error: new Error(SUPABASE_REQUIRED_MSG) }
   }
 
+  const rpcFirst = await fetchShopProductsPrimaryRpc()
+  if (!rpcFirst.error && Array.isArray(rpcFirst.data)) {
+    return { ...rpcFirst, data: sortProductsByCreatedAtDesc(rpcFirst.data) }
+  }
+  if (rpcFirst.error && !isRpcCatalogMissingError(rpcFirst.error) && !isStatementTimeoutError(rpcFirst.error)) {
+    return rpcFirst
+  }
+
   const selectVariants = [SHOP_PRODUCT_SELECT, SHOP_PRODUCT_SELECT_MINIMAL, '*']
 
-  let result
+  let result = rpcFirst
   for (const selectList of selectVariants) {
     result = await runShopProductsSelect(selectList)
     if (!result.error) {
@@ -186,9 +200,9 @@ export const fetchShopProducts = async () => {
   }
 
   if (result?.error && isStatementTimeoutError(result.error)) {
-    const rpcResult = await fetchShopProductsViaRpc()
-    if (!rpcResult.error && Array.isArray(rpcResult.data)) {
-      return { ...rpcResult, data: sortProductsByCreatedAtDesc(rpcResult.data) }
+    const rpcFallback = await fetchShopProductsViaRpc()
+    if (!rpcFallback.error && Array.isArray(rpcFallback.data)) {
+      return { ...rpcFallback, data: sortProductsByCreatedAtDesc(rpcFallback.data) }
     }
   }
 
@@ -210,6 +224,16 @@ const saveToStorage = (products) => {
   try {
     localStorage.setItem('magari-products-storage', JSON.stringify(products))
   } catch {
+  }
+}
+
+/** Evita bloquear el hilo principal tras descargar catálogos grandes. */
+const scheduleSaveCatalogToStorage = (products) => {
+  const run = () => saveToStorage(products)
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(() => run(), { timeout: 2500 })
+  } else {
+    setTimeout(run, 0)
   }
 }
 
@@ -275,7 +299,7 @@ export const useProductsStore = create((set, get) => ({
 
       const products = (Array.isArray(data) ? data : []).map(fromDb)
       set({ products, loading: false, initialized: true, error: null })
-      saveToStorage(products)
+      scheduleSaveCatalogToStorage(products)
     } finally {
       set({ catalogFetchPending: false })
     }
