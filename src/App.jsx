@@ -21,6 +21,7 @@ import ServicesPage from './pages/Services'
 import RealEstatePage from './pages/RealEstate'
 import PortfolioPage from './pages/Portfolio'
 import ContactPage from './pages/Contact'
+import ContactBookingSuccessPage from './pages/ContactBookingSuccess'
 import MarketplacePage from './pages/Marketplace'
 import MomadeCommunityPage from './pages/MomadeCommunity'
 import BecomeVendorPage from './pages/BecomeVendor'
@@ -120,7 +121,11 @@ const pageMeta = {
   '/contact': {
     title: 'Contact & Book — Magari & Co.',
     description:
-      'Book a consult, ask about a package, or flag a shop issue. Typical reply: 24–48 business hours. Buyer/seller routing includes eXp Realty disclosure on the real estate page.',
+      'Request a consultation with an available time (Central), or send a general message. Typical reply: 24–48 business hours.',
+  },
+  '/contact/success': {
+    title: 'Consultation Requested — Magari & Co.',
+    description: 'Thank you for requesting a consultation with Magari & Co.',
   },
   '/book': {
     title: 'Book a Consultation — Calendly | Magari & Co.',
@@ -310,6 +315,7 @@ function App() {
           <Route path="/maker/:slug" element={<VendorProfilePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/contact/success" element={<ContactBookingSuccessPage />} />
           <Route path="/book" element={<BookPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/casa-magari" element={<CasaMagariPage />} />

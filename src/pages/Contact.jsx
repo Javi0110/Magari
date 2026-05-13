@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Mail, Instagram, MapPin, Send } from 'lucide-react'
+import { Mail, Instagram, MapPin, Send, ChevronDown } from 'lucide-react'
 import { sendContactFormEmail } from '../utils/emailService'
 import InstagramDmCta from '../components/InstagramDmCta'
 import PageBottomCta from '../components/PageBottomCta'
 import BookConsultButton from '../components/BookConsultButton'
-import CalendlyIframe from '../components/CalendlyIframe'
+import ConsultationBookingWizard from '../components/consultation/ConsultationBookingWizard'
 
 const SERVICE_OPTIONS = [
   { value: '', label: 'Service needed (select one)' },
@@ -39,6 +39,7 @@ function labelForService(value) {
 
 export default function ContactPage() {
   const [searchParams] = useSearchParams()
+  const [generalOpen, setGeneralOpen] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -130,11 +131,11 @@ export default function ContactPage() {
             <InstagramDmCta className="btn-outline btn-sm" />
           </div>
           <div className="flex flex-wrap gap-2 justify-center mt-3">
-            <BookConsultButton variant="modal" className="btn-primary btn-sm">
-              Book (Calendly popup)
-            </BookConsultButton>
+            <a href="#book" className="btn-primary btn-sm">
+              Request a consultation
+            </a>
             <BookConsultButton variant="page" className="btn-outline btn-sm">
-              Open /book
+              Scheduling page (/book)
             </BookConsultButton>
           </div>
         </div>
@@ -189,20 +190,18 @@ export default function ContactPage() {
             </div>
 
             <div className="card p-6 sm:p-8 border border-greige-light/80 bg-white/95">
-              <h2 className="font-serif text-xl text-neutral-800 mb-2">Schedule (Calendly)</h2>
+              <h2 className="font-serif text-xl text-neutral-800 mb-2">Prefer Calendly?</h2>
               <p className="text-sm text-neutral-600 mb-4">
-                Same calendar as <Link to="/book" className="text-sage-dark font-medium hover:underline">/book</Link>
-                — placeholder link until <span className="font-mono text-xs">VITE_CALENDLY_URL</span> is set.
+                Primary scheduling is now on this page (pick a time below). You can still open the legacy Calendly page if needed.
               </p>
-              <div className="flex flex-wrap gap-2 mb-4">
-                <BookConsultButton variant="modal" className="btn-primary btn-sm">
-                  Open popup
+              <div className="flex flex-wrap gap-2">
+                <BookConsultButton variant="modal" className="btn-outline btn-sm">
+                  Calendly popup
                 </BookConsultButton>
                 <BookConsultButton variant="page" className="btn-outline btn-sm">
-                  Full page (/book)
+                  /book
                 </BookConsultButton>
               </div>
-              <CalendlyIframe className="min-h-[480px] md:min-h-[560px]" title="Schedule — Calendly embed" />
             </div>
 
             <div className="card p-8 border border-greige-light/80 bg-white/90">
@@ -233,91 +232,105 @@ export default function ContactPage() {
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="order-1 lg:order-2">
-            <div id="book" className="card p-8 border border-greige-light/80 scroll-mt-28">
-              <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-2">Booking / inquiry</h2>
-              <p className="text-sm text-neutral-500 mb-6">
-                Add photos in your message if you can — even phone snaps help.
-              </p>
-
-              {submitted ? (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-taupe/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Send className="w-8 h-8 text-taupe" />
-                  </div>
-                  <h3 className="font-serif text-2xl text-neutral-700 mb-2">Message sent</h3>
-                  <p className="text-neutral-600 text-sm">We&apos;ll get back within 24–48 business hours.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div>
-                    <label className="block text-neutral-700 font-medium mb-2 text-sm">Name *</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="input-field"
-                      placeholder="Your name"
-                      autoComplete="name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-neutral-700 font-medium mb-2 text-sm">Email *</label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="input-field"
-                      placeholder="you@email.com"
-                      autoComplete="email"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-neutral-700 font-medium mb-2 text-sm">Phone</label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="input-field"
-                      placeholder="Optional"
-                      autoComplete="tel"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-neutral-700 font-medium mb-2 text-sm">Service needed *</label>
-                    <select
-                      required
-                      value={formData.serviceNeeded}
-                      onChange={(e) => setFormData({ ...formData, serviceNeeded: e.target.value })}
-                      className="input-field"
-                    >
-                      {SERVICE_OPTIONS.map((o) => (
-                        <option key={o.value || 'empty'} value={o.value}>
-                          {o.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-neutral-700 font-medium mb-2 text-sm">Message *</label>
-                    <textarea
-                      required
-                      minLength={4}
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="input-field min-h-36"
-                      placeholder="Timeline, neighborhood, room photos, or what keeps you stuck…"
-                    />
-                  </div>
-                  <button type="submit" className="w-full btn-primary py-3.5">
-                    <Send className="w-5 h-5" />
-                    Send Message
-                  </button>
-                </form>
-              )}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="order-1 lg:order-2 space-y-6">
+            <div id="book" className="scroll-mt-28">
+              <ConsultationBookingWizard />
             </div>
+
+            <details
+              className="rounded-2xl border border-greige-light/80 bg-white/90 overflow-hidden group"
+              open={generalOpen}
+              onToggle={(e) => setGeneralOpen(e.target.open)}
+            >
+              <summary className="cursor-pointer list-none px-6 py-4 flex items-center justify-between gap-2 font-medium text-neutral-800 hover:bg-cream/50">
+                <span>General message (email only, no time slot)</span>
+                <ChevronDown
+                  className={`w-5 h-5 text-neutral-500 transition-transform shrink-0 ${generalOpen ? 'rotate-180' : ''}`}
+                />
+              </summary>
+              <div className="px-6 pb-6 pt-0 border-t border-greige-light/60">
+                <p className="text-xs text-neutral-500 mb-4 pt-4">
+                  For quick questions without choosing a time — we still reply within 24–48 business hours.
+                </p>
+                {submitted ? (
+                  <div className="text-center py-8">
+                    <div className="w-14 h-14 bg-taupe/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Send className="w-7 h-7 text-taupe" />
+                    </div>
+                    <h3 className="font-serif text-xl text-neutral-700 mb-1">Message sent</h3>
+                    <p className="text-neutral-600 text-sm">We&apos;ll get back within 24–48 business hours.</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-neutral-700 font-medium mb-2 text-sm">Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="input-field"
+                        placeholder="Your name"
+                        autoComplete="name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-neutral-700 font-medium mb-2 text-sm">Email *</label>
+                      <input
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="input-field"
+                        placeholder="you@email.com"
+                        autoComplete="email"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-neutral-700 font-medium mb-2 text-sm">Phone</label>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        className="input-field"
+                        placeholder="Optional"
+                        autoComplete="tel"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-neutral-700 font-medium mb-2 text-sm">Service needed *</label>
+                      <select
+                        required
+                        value={formData.serviceNeeded}
+                        onChange={(e) => setFormData({ ...formData, serviceNeeded: e.target.value })}
+                        className="input-field"
+                      >
+                        {SERVICE_OPTIONS.map((o) => (
+                          <option key={o.value || 'empty'} value={o.value}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-neutral-700 font-medium mb-2 text-sm">Message *</label>
+                      <textarea
+                        required
+                        minLength={4}
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        className="input-field min-h-28"
+                        placeholder="Timeline, neighborhood, room photos…"
+                      />
+                    </div>
+                    <button type="submit" className="w-full btn-primary py-3 gap-2">
+                      <Send className="w-5 h-5" />
+                      Send message
+                    </button>
+                  </form>
+                )}
+              </div>
+            </details>
           </motion.div>
         </div>
 

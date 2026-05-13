@@ -52,3 +52,10 @@ $$;
 alter function public.get_shop_products_catalog(integer) set statement_timeout = '60s';
 
 grant execute on function public.get_shop_products_catalog(integer) to anon, authenticated;
+
+-- -----------------------------------------------------------------------------
+-- Consultas internas (calendario + solicitudes): copia y ejecuta TODO el archivo
+-- supabase/migrations/20260413120000_consultation_booking.sql
+-- Luego en Authentication crea usuario magaribyelena@gmail.com (misma clave que /admin)
+-- para que las pestañas Consultations / Availability lean Supabase con RLS.
+-- -----------------------------------------------------------------------------

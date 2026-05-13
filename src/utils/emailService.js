@@ -83,4 +83,22 @@ export const sendLeadMagnetChecklistEmail = async ({
   })
 }
 
+/** Optional: notify admin when internal consultation booking is created (Supabase remains source of truth). */
+export async function notifyConsultationBooked({
+  guestName,
+  guestEmail,
+  serviceLabel,
+  slotLabel,
+  requestId,
+}) {
+  return postMagariRelay({
+    kind: 'consultation_booked',
+    guestName,
+    guestEmail,
+    serviceLabel,
+    slotLabel,
+    requestId,
+  })
+}
+
 export { MAGARI_EMAIL }

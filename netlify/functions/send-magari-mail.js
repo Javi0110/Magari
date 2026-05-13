@@ -165,6 +165,25 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers: cors, body: JSON.stringify({ ok: true }) }
     }
 
+    if (kind === 'consultation_booked') {
+      const { guestName, guestEmail, serviceLabel, slotLabel, requestId } = body
+      if (!guestEmail || !serviceLabel || !slotLabel) {
+        return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'Missing fields' }) }
+      }
+      const internalHtml = `<p><strong>Nueva solicitud de consulta (calendario interno)</strong></p>
+<ul>
+<li>ID: ${escapeHtml(requestId || '—')}</li>
+<li>Nombre: ${escapeHtml(guestName || '—')}</li>
+<li>Email: ${escapeHtml(guestEmail)}</li>
+<li>Servicio: ${escapeHtml(serviceLabel)}</li>
+<li>Horario: ${escapeHtml(slotLabel)}</li>
+</ul>
+<p><a href="https://casamagari.com/admin">Abrir Admin → Consultations</a></p>`
+      const r1 = await sendResend(MAGARI_EMAIL, `Consulta: ${serviceLabel}`, internalHtml)
+      if (!r1.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r1.error }) }
+      return { statusCode: 200, headers: cors, body: JSON.stringify({ ok: true }) }
+    }
+
     return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'Unknown kind' }) }
   } catch (err) {
     return {

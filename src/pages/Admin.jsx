@@ -17,7 +17,9 @@ import {
   Search,
   Image as ImageIcon,
   Upload,
-  Bell
+  Bell,
+  Calendar,
+  Clock,
 } from 'lucide-react'
 import { sampleTestimonials } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
@@ -31,6 +33,8 @@ import {
 } from '../utils/fulfillment'
 import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emailRelay'
 import { useNotificationsStore } from '../store/notificationsStore'
+import ConsultationsAdminView from '../components/admin/ConsultationsAdminView'
+import AvailabilityAdminView from '../components/admin/AvailabilityAdminView'
 
 function slugify(title) {
   const s = String(title || '')
@@ -102,6 +106,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   const [showNotifications, setShowNotifications] = useState(false)
+  const [supabaseAuthNote, setSupabaseAuthNote] = useState('')
   const { items: notifications, unreadCount, error: notificationsError, fetchForAdmin, markAsRead, markAllAsRead } = useNotificationsStore()
 
   useEffect(() => {
@@ -120,13 +125,27 @@ export default function AdminPage() {
     }
   }
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
     setLoginError('')
+    setSupabaseAuthNote('')
     const trimmedEmail = (email || '').trim().toLowerCase()
     if (trimmedEmail !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
       setLoginError('Email o contraseña incorrectos.')
       return
+    }
+    if (supabase) {
+      const { error: authErr } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password,
+      })
+      if (authErr) {
+        setSupabaseAuthNote(
+          `Consultas / Disponibilidad: sesión Supabase no iniciada (${authErr.message}). Crea en Supabase → Authentication un usuario con email ${ADMIN_EMAIL} y la misma contraseña del panel, o revisa la clave.`
+        )
+      }
+    } else {
+      setSupabaseAuthNote('Supabase no está configurado (variables VITE_SUPABASE_*).')
     }
     setIsLoggedIn(true)
   }
@@ -231,7 +250,16 @@ export default function AdminPage() {
               )}
             </div>
             <button
-              onClick={() => setIsLoggedIn(false)}
+              type="button"
+              onClick={async () => {
+                try {
+                  await supabase?.auth.signOut()
+                } catch {
+                  /* ignore */
+                }
+                setIsLoggedIn(false)
+                setSupabaseAuthNote('')
+              }}
               className="btn-outline"
             >
               Logout
@@ -240,6 +268,12 @@ export default function AdminPage() {
         </div>
 
         {/* Navigation Tabs */}
+        {supabaseAuthNote && (
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+            {supabaseAuthNote}
+          </div>
+        )}
+
         <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
           {[
             { id: 'dashboard', icon: <TrendingUp className="w-4 h-4" />, label: 'Dashboard' },
@@ -247,6 +281,8 @@ export default function AdminPage() {
             { id: 'orders', icon: <ShoppingBag className="w-4 h-4" />, label: 'Orders' },
             { id: 'payouts', icon: <DollarSign className="w-4 h-4" />, label: 'Payouts' },
             { id: 'vendors', icon: <Users className="w-4 h-4" />, label: 'Vendors' },
+            { id: 'consultations', icon: <Calendar className="w-4 h-4" />, label: 'Consultations' },
+            { id: 'availability', icon: <Clock className="w-4 h-4" />, label: 'Availability' },
             { id: 'services', icon: <Settings className="w-4 h-4" />, label: 'Services' },
             { id: 'reviews', icon: <MessageSquare className="w-4 h-4" />, label: 'Reviews' },
             { id: 'settings', icon: <Settings className="w-4 h-4" />, label: 'Settings' },
@@ -278,6 +314,8 @@ export default function AdminPage() {
             onClearHighlight={() => setHighlightedApplicationId(null)}
           />
         )}
+        {activeTab === 'consultations' && <ConsultationsAdminView />}
+        {activeTab === 'availability' && <AvailabilityAdminView />}
         {activeTab === 'reviews' && <ReviewsView />}
         {activeTab === 'settings' && <SettingsView />}
       </div>
