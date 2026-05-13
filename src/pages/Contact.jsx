@@ -55,7 +55,7 @@ export default function ContactPage() {
 
       if (intent === 'buyer') {
         serviceNeeded = 'buyer'
-        message = message || 'I would like to schedule a buyer consultation.'
+        message = message || 'I would like to schedule a buyer call.'
       } else if (intent === 'seller') {
         serviceNeeded = 'seller'
         message =
@@ -114,13 +114,16 @@ export default function ContactPage() {
     <div className="min-h-screen bg-cream py-12 md:py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 max-w-2xl mx-auto">
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-neutral-700 mb-4">Contact &amp; Book</h1>
-          <p className="text-lg text-neutral-600 mb-6">
-            Primary spot for consults and inquiries — tell us what you need; we route it cleanly.
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-neutral-700 mb-4">Let&apos;s Work Together</h1>
+          <p className="text-lg text-neutral-600 mb-2">
+            Tell me what you need — design, staging, or real estate — and I&apos;ll help you choose the best next step.
+          </p>
+          <p className="text-sm text-neutral-500 mb-6">
+            Serving Georgetown + Austin, TX (virtual services available anywhere)
           </p>
           <div className="flex flex-wrap gap-2 justify-center">
             <a href="/#lead-magnet" className="btn-outline text-sm py-2 px-4 inline-flex items-center justify-center">
-              Free checklist
+              Download Checklist
             </a>
             <InstagramDmCta className="btn-outline text-sm py-2 px-4 inline-flex items-center justify-center" />
           </div>
@@ -283,7 +286,7 @@ export default function ContactPage() {
                   </div>
                   <button type="submit" className="w-full btn-primary py-3.5 inline-flex items-center justify-center gap-2">
                     <Send className="w-5 h-5" />
-                    Send
+                    Send Message
                   </button>
                 </form>
               )}

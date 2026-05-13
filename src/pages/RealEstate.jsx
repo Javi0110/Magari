@@ -11,27 +11,29 @@ export default function RealEstatePage() {
       <section className="border-b border-greige-light/60 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 text-center">
           <p className="text-xs uppercase tracking-[0.28em] text-sage-dark mb-4">Real estate</p>
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-neutral-700 mb-6 text-balance">
-            Real Estate + Design Advantage
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-neutral-700 mb-4 text-balance">
+            Real Estate, the Magari way.
           </h1>
-          <p className="text-base font-semibold text-neutral-800 mb-4">
-            Realtor<sup>®</sup> @ eXp Realty
+          <p className="text-lg md:text-xl text-neutral-700 font-medium mb-4">
+            Buy • Sell • Invest — with design strategy built in.
           </p>
-          <p className="text-sm text-neutral-600 max-w-2xl mx-auto leading-relaxed mb-4">
-            Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty — real estate services provided through eXp Realty. Magari
-            &amp; Co. is <strong className="font-medium text-neutral-700">not</strong> a brokerage; it is the design and
-            staging studio. We never blur that line in contracts or marketing.
+          <p className="text-sm font-semibold text-sage-dark mb-6">
+            Elena Fadhel | Realtor<sup>®</sup> @ eXp Realty | Georgetown + Austin, TX
           </p>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed mb-10">
-            Licensed questions stay in the brokerage lane; prep, staging, and interiors stay with Magari. Same thread,
-            two clear roles — less telephone.
+          <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed mb-4">
+            Real estate is more than contracts — it&apos;s lifestyle, design, potential, and long-term value. I help clients
+            buy and sell with confidence by combining real estate expertise with an interior designer&apos;s eye.
+          </p>
+          <p className="text-sm text-neutral-600 max-w-2xl mx-auto leading-relaxed mb-10">
+            Magari &amp; Co. is the design and staging studio — not a brokerage. Licensed real estate services are offered
+            separately through eXp Realty by Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
             <Link
               to="/contact#book?intent=buyer"
               className="btn-primary inline-flex items-center justify-center gap-2"
             >
-              Schedule Buyer Consultation
+              Schedule a Buyer Call
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
@@ -58,17 +60,18 @@ export default function RealEstatePage() {
             <div className="w-12 h-12 rounded-2xl bg-sage-muted/40 flex items-center justify-center text-sage-dark mb-6">
               <KeyRound className="w-6 h-6" />
             </div>
-            <h2 className="font-serif text-3xl text-neutral-700 mb-4">For Buyers</h2>
-            <p className="text-neutral-600 leading-relaxed mb-3">
-              Tours with layout context, not just pretty staging — so you know what you are buying.
+            <h2 className="font-serif text-3xl text-neutral-700 mb-4">Buying a Home</h2>
+            <p className="text-neutral-600 leading-relaxed mb-6">
+              Whether it&apos;s your first home or your next investment, I guide you through the process with clarity and
+              strategy.
             </p>
-            <p className="text-neutral-600 text-sm mb-6">Licensed representation through eXp Realty.</p>
             <ul className="space-y-3 mb-8">
               {[
-                'Neighborhood tours aligned with how you actually live',
-                'Offer strategy with design-aware walkthroughs',
-                'Negotiation support with clear timelines',
-                'Guidance through inspection + next-step trades',
+                'Personalized home search + MLS access',
+                'Private showings & offer guidance',
+                'Negotiation strategy',
+                'Inspection support + next steps',
+                'Closing coordination and support',
               ].map((t) => (
                 <li key={t} className="flex gap-3 text-neutral-600 text-sm">
                   <Check className="w-5 h-5 text-sage shrink-0" />
@@ -76,11 +79,8 @@ export default function RealEstatePage() {
                 </li>
               ))}
             </ul>
-            <Link
-              to="/contact#book?intent=buyer"
-              className="btn-primary w-full sm:w-auto inline-block text-center px-8 py-3"
-            >
-              Schedule Buyer Consultation
+            <Link to="/contact#book?intent=buyer" className="btn-primary w-full sm:w-auto inline-block text-center px-8 py-3">
+              Schedule a Buyer Call
             </Link>
           </motion.div>
 
@@ -95,23 +95,18 @@ export default function RealEstatePage() {
             <div className="w-12 h-12 rounded-2xl bg-earth/15 flex items-center justify-center text-earth-dark mb-6">
               <Home className="w-6 h-6" />
             </div>
-            <h2 className="font-serif text-3xl text-neutral-700 mb-4">For Sellers</h2>
-            <p className="text-neutral-600 leading-relaxed mb-3">
-              Online polish + in-person flow so buyers slow down and remember the address.
-            </p>
-            <p className="text-neutral-600 text-sm mb-6">
-              Listing strategy through eXp Realty; prep and staging through Magari &amp; Co. Ask about the{' '}
-              <Link to="/services#packages" className="text-sage-dark font-medium hover:underline">
-                Listing Prep Package
-              </Link>{' '}
-              when you want a written runway before photos.
+            <h2 className="font-serif text-3xl text-neutral-700 mb-4">Selling a Home</h2>
+            <p className="text-neutral-600 leading-relaxed mb-6">
+              Selling is about positioning. I help you prepare your home so it photographs beautifully, shows better, and
+              attracts stronger offers.
             </p>
             <ul className="space-y-3 mb-8">
               {[
-                'Prep roadmap: what to tackle first for ROI',
-                'Staging notes matched to your go-live date',
-                'Photo-day priorities so MLS hits strong on day one',
-                'Agent + designer cadence — not competing checklists',
+                'Pricing + market strategy',
+                'Listing preparation plan',
+                'Staging guidance & optional styling packages',
+                'Professional presentation support',
+                'Negotiation + contract management',
               ].map((t) => (
                 <li key={t} className="flex gap-3 text-neutral-600 text-sm">
                   <Check className="w-5 h-5 text-sage shrink-0" />
@@ -119,10 +114,7 @@ export default function RealEstatePage() {
                 </li>
               ))}
             </ul>
-            <Link
-              to="/contact#book?intent=seller"
-              className="btn-secondary w-full sm:w-auto inline-block text-center px-8 py-3"
-            >
+            <Link to="/contact#book?intent=seller" className="btn-secondary w-full sm:w-auto inline-block text-center px-8 py-3">
               Sell With Magari
             </Link>
           </motion.div>
@@ -136,23 +128,31 @@ export default function RealEstatePage() {
               <Layers className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-4">Buy + Design</h2>
-              <p className="text-neutral-600 leading-relaxed mb-4">
-                Most buyers tour fast, then notice the quirks after closing. When your Realtor<sup>®</sup> @ eXp Realty
-                and Magari interiors share a thread, you get fewer &ldquo;ask the other person&rdquo; loops — and faster
-                clarity on what a room could become.
+              <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-4">Buy + Design Advantage</h2>
+              <p className="text-neutral-600 leading-relaxed mb-6">
+                Most buyers can&apos;t see past ugly paint, outdated lighting, or empty rooms. I can. I help you recognize the
+                potential in a property — and I help you turn it into a dream home.
               </p>
-              <p className="text-neutral-600 leading-relaxed mb-8">
-                Sellers get the same advantage: prep that photographs, open-house flow that reads intentional — not
-                last-minute scatter fixes.
-              </p>
+              <ul className="space-y-3 mb-8">
+                {[
+                  'See renovation potential instantly',
+                  'Avoid costly layout mistakes',
+                  'Visualize updates before you buy',
+                  'Design strategy that protects your investment',
+                ].map((t) => (
+                  <li key={t} className="flex gap-3 text-neutral-600 text-sm">
+                    <Check className="w-5 h-5 text-sage shrink-0" />
+                    {t}
+                  </li>
+                ))}
+              </ul>
               <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
                 <Link to="/contact#book?intent=buyer" className="btn-primary inline-flex items-center justify-center gap-2">
-                  Schedule Buyer Consultation
+                  Schedule a Buyer Call
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link to="/services" className="btn-outline inline-flex items-center justify-center">
-                  View design packages
+                  View services
                 </Link>
                 <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
               </div>
@@ -161,24 +161,44 @@ export default function RealEstatePage() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-        <RealEstateLeadForm id="real-estate-inquiry" />
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 text-center">
+        <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-4">Let&apos;s make your next move your best move.</h2>
+        <p className="text-neutral-600 mb-8 text-sm md:text-base">
+          Book a consultation and tell me what you&apos;re looking for.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
+          <Link to="/contact#book?intent=buyer" className="btn-primary inline-flex items-center justify-center gap-2 px-8">
+            Schedule Buyer Consultation
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link to="/contact#book?intent=seller" className="btn-secondary inline-flex items-center justify-center gap-2 px-8">
+            Request Seller Strategy Call
+          </Link>
+        </div>
       </section>
 
-      <section className="max-w-3xl mx-auto px-4 pb-8 text-center">
-        <p className="text-sm text-neutral-500 leading-relaxed mb-3">
-          Real estate services provided by Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty (eXp Realty). Magari &amp;
-          Co. is not a brokerage.
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-20">
+        <RealEstateLeadForm
+          id="real-estate-inquiry"
+          formTitle="Let's connect"
+          formIntro="Fill out the form and I'll reach out within 24–48 hours."
+          submitLabel="Send Message"
+        />
+      </section>
+
+      <section className="max-w-3xl mx-auto px-4 pb-10 text-center">
+        <p className="text-sm text-neutral-500 leading-relaxed">
+          Real estate services provided by Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty.
         </p>
-        <Link to="/portfolio" className="inline-block mt-4 text-sage-dark font-medium hover:underline">
-          See before &amp; after transformations →
+        <Link to="/portfolio" className="inline-block mt-6 text-sage-dark font-medium hover:underline">
+          View Portfolio →
         </Link>
       </section>
 
       <PageBottomCta
-        headline="Buying, selling, or both?"
-        body="Use the form above for a quick email intro — or the full booking flow on Contact. Instagram works for short questions."
-        primaryLabel="Book on Contact"
+        headline="Questions before you book?"
+        body="Use Contact for the full form, or DM on Instagram for quick asks."
+        primaryLabel="Book a Consultation"
         primaryTo="/contact#book"
       />
     </div>

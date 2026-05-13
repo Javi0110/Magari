@@ -2,7 +2,12 @@ import { useState } from 'react'
 import { Loader2, Send } from 'lucide-react'
 import { sendContactFormEmail, isEmailRelayConfigured } from '../utils/emailService'
 
-export default function RealEstateLeadForm({ id = 'real-estate-lead' }) {
+export default function RealEstateLeadForm({
+  id = 'real-estate-lead',
+  formTitle = "Let's connect",
+  formIntro = "Fill out the form and I'll reach out within 24–48 hours.",
+  submitLabel = 'Send Message',
+}) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -56,12 +61,8 @@ export default function RealEstateLeadForm({ id = 'real-estate-lead' }) {
 
   return (
     <section id={id} className="max-w-xl mx-auto scroll-mt-28">
-      <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-2 text-center">
-        Quick real estate inquiry
-      </h2>
-      <p className="text-sm text-neutral-600 text-center mb-6">
-        Brokerage through eXp Realty — Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty.
-      </p>
+      <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-2 text-center">{formTitle}</h2>
+      <p className="text-sm text-neutral-600 text-center mb-6 max-w-md mx-auto leading-relaxed">{formIntro}</p>
 
       <div className="card p-6 md:p-8 border border-greige-light/80 bg-white/95">
         {status === 'success' ? (
@@ -157,7 +158,7 @@ export default function RealEstateLeadForm({ id = 'real-estate-lead' }) {
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  Send inquiry
+                  {submitLabel}
                 </>
               )}
             </button>

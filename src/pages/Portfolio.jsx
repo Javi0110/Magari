@@ -46,7 +46,7 @@ export default function PortfolioPage() {
               <ArrowRight className="w-4 h-4" />
             </Link>
             <a href="/#lead-magnet" className="btn-outline inline-flex items-center justify-center">
-              Free Home Prep Checklist
+              Download Checklist
             </a>
             <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
           </div>

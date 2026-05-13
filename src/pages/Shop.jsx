@@ -277,10 +277,10 @@ export default function ShopPage() {
             Want your home styled like this? Book a consultation.
           </p>
           <Link
-            to="/services"
+            to="/contact#book"
             className="inline-flex justify-center shrink-0 rounded-full bg-white px-4 py-2 text-sm font-semibold text-sage-dark border border-sage-muted/60 hover:bg-cream transition-colors"
           >
-            View services
+            Book a Consultation
           </Link>
         </div>
       </div>

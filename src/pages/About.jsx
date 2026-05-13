@@ -15,23 +15,35 @@ export default function AboutPage() {
           className="text-center mb-16"
         >
           <h1 className="font-serif text-5xl md:text-6xl text-neutral-600 mb-6">
-            About Magari & Co.
+            About Magari &amp; Co.
           </h1>
-          <p className="text-xl text-neutral-600 leading-relaxed max-w-2xl mx-auto">
-            Elena Fadhel is the founder of Magari &amp; Co. — interior design and home staging — and a Realtor
-            <sup>®</sup> @ eXp Realty for buying and selling. Mission:{' '}
-            <span className="font-serif italic text-neutral-700">&ldquo;From a dream to your reality.&rdquo;</span>
+          <p className="text-xl text-neutral-600 leading-relaxed max-w-2xl mx-auto mb-4">
+            Hi, I&apos;m Elena — founder of Magari &amp; Co. I&apos;ve always believed that a home should feel like peace,
+            beauty, and purpose. What started as a creative dream became a design studio built around helping families
+            transform their spaces with intention.
+          </p>
+          <p className="text-lg text-neutral-600 leading-relaxed max-w-2xl mx-auto mb-4">
+            Now, as a{' '}
+            <strong className="font-medium text-neutral-700">
+              Realtor<sup>®</sup> @ eXp Realty
+            </strong>
+            , I&apos;m able to
+            guide clients not only in design — but in the entire home journey: buying, selling, and creating a space you
+            truly love.
+          </p>
+          <p className="font-serif text-2xl md:text-3xl text-neutral-700 italic mb-2">
+            From a dream to your reality 🏡✨
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap mt-10">
             <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link to="/services" className="btn-outline inline-flex items-center justify-center">
-              View services
+            <Link to="/portfolio" className="btn-outline inline-flex items-center justify-center">
+              View Portfolio
             </Link>
             <a href="/#lead-magnet" className="btn-outline inline-flex items-center justify-center">
-              Free Home Prep Checklist
+              Download Checklist
             </a>
             <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
           </div>

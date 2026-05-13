@@ -16,6 +16,9 @@ export default function LeadMagnetForm({
   subtitle = 'Photos, walk-through flow, quick wins — plus what to leave to a pro. One PDF, no fluff.',
   source = 'Homepage lead magnet',
   compact = false,
+  submitButtonLabel = 'Download Checklist',
+  successDownloadButtonLabel = 'Download Checklist',
+  disclaimer = null,
 }) {
   const [form, setForm] = useState({
     name: '',
@@ -77,7 +80,7 @@ export default function LeadMagnetForm({
               className="btn-primary inline-flex items-center justify-center gap-2 px-8 py-3.5"
             >
               <Download className="w-5 h-5" />
-              Download PDF checklist
+              {successDownloadButtonLabel}
             </a>
           </div>
         ) : (
@@ -151,10 +154,13 @@ export default function LeadMagnetForm({
               ) : (
                 <>
                   <Send className="w-5 h-5" />
-                  Download Free Home Prep Checklist
+                  {submitButtonLabel}
                 </>
               )}
             </button>
+            {disclaimer && (
+              <p className="text-xs text-neutral-500 text-center leading-relaxed pt-1">{disclaimer}</p>
+            )}
           </form>
         )}
       </div>

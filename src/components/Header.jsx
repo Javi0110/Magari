@@ -107,7 +107,7 @@ export default function Header() {
               to="/contact#book"
               className="shrink-0 rounded-full bg-sage px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-95 transition-opacity"
             >
-              Book Now
+              Book a Consultation
             </Link>
             <button
               onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
@@ -208,7 +208,7 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="block w-full text-center rounded-2xl bg-sage text-white font-semibold py-3"
               >
-                Book Now
+                Book a Consultation
               </Link>
               {navigation.map((item) => (
                 <Link
