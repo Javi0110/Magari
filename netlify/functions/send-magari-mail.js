@@ -181,6 +181,18 @@ exports.handler = async (event) => {
 <p><a href="https://casamagari.com/admin">Abrir Admin → Consultations</a></p>`
       const r1 = await sendResend(MAGARI_EMAIL, `Consulta: ${serviceLabel}`, internalHtml)
       if (!r1.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r1.error }) }
+
+      const guestHtml = `<p>Hola ${escapeHtml(guestName || 'hola')},</p>
+<p>Hemos recibido tu <strong>solicitud de consulta</strong> para <strong>${escapeHtml(serviceLabel)}</strong>.</p>
+<p><strong>Horario solicitado:</strong><br/>${escapeHtml(slotLabel)}</p>
+<p>Te confirmaremos por correo si hay algún ajuste. Si no ves nuestra respuesta en 24–48 h hábiles, escríbenos a <a href="mailto:${MAGARI_EMAIL}">${MAGARI_EMAIL}</a>.</p>
+<p>— Magari &amp; Co.</p>`
+      const r2 = await sendResend(
+        guestEmail,
+        'Confirmación — consulta solicitada (Magari & Co.)',
+        guestHtml
+      )
+      if (!r2.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r2.error }) }
       return { statusCode: 200, headers: cors, body: JSON.stringify({ ok: true }) }
     }
 
