@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Send, Loader2, Download } from 'lucide-react'
-import { sendLeadMagnetChecklistEmail, isEmailRelayConfigured } from '../utils/emailService'
+import { isEmailRelayConfigured } from '../utils/emailService'
+import { submitLeadMagnetSignup } from '../utils/leadMagnet'
 
 const SERVICE_OPTIONS = [
   { value: '', label: 'Interested in (pick one)' },
@@ -34,7 +35,7 @@ export default function LeadMagnetForm({
     e.preventDefault()
     setError(null)
     setStatus('sending')
-    const result = await sendLeadMagnetChecklistEmail({
+    const result = await submitLeadMagnetSignup({
       name: form.name.trim(),
       email: form.email.trim(),
       phone: form.phone.trim(),
