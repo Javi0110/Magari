@@ -8,7 +8,7 @@ A complete React website for Magari & Co., featuring handmade decor shop, virtua
 
 ## 🎨 Design & Aesthetic
 
-This site follows the aesthetic of the staging site at `magariandco-staging.b12sites.com`:
+This site follows the aesthetic of the legacy staging build (`magariandco-staging.b12sites.com`); **production: casamagari.com**.
 - **Airy, neutral, handmade × modern** feeling
 - **Color Palette:**
   - Cream: `#FBF7F3` (main background)
@@ -405,7 +405,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGc...
 VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
 
 # Backend URL (for API calls)
-VITE_API_URL=https://api.magariandco.com
+VITE_API_URL=https://api.casamagari.com
 ```
 
 **Backend `.env`:**

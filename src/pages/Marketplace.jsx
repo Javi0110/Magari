@@ -259,6 +259,7 @@ export default function MarketplacePage() {
     const isMagariAccount =
       normalized === 'magaribyelena@gmail.com' ||
       normalized === 'magari@magariandco.com' ||
+      normalized === 'magari@casamagari.com' ||
       email.includes('magari')
     setIsLoggedIn(true)
     setView('dashboard')
