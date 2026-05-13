@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, Instagram, MapPin, Send } from 'lucide-react'
 import { sendContactFormEmail } from '../utils/emailService'
 
 export default function ContactPage() {
+  const [searchParams] = useSearchParams()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -11,6 +13,31 @@ export default function ContactPage() {
     message: ''
   })
   const [submitted, setSubmitted] = useState(false)
+
+  useEffect(() => {
+    const intent = searchParams.get('intent')
+    const topic = searchParams.get('topic')
+    setFormData((prev) => {
+      let subject = prev.subject
+      let message = prev.message
+      if (intent === 'buyer') {
+        subject = 'real-estate-buying'
+        message = message || 'I would like to schedule a buyer call.'
+      } else if (intent === 'seller') {
+        subject = 'real-estate-selling'
+        message = message || 'I am interested in selling with Magari — please share next steps.'
+      } else if (intent === 'buy-design') {
+        subject = 'real-estate-buy-design'
+        message = message || 'I am interested in the Buy + Design Advantage — book a consultation.'
+      }
+      if (topic) {
+        subject = subject || 'book-consultation'
+        const decoded = decodeURIComponent(topic)
+        message = message || `I'm interested in: ${decoded}. Please follow up with availability.`
+      }
+      return { ...prev, subject, message }
+    })
+  }, [searchParams])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -36,6 +63,27 @@ export default function ContactPage() {
     <div className="min-h-screen bg-cream py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
+        <div className="text-center mb-10 max-w-2xl mx-auto">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2 justify-center mb-8">
+            <a href="/#lead-magnet" className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center">
+              Free checklist (form)
+            </a>
+            <a
+              href="/home-prep-checklist.pdf"
+              download="Magari-Home-Prep-Checklist.pdf"
+              className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center"
+            >
+              Download PDF only
+            </a>
+            <Link to="/real-estate#buy" className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center">
+              Schedule a Buyer Call
+            </Link>
+            <Link to="/real-estate#sell" className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center">
+              Sell With Magari
+            </Link>
+          </div>
+        </div>
+
         <div className="text-center mb-16">
           <h1 className="font-serif text-5xl md:text-6xl text-neutral-600 mb-4">
             Get in Touch
@@ -51,10 +99,11 @@ export default function ContactPage() {
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <div className="card p-8">
-              <h2 className="font-serif text-3xl text-neutral-700 mb-6">
+            <div id="book" className="card p-8 scroll-mt-28">
+              <h2 className="font-serif text-3xl text-neutral-700 mb-2">
                 Send us a message
               </h2>
+              <p className="text-sm text-neutral-500 mb-6">Book a consultation, ask about a package, or say hello.</p>
 
               {submitted ? (
                 <div className="text-center py-12">
@@ -109,12 +158,16 @@ export default function ContactPage() {
                       className="input-field"
                     >
                       <option value="">Select a subject</option>
-                      <option value="general">General Inquiry</option>
-                      <option value="styling">Virtual Styling Question</option>
-                      <option value="order">Order Status</option>
-                      <option value="wholesale">Wholesale/Collaboration</option>
-                      <option value="marketplace">Marketplace Question</option>
-                      <option value="press">Press/Media</option>
+                      <option value="book-consultation">Book a consultation (design / staging)</option>
+                      <option value="real-estate-buying">Real estate — Buying</option>
+                      <option value="real-estate-selling">Real estate — Selling</option>
+                      <option value="real-estate-buy-design">Buy + Design Advantage</option>
+                      <option value="general">General inquiry</option>
+                      <option value="styling">Virtual styling</option>
+                      <option value="order">Order status (Shop)</option>
+                      <option value="wholesale">Wholesale / collaboration</option>
+                      <option value="marketplace">MOMade marketplace</option>
+                      <option value="press">Press / media</option>
                       <option value="other">Other</option>
                     </select>
                   </div>

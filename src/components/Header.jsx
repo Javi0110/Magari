@@ -13,9 +13,11 @@ export default function Header() {
 
   const navigation = [
     { name: 'Home', href: '/' },
-    { name: 'Design Services', href: '/design-services' },
-    { name: 'Shop Magari', href: '/shop' },
-    { name: 'MOMade Market', href: '/momade', isIcon: true },
+    { name: 'Services', href: '/services' },
+    { name: 'Real Estate', href: '/real-estate' },
+    { name: 'Portfolio', href: '/portfolio' },
+    { name: 'Shop', href: '/shop' },
+    { name: 'MOMade', href: '/momade', isIcon: true },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
   ]
@@ -67,33 +69,29 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-6 xl:space-x-7">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className={item.isIcon 
-                  ? "flex items-center justify-center h-24 cursor-pointer transition-opacity hover:opacity-80"
-                  : "text-stone hover:text-sage transition-colors font-medium tracking-wide flex items-center"
+                className={
+                  item.isIcon
+                    ? 'flex items-center gap-2 text-stone hover:text-sage transition-colors font-medium tracking-wide'
+                    : 'text-stone hover:text-sage transition-colors font-medium tracking-wide'
                 }
-                aria-label={item.isIcon ? "MOMade Market" : item.name}
+                aria-label={item.isIcon ? 'MOMade Marketplace' : item.name}
               >
                 {item.isIcon ? (
                   <>
-                    <img 
-                      src="/momade-logo.png" 
-                      alt="MOMade Market" 
-                      className="h-14 md:h-16 w-auto object-contain"
+                    <img
+                      src="/momade-logo.png"
+                      alt=""
+                      className="h-11 w-auto object-contain opacity-90"
                       onError={(e) => {
                         e.target.style.display = 'none'
-                        if (e.target.nextSibling) {
-                          e.target.nextSibling.style.display = 'block'
-                        }
                       }}
                     />
-                    <span className="hidden text-stone hover:text-sage transition-colors font-medium tracking-wide ml-2">
-                      MOMade Market
-                    </span>
+                    <span>MOMade</span>
                   </>
                 ) : (
                   item.name
@@ -102,8 +100,14 @@ export default function Header() {
             ))}
           </div>
 
-          {/* Profile / login dropdown (desktop) */}
-          <div className="hidden lg:flex items-center gap-4 relative">
+          {/* Desktop CTA */}
+          <div className="hidden lg:flex items-center gap-4 xl:gap-5 relative">
+            <Link
+              to="/contact#book"
+              className="shrink-0 rounded-full bg-sage px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-95 transition-opacity"
+            >
+              Book a Consultation
+            </Link>
             <button
               onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
               className="flex items-center justify-center text-stone hover:text-sage transition-colors"
@@ -198,6 +202,13 @@ export default function Header() {
             className="lg:hidden border-t border-neutral-200 bg-cream"
           >
             <div className="px-4 py-4 space-y-3">
+              <Link
+                to="/contact#book"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block w-full text-center rounded-2xl bg-sage text-white font-semibold py-3"
+              >
+                Book a Consultation
+              </Link>
               {navigation.map((item) => (
                 <Link
                   key={item.name}
@@ -215,7 +226,7 @@ export default function Header() {
                           e.target.style.display = 'none'
                         }}
                       />
-                      <span>Marketplace</span>
+                      <span>MOMade</span>
                     </>
                   ) : (
                     item.name

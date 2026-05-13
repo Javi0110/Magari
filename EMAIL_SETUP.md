@@ -1,71 +1,61 @@
-# Configuración de Emails con EmailJS
+# Correos: Resend + Netlify (sin EmailJS)
 
-Para que los correos lleguen a **magaribyelena@gmail.com** (solicitudes de servicios, contacto, aplicaciones de vendors, aprobaciones y rechazos) y a los clientes/solicitantes, configura EmailJS una sola vez.
+Los formularios del sitio (contacto, lead magnet / checklist, solicitud vendor) envían correo a **magaribyelena@gmail.com** y copia al cliente cuando aplica, usando **Resend** (plan gratuito) desde una **Netlify Function**: `send-magari-mail`.
 
-## 1. Cuenta y servicio en EmailJS
+Los correos de **aprobación/rechazo de vendor** siguen usando la función **`send-vendor-email`** (mismo stack: Resend en Netlify). Opcionalmente la app intenta antes la Edge Function de Supabase.
 
-1. Entra en [https://www.emailjs.com/](https://www.emailjs.com/) y crea una cuenta (plan gratuito: 200 emails/mes).
-2. **Email Services** → **Add New Service** → elige **Gmail** (o tu proveedor).
-3. Conecta la cuenta desde la que quieres enviar (p. ej. magaribyelena@gmail.com) y **guarda el SERVICE_ID**.
+---
 
-## 2. Plantilla que usa la app
+## 1. Resend
 
-La app envía siempre estas variables: **to_email**, **subject**, **message** (y a veces from_name, etc.). Con una sola plantilla basta.
+1. Cuenta en [resend.com](https://resend.com) → **API Keys** → crea una (`re_...`).
+2. (Recomendado) Verifica tu dominio en **Domains** y define un remitente tipo `Magari <hola@tudominio.com>`.
 
-1. En EmailJS ve a **Email Templates** → **Create New Template**.
-2. En la plantilla, configura exactamente:
+---
 
-**To (destinatario):**
-```
-{{to_email}}
-```
+## 2. Variables en Netlify
 
-**Subject (asunto):**
-```
-{{subject}}
-```
+En el sitio → **Site configuration** → **Environment variables**:
 
-**Content (cuerpo):**
-```
-{{message}}
-```
+| Variable | Descripción |
+|----------|-------------|
+| `RESEND_API_KEY` | API key de Resend (**obligatoria**). |
+| `RESEND_FROM_EMAIL` | Opcional. Ej. `Magari <onboarding@resend.dev>` o tu dominio verificado. Si no existe, la función usa `Magari <onboarding@resend.dev>`. |
 
-3. Opcional: en "Settings" de la plantilla puedes activar "Reply-To" y usar `{{from_email}}` si lo quieres para contestar al cliente.
-4. **Guarda** y copia el **TEMPLATE_ID** (p. ej. `template_xxxxxx`).
+**Redeploy** tras guardar variables.
 
-## 3. Public Key
+---
 
-1. **Account** → **General**.
-2. En **API Keys** copia la **Public Key**.
+## 3. Desarrollo local (`npm run dev`)
 
-## 4. Variables de entorno
+Las funciones no existen en `localhost:5173`. Opciones:
 
-En la raíz del proyecto (donde está `package.json`):
+- **A)** En `.env` (raíz del proyecto):
 
-1. Si no existe, crea un archivo **`.env`**.
-2. Añade estas líneas (sustituye por tus valores reales):
+  ```env
+  VITE_EMAIL_RELAY_URL=https://casamagari.com/.netlify/functions/send-magari-mail
+  ```
+
+  (Sustituye por tu dominio Netlify real.)
+
+- **B)** Ejecutar **`netlify dev`** en lugar de `npm run dev` para levantar Vite + funciones.
+
+Para emails de aprobación vendor, la app usa la misma lógica: en producción `https://TU-DOMINIO/.netlify/functions/send-vendor-email`, o variable opcional:
 
 ```env
-# EmailJS – obligatorio para que lleguen los correos
-VITE_EMAILJS_SERVICE_ID=tu_service_id
-VITE_EMAILJS_TEMPLATE_ID=tu_template_id
-VITE_EMAILJS_PUBLIC_KEY=tu_public_key
+VITE_VENDOR_EMAIL_RELAY_URL=https://casamagari.com/.netlify/functions/send-vendor-email
 ```
 
-3. Guarda el archivo. **Reinicia el servidor de desarrollo** (`npm run dev`).
+---
 
-## 5. Comprobar que está configurado
+## 4. Comprobar
 
-- En desarrollo, al cargar la app deberías ver en la consola del navegador:  
-  `EmailJS configurado. Los correos se enviarán a magaribyelena@gmail.com...`
-- Si no ves ese mensaje, revisa que las tres variables estén en `.env`, que empiecen por `VITE_` y que hayas reiniciado `npm run dev`.
+1. Despliega en Netlify con `RESEND_API_KEY` configurada.
+2. Envía el formulario de contacto o el lead magnet.
+3. Revisa la bandeja de **magaribyelena@gmail.com** y la del remitente de prueba.
 
-## Resumen
+Si falla, en el navegador (F12) → **Network** mira la respuesta del `POST` a `send-magari-mail`; en Netlify → **Functions** → logs.
 
-| Variable en `.env`           | Dónde obtenerla              |
-|-----------------------------|------------------------------|
-| `VITE_EMAILJS_SERVICE_ID`   | Email Services → tu servicio |
-| `VITE_EMAILJS_TEMPLATE_ID`  | Email Templates → tu plantilla |
-| `VITE_EMAILJS_PUBLIC_KEY`   | Account → API Keys           |
+---
 
-La plantilla debe usar **To: {{to_email}}**, **Subject: {{subject}}**, **Content: {{message}}**. Con eso, todos los envíos (servicios, contacto, vendor application, aprobación y rechazo) funcionan.
+Más detalle solo para aprobación/rechazo vendor: **`EMAIL_RELAY_PASOS.md`**.

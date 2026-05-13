@@ -1,275 +1,331 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useEffect } from 'react'
-import { ArrowRight, Palette, Home, Store, LayoutDashboard, ShoppingBag, Instagram } from 'lucide-react'
+import {
+  ArrowRight,
+  Palette,
+  Sofa,
+  Home,
+  Store,
+  Sparkles,
+  Quote,
+  CheckCircle2,
+  ShoppingBag,
+} from 'lucide-react'
+import LeadMagnetForm from '../components/LeadMagnetForm'
+
+const fadeUp = {
+  initial: { opacity: 0, y: 18 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: '-40px' },
+}
 
 export default function HomePage() {
-  const INSTAGRAM_HANDLE = 'magari.andco'
-  const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM_HANDLE}/`
-
-  useEffect(() => {
-    const runEmbeds = () => {
-      if (typeof window !== 'undefined' && window.instgrm?.Embeds?.process) {
-        window.instgrm.Embeds.process()
-      }
-    }
-    let script = document.querySelector('script[src="https://www.instagram.com/embed.js"]')
-    if (!script) {
-      script = document.createElement('script')
-      script.src = 'https://www.instagram.com/embed.js'
-      script.async = true
-      script.addEventListener('load', runEmbeds)
-      document.body.appendChild(script)
-    }
-    const t = setTimeout(runEmbeds, 600)
-    return () => clearTimeout(t)
-  }, [])
-
-  const features = [
-    {
-      icon: <Home className="w-8 h-8" />,
-      title: 'Interior Design Services',
-      description: 'Virtual styling, shopping support, and full-service decorating tailored to your home.',
-      link: '/design-services',
-      bgColor: 'bg-earth/10',
-      textColor: 'text-earth'
-    },
-    {
-      icon: <ShoppingBag className="w-8 h-8" />,
-      title: 'Shop Magari',
-      description: 'Curated decor and home goods selected by Magari & Co. to bring warmth into your space.',
-      link: '/shop',
-      bgColor: 'bg-sage/10',
-      textColor: 'text-sage'
-    },
-    {
-      icon: <Store className="w-8 h-8" />,
-      title: 'MOMade Market',
-      description: 'A curated marketplace featuring products from mom-owned creative businesses.',
-      link: '/momade',
-      bgColor: 'bg-taupe/10',
-      textColor: 'text-taupe-dark'
-    }
-  ]
-
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-cream-light via-cream to-neutral-100 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Hero Content */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <p className="text-sm uppercase tracking-[0.25em] text-neutral-500 mb-4">
-                Magari &amp; Co.
-              </p>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-neutral-700 leading-tight mb-4">
-                Design. Curated Goods. A Marketplace for Makers.
+    <div className="min-h-screen bg-cream pb-24 md:pb-0">
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-white via-cream to-cream border-b border-greige-light/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20 lg:py-24">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
+              <p className="text-xs uppercase tracking-[0.28em] text-sage-dark mb-4">Magari &amp; Co.</p>
+              <h1 className="font-serif text-4xl sm:text-5xl lg:text-[3.25rem] leading-[1.08] text-neutral-800 mb-5 text-balance">
+                Interior design, home staging &amp; real estate — one calm, cohesive team.
               </h1>
-              <p className="text-lg md:text-xl text-neutral-600 mb-8 leading-relaxed max-w-xl">
-                Magari &amp; Co. is a design studio and curated marketplace supporting handmade goods and creative entrepreneurs.
+              <p className="text-lg text-neutral-600 leading-relaxed max-w-xl mb-8">
+                We help you prepare, polish, and present your home — whether you&apos;re staying, selling, or
+                searching for what&apos;s next. Shop Magari and MOMade are here when you&apos;re ready; services come
+                first.
               </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/design-services" className="btn-primary text-center">
-                  Book Design Consultation
-                  <ArrowRight className="inline-block ml-2 w-5 h-5" />
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+                <Link to="/contact#book" className="btn-primary text-center inline-flex items-center justify-center gap-2">
+                  Book a Consultation
+                  <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link to="/shop" className="btn-secondary text-center">
-                  Shop Magari
+                <Link
+                  to="/real-estate#buy"
+                  className="btn-outline text-center inline-flex items-center justify-center gap-2"
+                >
+                  Schedule a Buyer Call
                 </Link>
-                <Link to="/momade" className="btn-secondary text-center">
-                  Explore MOMade Market
-                  <ArrowRight className="inline-block ml-2 w-5 h-5" />
+                <Link
+                  to="/real-estate#sell"
+                  className="btn-secondary text-center inline-flex items-center justify-center gap-2"
+                >
+                  Sell With Magari
                 </Link>
               </div>
+              <a
+                href="#lead-magnet"
+                className="inline-block mt-5 text-sm font-medium text-sage-dark hover:underline"
+              >
+                Download Free Home Prep Checklist →
+              </a>
             </motion.div>
-
-            {/* Hero Visual */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden shadow-soft-lg bg-neutral-200"
+              transition={{ duration: 0.6, delay: 0.08 }}
+              className="relative aspect-[4/5] max-h-[520px] rounded-3xl overflow-hidden border border-greige-light bg-neutral-100 shadow-soft-lg mx-auto w-full max-w-md lg:max-w-none"
             >
-              <img 
-                src="/hero-image.jpeg" 
-                alt="Magari & Co. - Handcrafted decor and design"
-                className="w-full h-full object-cover"
+              <img
+                src="/hero-image.jpeg"
+                alt="Warm, minimal interior by Magari and Co."
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="eager"
+                fetchPriority="high"
                 onError={(e) => {
-                  // Fallback to placeholder if image not found
                   e.target.style.display = 'none'
-                  e.target.nextElementSibling.style.display = 'flex'
                 }}
               />
-              {/* Fallback placeholder */}
-              <div className="absolute inset-0 flex items-center justify-center text-neutral-400" style={{ display: 'none' }}>
-                <div className="text-center">
-                  <Palette className="w-20 h-20 mx-auto mb-4 opacity-30" />
-                  <p className="text-sm">Hero Image Placeholder</p>
-                  <p className="text-xs mt-2">Add hero-image.jpg to /public folder</p>
-                </div>
+              <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8 bg-gradient-to-t from-black/45 via-black/10 to-transparent">
+                <p className="text-white/95 font-serif text-xl md:text-2xl leading-snug">
+                  Organic modern warmth — designed for real life.
+                </p>
               </div>
             </motion.div>
           </div>
         </div>
-
-        {/* Decorative Elements */}
-        <div className="absolute top-20 right-10 w-32 h-32 bg-sage/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-40 h-40 bg-earth/10 rounded-full blur-3xl" />
       </section>
 
-      {/* Three Pillars Section */}
-      <section className="py-14 md:py-16 bg-white">
+      {/* Services overview */}
+      <section className="py-16 md:py-20 bg-white border-b border-greige-light/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="font-serif text-3xl md:text-4xl text-center text-neutral-600 mb-10"
-          >
-            Three ways to work with Magari &amp; Co.
-          </motion.h2>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Link to={feature.link} className="card group hover:scale-105 transition-transform duration-300 block h-full">
-                  <div className={`w-16 h-16 rounded-2xl ${feature.bgColor} flex items-center justify-center ${feature.textColor} mb-4`}>
-                    {feature.icon}
+          <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-12 md:mb-14">
+            <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-3">Services overview</h2>
+            <p className="text-neutral-600 leading-relaxed">
+              Start where you need the most clarity — we&apos;ll guide the rest with transparent packages and calm
+              communication.
+            </p>
+          </motion.div>
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            {[
+              {
+                title: 'Interior design',
+                desc: 'Virtual express, full-service projects, and everything between.',
+                href: '/services',
+                icon: Palette,
+                cta: 'View packages',
+              },
+              {
+                title: 'Home staging',
+                desc: 'Walkthroughs, listing prep, and photo-ready layering.',
+                href: '/services#packages',
+                icon: Sofa,
+                cta: 'Explore staging',
+              },
+              {
+                title: 'Real estate',
+                desc: 'Buy and sell with a design-aware partner at the table.',
+                href: '/real-estate',
+                icon: Home,
+                cta: 'Buy or sell',
+              },
+            ].map((item, i) => (
+              <motion.div key={item.title} {...fadeUp} transition={{ delay: i * 0.06 }}>
+                <Link
+                  to={item.href}
+                  className="card h-full flex flex-col p-8 border border-greige-light/80 hover:border-sage-muted transition-colors group"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-sage-muted/40 text-sage-dark flex items-center justify-center mb-5">
+                    <item.icon className="w-6 h-6" />
                   </div>
-                  <h3 className="font-serif text-2xl text-sage-dark mb-3">
-                    {feature.title}
-                  </h3>
-                  <p className="text-stone mb-4 leading-relaxed">
-                    {feature.description}
-                  </p>
-                  <span className={`${feature.textColor} font-medium group-hover:underline inline-flex items-center`}>
-                    Explore
-                    <ArrowRight className="ml-1 w-4 h-4" />
+                  <h3 className="font-serif text-2xl text-neutral-700 mb-2">{item.title}</h3>
+                  <p className="text-neutral-600 text-sm leading-relaxed flex-1 mb-6">{item.desc}</p>
+                  <span className="text-sage-dark font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                    {item.cta}
+                    <ArrowRight className="w-4 h-4" />
                   </span>
                 </Link>
+              </motion.div>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <Link to="/contact#book" className="btn-primary inline-flex items-center gap-2">
+              Book a Consultation
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Magari */}
+      <section className="py-16 md:py-20 bg-cream">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-12">
+            <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-3">Why Magari is different</h2>
+            <p className="text-neutral-600">Fewer handoffs. More cohesion. A single aesthetic point of view.</p>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              'Design + staging + real estate fluency in one studio',
+              'Warm minimalism — elevated but never cold',
+              'Packages with starting prices so expectations stay clear',
+              'Shop & marketplace support makers without hijacking your project timeline',
+            ].map((text, i) => (
+              <motion.div
+                key={text}
+                {...fadeUp}
+                transition={{ delay: i * 0.05 }}
+                className="flex gap-3 rounded-2xl border border-greige-light bg-white/80 p-5"
+              >
+                <CheckCircle2 className="w-6 h-6 text-sage shrink-0 mt-0.5" />
+                <p className="text-sm text-neutral-600 leading-relaxed">{text}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Instagram Feed Section */}
-      <section className="py-16 bg-white border-t border-cream-dark/40">
+      {/* Before/After preview */}
+      <section className="py-16 md:py-20 bg-white border-y border-greige-light/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10"
-          >
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Instagram className="w-5 h-5 text-neutral-500" />
-                <p className="text-xs uppercase tracking-[0.25em] text-neutral-500">
-                  Instagram
-                </p>
-              </div>
-              <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-2">
-                Follow our design process on Instagram.
-              </h2>
-              <p className="text-neutral-600 text-sm md:text-base max-w-xl">
-                See behind-the-scenes from installs, styling days, maker features, and the Casa Magari journey as it comes to life.
-              </p>
-            </div>
-            <div className="flex md:justify-end">
-              <a
-                href={INSTAGRAM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm font-medium text-sage hover:text-sage-dark"
-              >
-                @{INSTAGRAM_HANDLE}
-                <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
-          </motion.div>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-12">
+            <motion.div {...fadeUp}>
+              <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-2">Before / After</h2>
+              <p className="text-neutral-600 max-w-xl">A glimpse of the transformations we document for clients.</p>
+            </motion.div>
+            <Link to="/portfolio" className="btn-outline self-start md:self-auto inline-flex items-center gap-2">
+              Full portfolio
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4 md:gap-6">
+            {[1, 2, 3].map((n) => (
+              <motion.div key={n} {...fadeUp} className="grid grid-cols-2 gap-2">
+                <div className="aspect-[3/4] rounded-2xl bg-gradient-to-br from-greige-light to-greige flex items-center justify-center text-[10px] uppercase tracking-widest text-stone">
+                  Before
+                </div>
+                <div className="aspect-[3/4] rounded-2xl bg-gradient-to-br from-sage-muted/50 to-sage/20 flex items-center justify-center text-[10px] uppercase tracking-widest text-sage-dark">
+                  After
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          <div className="card p-0 overflow-hidden">
-            <div className="flex flex-col lg:flex-row justify-center gap-6 px-2 py-4">
-              <div className="max-w-xl w-full mx-auto">
-                <blockquote
-                  className="instagram-media"
-                  data-instgrm-captioned
-                  data-instgrm-permalink="https://www.instagram.com/reel/DQKxIx_EZ7z/?utm_source=ig_embed&amp;utm_campaign=loading"
-                  data-instgrm-version="14"
-                  style={{
-                    background: '#FFF',
-                    border: 0,
-                    borderRadius: 3,
-                    boxShadow:
-                      '0 0 1px 0 rgba(0,0,0,0.5), 0 1px 10px 0 rgba(0,0,0,0.15)',
-                    margin: 1,
-                    maxWidth: 540,
-                    minWidth: 326,
-                    padding: 0,
-                    width: '100%',
-                  }}
-                />
-              </div>
-              <div className="max-w-xl w-full mx-auto">
-                <blockquote
-                  className="instagram-media"
-                  data-instgrm-captioned
-                  data-instgrm-permalink="https://www.instagram.com/reel/DPW6TdBERrT/?utm_source=ig_embed&amp;utm_campaign=loading"
-                  data-instgrm-version="14"
-                  style={{
-                    background: '#FFF',
-                    border: 0,
-                    borderRadius: 3,
-                    boxShadow:
-                      '0 0 1px 0 rgba(0,0,0,0.5), 0 1px 10px 0 rgba(0,0,0,0.15)',
-                    margin: 1,
-                    maxWidth: 540,
-                    minWidth: 326,
-                    padding: 0,
-                    width: '100%',
-                  }}
-                />
-              </div>
+      {/* Testimonials */}
+      <section className="py-16 md:py-20 bg-cream">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.h2 {...fadeUp} className="font-serif text-3xl md:text-4xl text-center text-neutral-700 mb-12">
+            Client words
+          </motion.h2>
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            {[
+              {
+                quote:
+                  'Elena made our listing feel like a home buyers wanted to stay in — not a sterile showroom. The prep list alone saved us weeks.',
+                who: 'Seller · Austin',
+              },
+              {
+                quote:
+                  'Having someone who speaks both design and real estate meant we didn’t waste tours on houses that would never work for our family.',
+                who: 'Buyer couple · Central TX',
+              },
+              {
+                quote:
+                  'Virtual design express was fast, clear, and actually shoppable. Our living room finally feels finished.',
+                who: 'Remote client · USA',
+              },
+            ].map((t, i) => (
+              <motion.figure
+                key={i}
+                {...fadeUp}
+                transition={{ delay: i * 0.08 }}
+                className="card p-8 border border-greige-light/80 relative"
+              >
+                <Quote className="w-8 h-8 text-sage-muted mb-4 opacity-80" aria-hidden />
+                <blockquote className="text-neutral-600 text-sm leading-relaxed mb-4">&ldquo;{t.quote}&rdquo;</blockquote>
+                <figcaption className="text-xs font-medium text-sage-dark uppercase tracking-wider">{t.who}</figcaption>
+              </motion.figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Lead magnet */}
+      <section className="py-16 md:py-24 bg-gradient-to-b from-white to-cream border-t border-greige-light/50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <LeadMagnetForm
+            id="lead-magnet"
+            title="Free Home Prep Checklist (Sell Faster & Look Better)"
+            subtitle="Practical steps for photos, walkthroughs, and first impressions — plus a gentle nudge on what to leave to the pros."
+            source="Homepage — Home Prep Checklist"
+          />
+        </div>
+      </section>
+
+      {/* Shop preview — secondary */}
+      <section className="py-14 md:py-16 bg-white border-y border-greige-light/40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            <div className="max-w-xl">
+              <p className="text-xs uppercase tracking-[0.22em] text-neutral-500 mb-2">When you&apos;re ready to shop</p>
+              <h2 className="font-serif text-3xl text-neutral-700 mb-3">Shop Magari</h2>
+              <p className="text-neutral-600 text-sm leading-relaxed mb-6">
+                Curated decor and pieces selected to layer warmth into your space — a complement to our services, not
+                a distraction.
+              </p>
+              <Link to="/shop" className="btn-outline inline-flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4" />
+                Browse Shop Magari
+              </Link>
             </div>
-            <div className="flex justify-center px-2 pb-4">
-              <div className="max-w-xl w-full mx-auto">
-                <blockquote
-                  className="instagram-media"
-                  data-instgrm-captioned
-                  data-instgrm-permalink="https://www.instagram.com/reel/DHqyKC6Rhbs/?utm_source=ig_embed&amp;utm_campaign=loading"
-                  data-instgrm-version="14"
-                  style={{
-                    background: '#FFF',
-                    border: 0,
-                    borderRadius: 3,
-                    boxShadow:
-                      '0 0 1px 0 rgba(0,0,0,0.5), 0 1px 10px 0 rgba(0,0,0,0.15)',
-                    margin: 1,
-                    maxWidth: 540,
-                    minWidth: 326,
-                    padding: 0,
-                    width: '100%',
-                  }}
-                />
-              </div>
+            <div className="flex gap-3 flex-1 justify-center lg:justify-end opacity-90">
+              <div className="w-24 h-28 sm:w-28 sm:h-32 rounded-2xl bg-sage-muted/35 border border-greige-light" />
+              <div className="w-24 h-28 sm:w-28 sm:h-32 rounded-2xl bg-earth/20 border border-greige-light -mt-4" />
+              <div className="w-24 h-28 sm:w-28 sm:h-32 rounded-2xl bg-taupe-light/50 border border-greige-light" />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* MOMade preview — secondary */}
+      <section className="py-14 md:py-16 bg-cream">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row-reverse lg:items-center justify-between gap-8">
+            <div className="max-w-xl lg:text-right lg:ml-auto">
+              <p className="text-xs uppercase tracking-[0.22em] text-neutral-500 mb-2">Support mom makers</p>
+              <h2 className="font-serif text-3xl text-neutral-700 mb-3">MOMade Marketplace</h2>
+              <p className="text-neutral-600 text-sm leading-relaxed mb-6">
+                Discover mom-made ceramics, textiles, and gifts. A joyful extra — your project timeline always comes
+                first.
+              </p>
+              <Link to="/momade" className="btn-outline inline-flex items-center gap-2 lg:flex-row-reverse">
+                Explore MOMade
+                <Store className="w-4 h-4" />
+              </Link>
+            </div>
+            <div className="flex gap-3 flex-1 justify-center lg:justify-start opacity-90">
+              <div className="w-24 h-28 sm:w-28 sm:h-32 rounded-2xl bg-taupe-light/60 border border-greige-light" />
+              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-sage/15 border border-sage-muted flex items-center justify-center">
+                <Sparkles className="w-8 h-8 text-sage" />
+              </div>
+              <div className="w-24 h-28 sm:w-28 sm:h-32 rounded-2xl bg-greige-light/80 border border-greige-light -mt-3" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact CTA */}
+      <section className="py-16 md:py-20 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div {...fadeUp}>
+            <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-4">Ready when you are</h2>
+            <p className="text-neutral-600 mb-8 max-w-xl mx-auto leading-relaxed">
+              Tell us what you&apos;re dreaming up — or what you&apos;re listing next. We&apos;ll reply with clear next
+              steps.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
+              <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
+                Book a Consultation
+              </Link>
+              <Link to="/contact" className="btn-outline inline-flex items-center justify-center gap-2">
+                Contact
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </section>
     </div>
   )
 }
-

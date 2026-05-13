@@ -207,7 +207,7 @@ export default function AboutPage() {
             Ready to work together?
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/design-services" className="btn-primary">
+            <Link to="/services" className="btn-primary">
               Book Design Services
             </Link>
             <Link to="/shop" className="btn-outline">

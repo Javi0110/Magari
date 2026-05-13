@@ -34,4 +34,4 @@ Para que el vendor reciba un email cuando su solicitud sea aprobada o rechazada:
    ```
    (Si no tienes Supabase CLI, instálalo: `npm i -g supabase`. Luego haz login: `supabase login` y enlaza el proyecto: `supabase link --project-ref lvzmbghugqnetkosbbpr`.)
 
-Si no despliegas la función, la app intentará enviar el email con EmailJS si lo tienes configurado en `.env`.
+Si no despliegas la función, la app usa el relay Netlify + Resend (`send-vendor-email`) si el sitio está en Netlify o si defines `VITE_VENDOR_EMAIL_RELAY_URL` en `.env` para pruebas locales.

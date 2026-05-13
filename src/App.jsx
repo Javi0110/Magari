@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 
@@ -6,6 +6,7 @@ import { AnimatePresence } from 'framer-motion'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Cart from './components/Cart'
+import MobileBookNowBar from './components/MobileBookNowBar'
 
 // Page Components
 import HomePage from './pages/Home'
@@ -13,12 +14,9 @@ import ShopPage from './pages/Shop'
 import ProductDetailPage from './pages/ProductDetail'
 import RewardsPage from './pages/Rewards'
 import RewardsDashboardPage from './pages/RewardsDashboard'
-import DesignServicesPage from './pages/DesignServices'
-import HomeStagingAustinPage from './pages/HomeStagingAustin'
-import InteriorDesignAustinPage from './pages/InteriorDesignAustin'
-import VirtualStylingPage from './pages/VirtualStylingPage'
-import AirbnbDesignPage from './pages/AirbnbDesign'
-import StagingForRealtorsPage from './pages/StagingForRealtors'
+import ServicesPage from './pages/Services'
+import RealEstatePage from './pages/RealEstate'
+import PortfolioPage from './pages/Portfolio'
 import ContactPage from './pages/Contact'
 import MarketplacePage from './pages/Marketplace'
 import BecomeVendorPage from './pages/BecomeVendor'
@@ -32,8 +30,23 @@ import CheckoutCancelPage from './pages/CheckoutCancel'
 // SEO Meta Tags by Route
 const pageMeta = {
   '/': {
-    title: 'Magari & Co. — From a dream to your reality',
-    description: 'Handmade decor, virtual styling, and curated marketplace supporting mom makers. Transform your space with beautiful, accessible design.'
+    title: 'Magari & Co. — Interior Design, Staging & Real Estate | casamagari.com',
+    description:
+      'Book interior design, home staging, and real estate services with Magari & Co. Shop Magari and MOMade Marketplace when you are ready — Austin, TX & beyond.',
+  },
+  '/services': {
+    title: 'Services & Packages — Magari & Co.',
+    description:
+      'Virtual design, staging walkthroughs, listing prep, and full interior design projects with clear starting prices. Book a consultation.',
+  },
+  '/real-estate': {
+    title: 'Real Estate — Buy & Sell With Magari & Co.',
+    description:
+      'Buy and sell with design-aware guidance. Schedule a buyer call, explore listing prep, and learn about the Buy + Design Advantage.',
+  },
+  '/portfolio': {
+    title: 'Portfolio — Before & After | Magari & Co.',
+    description: 'Before and after transformations from Magari & Co. interior design and staging projects.',
   },
   '/shop': {
     title: 'Shop Magari — Magari & Co.',
@@ -96,27 +109,29 @@ const pageMeta = {
     description: 'Learn about Elena and the story behind Magari & Co. — creating accessible design and supporting mom makers.'
   },
   '/contact': {
-    title: 'Contact — Magari & Co.',
-    description: 'Reach out to Magari & Co. for questions, collaborations, or styling support.'
+    title: 'Contact & Book — Magari & Co.',
+    description:
+      'Book a consultation, schedule a buyer or seller call, or download the free home prep checklist. Magari & Co. replies within 24–48 hours.',
   },
   '/admin': {
     title: 'Admin Dashboard — Magari & Co.',
-    description: 'Admin portal for Magari & Co.'
+    description: 'Admin portal for Magari & Co.',
   },
   '/casa-magari': {
+    title: 'Casa Magari — A Future Design-Forward Stay by Magari & Co.',
+    description:
+      'Follow the behind-the-scenes journey of Casa Magari, a future Airbnb-style stay curated with mom-made pieces, local art, and slow, beautiful living.',
+  },
   '/rewards': {
     title: 'Magari Rewards — Loyalty & Referrals',
     description:
-      'Join Magari Rewards to earn points on every purchase, unlock tiers, and redeem exclusive perks.'
+      'Join Magari Rewards to earn points on every purchase, unlock tiers, and redeem exclusive perks.',
   },
   '/rewards/dashboard': {
     title: 'Magari Rewards Dashboard — Magari & Co.',
     description:
-      'View your Magari Rewards points, tier progress, and referral benefits in one place.'
+      'View your Magari Rewards points, tier progress, and referral benefits in one place.',
   },
-    title: 'Casa Magari — A Future Design-Forward Stay by Magari & Co.',
-    description: 'Follow the behind-the-scenes journey of Casa Magari, a future Airbnb-style stay curated with mom-made pieces, local art, and slow, beautiful living.'
-  }
 }
 
 function App() {
@@ -134,7 +149,7 @@ function App() {
       '@type': 'LocalBusiness',
       name: 'Magari & Co.',
       description:
-        'Magari & Co. is a design studio and curated marketplace based in Austin, Texas, offering interior design services, styling, and mom-made home goods.',
+        'Magari & Co. offers interior design, home staging, and real estate services in Austin, Texas, plus Shop Magari and the MOMade marketplace.',
       url: 'https://casamagari.com',
       image: 'https://casamagari.com/og-image.jpg',
       address: {
@@ -248,25 +263,27 @@ function App() {
   }, [location])
 
   return (
-    <div className="App">
+    <div className="App pb-24 md:pb-0">
       <Header />
-      
+
       <Cart />
 
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/real-estate" element={<RealEstatePage />} />
+          <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/shop/:id" element={<ProductDetailPage />} />
           <Route path="/rewards" element={<RewardsPage />} />
           <Route path="/rewards/dashboard" element={<RewardsDashboardPage />} />
-          <Route path="/design-services" element={<DesignServicesPage />} />
-          {/* SEO landing pages for design services */}
-          <Route path="/home-staging-austin" element={<HomeStagingAustinPage />} />
-          <Route path="/interior-design-austin" element={<InteriorDesignAustinPage />} />
-          <Route path="/virtual-styling" element={<VirtualStylingPage />} />
-          <Route path="/airbnb-design" element={<AirbnbDesignPage />} />
-          <Route path="/staging-for-realtors" element={<StagingForRealtorsPage />} />
+          <Route path="/design-services" element={<Navigate to="/services" replace />} />
+          <Route path="/home-staging-austin" element={<Navigate to="/services" replace />} />
+          <Route path="/interior-design-austin" element={<Navigate to="/services" replace />} />
+          <Route path="/virtual-styling" element={<Navigate to="/services" replace />} />
+          <Route path="/airbnb-design" element={<Navigate to="/services" replace />} />
+          <Route path="/staging-for-realtors" element={<Navigate to="/real-estate" replace />} />
 
           {/* MOMade market routes */}
           <Route path="/marketplace" element={<MarketplacePage />} />
@@ -290,6 +307,7 @@ function App() {
       </AnimatePresence>
 
       <Footer />
+      <MobileBookNowBar />
     </div>
   )
 }

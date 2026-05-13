@@ -1,6 +1,8 @@
 # Email relay al vendor (sin EmailJS)
 
-Los correos de aprobación/rechazo al vendor se envían con **Resend** a través de una función en Netlify. No hace falta EmailJS ni Supabase CLI.
+Los correos de aprobación/rechazo al vendor se envían con **Resend** a través de la función **`send-vendor-email`** en Netlify.
+
+El resto de formularios del sitio (contacto, lead magnet, solicitud vendor al equipo) usan **`send-magari-mail`** en la misma carpeta `netlify/functions/`. Ver **`EMAIL_SETUP.md`**.
 
 ---
 
