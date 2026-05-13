@@ -284,12 +284,6 @@ export default function ShopPage() {
             >
               Book a Consultation
             </BookConsultButton>
-            <BookConsultButton
-              variant="page"
-              className="inline-flex justify-center shrink-0 rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-700 border border-greige-light hover:bg-cream transition-colors"
-            >
-              /book
-            </BookConsultButton>
           </div>
         </div>
       </div>
@@ -326,9 +320,6 @@ export default function ShopPage() {
             </button>
             <BookConsultButton variant="modal" className="btn-outline">
               Book design help
-            </BookConsultButton>
-            <BookConsultButton variant="page" className="btn-outline">
-              Scheduling page (/book)
             </BookConsultButton>
             <InstagramDmCta className="btn-outline" />
           </div>

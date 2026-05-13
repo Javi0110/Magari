@@ -287,28 +287,9 @@ const sendOrderConfirmation = async (order) => {
 
 ---
 
-### 6. Calendly Integration (Scheduling)
+### 6. Consultation scheduling (on-site)
 
-**Where to integrate:** `src/pages/Services.jsx` (line ~150)
-
-**Options:**
-1. **Calendly Embed** (easiest):
-```html
-<!-- Add to index.html or embed in component -->
-<div class="calendly-inline-widget" data-url="https://calendly.com/yourusername" style="min-width:320px;height:630px;"></div>
-<script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js"></script>
-```
-
-2. **React Calendly Package:**
-```bash
-npm install react-calendly
-```
-
-```jsx
-import { InlineWidget } from 'react-calendly'
-
-<InlineWidget url="https://calendly.com/yourusername" />
-```
+Consultations are booked on **`/contact#book`** using the in-app booking wizard (availability + Supabase). Legacy `/book` redirects there. Configure Supabase tables, RLS, and admin availability per your deployment notes.
 
 ---
 

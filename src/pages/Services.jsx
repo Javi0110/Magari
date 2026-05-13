@@ -39,9 +39,6 @@ export default function ServicesPage() {
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
             </BookConsultButton>
-            <BookConsultButton variant="page" className="btn-outline">
-              Scheduling page (/book)
-            </BookConsultButton>
             <a href="/#lead-magnet" className="btn-outline">
               Download Checklist
             </a>
@@ -171,9 +168,6 @@ export default function ServicesPage() {
             <BookConsultButton variant="modal" className="btn-primary px-10 py-3.5">
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
-            </BookConsultButton>
-            <BookConsultButton variant="page" className="btn-outline px-10 py-3.5">
-              Scheduling page (/book)
             </BookConsultButton>
           </div>
         </div>

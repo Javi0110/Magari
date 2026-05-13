@@ -49,11 +49,6 @@ export default function Footer() {
                   Book a Consultation
                 </BookConsultButton>
               </li>
-              <li>
-                <Link to="/book" className="text-neutral-600 hover:text-sage transition-colors">
-                  Scheduling page (/book)
-                </Link>
-              </li>
             </ul>
           </div>
 

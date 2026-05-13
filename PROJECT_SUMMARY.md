@@ -8,7 +8,7 @@ A complete, production-ready React website with **all pages and features** imple
 
 1. **Home** (`/`) — Hero, features, gallery carousel, testimonials
 2. **Shop** (`/shop`) — Filterable product grid, product detail modals, add to cart
-3. **Services** (`/services`) — Service cards, booking flow with 3 steps, Calendly integration placeholder
+3. **Services** (`/services`) — Service cards, booking CTAs to on-site consultation scheduling
 4. **Marketplace** (`/marketplace`) — Landing, vendor application form, vendor login, vendor dashboard
 5. **Testimonials** (`/testimonials`) — Review grid, submit review form with moderation
 6. **About** (`/about`) — Brand story, values, timeline, market schedule
@@ -47,7 +47,7 @@ The following are **marked with comments** in the code (`🔌 INTEGRATION:`):
 - **Database** — Supabase/Firebase for products, orders, vendors
 - **File Uploads** — S3 or Supabase Storage
 - **Email** — SendGrid for transactional emails
-- **Calendly** — Scheduling embed for in-person bookings
+- **Consultation scheduling** — `/contact#book` wizard (Supabase availability + requests)
 
 ### Analytics:
 - **Google Analytics** — Placeholder in index.html
@@ -125,7 +125,7 @@ All integration points include inline code comments explaining what needs to be 
 1. Add real product data (replace sampleData.js)
 2. Upload real product images
 3. Test all user flows end-to-end
-4. Set up Calendly scheduling
+4. Wire up on-site consultation scheduling (Supabase + `/contact#book`)
 5. Configure analytics (GA4, Meta Pixel)
 
 ### Phase 4: Marketplace (Week 4)

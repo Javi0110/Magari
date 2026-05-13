@@ -5,7 +5,6 @@ import { Mail, Instagram, MapPin, Send, ChevronDown } from 'lucide-react'
 import { sendContactFormEmail } from '../utils/emailService'
 import InstagramDmCta from '../components/InstagramDmCta'
 import PageBottomCta from '../components/PageBottomCta'
-import BookConsultButton from '../components/BookConsultButton'
 import ConsultationBookingWizard from '../components/consultation/ConsultationBookingWizard'
 
 const SERVICE_OPTIONS = [
@@ -134,9 +133,6 @@ export default function ContactPage() {
             <a href="#book" className="btn-primary btn-sm">
               Request a consultation
             </a>
-            <BookConsultButton variant="page" className="btn-outline btn-sm">
-              Scheduling page (/book)
-            </BookConsultButton>
           </div>
         </div>
 

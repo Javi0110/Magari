@@ -29,7 +29,7 @@ Before going live, connect these services:
 - [ ] **Stripe** — Payments (cart + services)
 - [ ] **Supabase** — Database + Auth + Storage
 - [ ] **SendGrid** — Transactional emails
-- [ ] **Calendly** — Appointment scheduling
+- [ ] **Consultation booking** — `/contact#book` (Supabase slots + `create_consultation_request`)
 - [ ] **Google Analytics** — Add your tracking ID
 - [ ] **Meta Pixel** — Add your pixel ID
 

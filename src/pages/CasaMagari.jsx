@@ -64,9 +64,6 @@ export default function CasaMagariPage() {
               <BookConsultButton variant="modal" className="btn-primary">
                 Book a consult
               </BookConsultButton>
-              <BookConsultButton variant="page" className="btn-outline">
-                Scheduling page (/book)
-              </BookConsultButton>
               <Link to="/shop" className="btn-outline">
                 Shop Magari
               </Link>

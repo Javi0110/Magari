@@ -41,9 +41,6 @@ export default function AboutPage() {
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
             </BookConsultButton>
-            <BookConsultButton variant="page" className="btn-outline">
-              Scheduling page (/book)
-            </BookConsultButton>
             <Link to="/services" className="btn-outline">
               Services &amp; pricing
             </Link>
@@ -221,9 +218,6 @@ export default function AboutPage() {
             <BookConsultButton variant="modal" className="btn-primary">
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
-            </BookConsultButton>
-            <BookConsultButton variant="page" className="btn-outline">
-              Scheduling page (/book)
             </BookConsultButton>
             <Link to="/services" className="btn-outline">
               View services

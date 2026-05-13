@@ -9,7 +9,6 @@ import Cart from './components/Cart'
 import MobileBookNowBar from './components/MobileBookNowBar'
 import InstagramDmCta from './components/InstagramDmCta'
 import PageBottomCta from './components/PageBottomCta'
-import BookConsultButton from './components/BookConsultButton'
 
 // Page Components
 import HomePage from './pages/Home'
@@ -30,7 +29,6 @@ import AdminPage from './pages/Admin'
 import CasaMagariPage from './pages/CasaMagari'
 import CheckoutSuccessPage from './pages/CheckoutSuccess'
 import CheckoutCancelPage from './pages/CheckoutCancel'
-import BookPage from './pages/Book'
 
 // SEO Meta Tags by Route
 const pageMeta = {
@@ -123,9 +121,9 @@ const pageMeta = {
     description: 'Thank you for requesting a consultation with Magari & Co.',
   },
   '/book': {
-    title: 'Book a Consultation — Calendly | Magari & Co.',
+    title: 'Book a Consultation — Magari & Co.',
     description:
-      'Schedule time with Magari & Co. via Calendly — interior design, staging, or intro calls. Or use the contact form for detailed messages.',
+      'Pick a time on the Contact page — interior design, staging, or intro consultations. Central Time availability.',
   },
   '/admin': {
     title: 'Admin Dashboard — Magari & Co.',
@@ -311,7 +309,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/contact/success" element={<ContactBookingSuccessPage />} />
-          <Route path="/book" element={<BookPage />} />
+          <Route path="/book" element={<Navigate to="/contact#book" replace />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/casa-magari" element={<CasaMagariPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
@@ -344,12 +342,9 @@ function NotFoundPage() {
             <Link to="/" className="btn-primary">
               Back to Home
             </Link>
-            <BookConsultButton variant="modal" className="btn-outline">
+            <Link to="/contact#book" className="btn-outline">
               Book a Consultation
-            </BookConsultButton>
-            <BookConsultButton variant="page" className="btn-outline">
-              Scheduling page (/book)
-            </BookConsultButton>
+            </Link>
             <InstagramDmCta className="btn-outline" />
           </div>
         </div>

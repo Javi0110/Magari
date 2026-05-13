@@ -1,30 +1,18 @@
 import { Link } from 'react-router-dom'
-import { useBookingModal } from '../context/BookingModalContext'
 
 /**
- * @param {'modal' | 'page'} variant — `modal` opens Calendly overlay; `page` navigates to `/book`.
- * Use with `btn-primary`, `btn-outline`, or `btn-secondary` (+ optional `btn-sm`, `btn-pill`, `btn-block`) from `index.css`.
+ * Consultation scheduling on the Contact page (on-site wizard, not a third-party embed).
+ * @param {'modal' | 'page'} variant — Kept for call-site compatibility; both resolve to `/contact#book`.
  */
 export default function BookConsultButton({
-  variant = 'modal',
+  variant: _variant = 'modal',
   className = '',
   children,
-  type = 'button',
   ...rest
 }) {
-  const { openBooking } = useBookingModal()
-
-  if (variant === 'page') {
-    return (
-      <Link to="/book" className={className} {...rest}>
-        {children}
-      </Link>
-    )
-  }
-
   return (
-    <button type={type} className={className} onClick={openBooking} {...rest}>
+    <Link to="/contact#book" className={className} {...rest}>
       {children}
-    </button>
+    </Link>
   )
 }

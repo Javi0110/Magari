@@ -96,9 +96,6 @@ export default function HomePage() {
                   Book a Consultation
                   <ArrowRight className="w-4 h-4" />
                 </BookConsultButton>
-                <BookConsultButton variant="page" className="btn-outline">
-                  Scheduling page (/book)
-                </BookConsultButton>
                 <Link
                   to="/real-estate"
                   className="btn-outline"
@@ -360,9 +357,6 @@ export default function HomePage() {
               >
                 Book a Consultation
                 <ArrowRight className="w-4 h-4" />
-              </BookConsultButton>
-              <BookConsultButton variant="page" className="btn-outline px-10 py-3.5">
-                Scheduling page (/book)
               </BookConsultButton>
             </div>
           </motion.div>
