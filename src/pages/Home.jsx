@@ -321,36 +321,31 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 8. Shop preview */}
-      <section className="py-14 md:py-16 bg-white border-y border-greige-light/40">
+      {/* 8–9. Secondary: Shop + MOMade — after services path + lead magnet; not in hero */}
+      <section className="bg-gradient-to-b from-cream to-white border-t border-greige-light/60 py-14 md:py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-            <div className="max-w-xl">
+          <p className="text-xs uppercase tracking-[0.22em] text-neutral-500 text-center mb-10 md:mb-12">
+            Shop &amp; MOMade — when you&apos;re ready (after your plan or consult)
+          </p>
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="border-b border-greige-light/60 pb-10 lg:border-b-0 lg:pb-0 lg:pr-8 lg:border-r border-greige-light/50">
               <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-3">Shop Magari</h2>
-              <p className="text-neutral-600 text-sm leading-relaxed mb-6">
+              <p className="text-neutral-600 text-sm leading-relaxed mb-6 max-w-md">
                 Curated home finds, handmade pieces, and favorites that feel like Magari.
               </p>
               <Link to="/shop" className="btn-outline inline-flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4" />
                 Shop Magari
               </Link>
+              <div className="flex gap-3 mt-8 justify-start opacity-85">
+                <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-sage-muted/35 border border-greige-light/80" />
+                <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-earth/20 border border-greige-light/80 -mt-2" />
+                <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-taupe-light/50 border border-greige-light/80" />
+              </div>
             </div>
-            <div className="flex gap-3 flex-1 justify-center lg:justify-end opacity-90">
-              <div className="w-24 h-28 sm:w-28 sm:h-32 rounded-2xl bg-sage-muted/35 border border-greige-light" />
-              <div className="w-24 h-28 sm:w-28 sm:h-32 rounded-2xl bg-earth/20 border border-greige-light -mt-4" />
-              <div className="w-24 h-28 sm:w-28 sm:h-32 rounded-2xl bg-taupe-light/50 border border-greige-light" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 9. MOMade preview */}
-      <section className="py-14 md:py-16 bg-cream">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row-reverse lg:items-center justify-between gap-8">
-            <div className="max-w-xl lg:text-right lg:ml-auto">
-              <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-3">MOMade Marketplace</h2>
-              <p className="text-neutral-600 text-sm leading-relaxed mb-6">
+            <div className="pt-2 lg:pt-0 lg:pl-2">
+              <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-3 lg:text-right">MOMade Marketplace</h2>
+              <p className="text-neutral-600 text-sm leading-relaxed mb-6 max-w-md lg:ml-auto lg:text-right">
                 A marketplace made by moms, for moms. Supporting small businesses and beautiful handmade finds.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 lg:justify-end">
@@ -362,13 +357,13 @@ export default function HomePage() {
                   Become a Vendor
                 </Link>
               </div>
-            </div>
-            <div className="flex gap-3 flex-1 justify-center lg:justify-start opacity-90">
-              <div className="w-24 h-28 sm:w-28 sm:h-32 rounded-2xl bg-taupe-light/60 border border-greige-light" />
-              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-sage/15 border border-sage-muted flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-sage" />
+              <div className="flex gap-3 mt-8 justify-center lg:justify-end opacity-85">
+                <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-taupe-light/60 border border-greige-light/80" />
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-sage/15 border border-sage-muted flex items-center justify-center">
+                  <Sparkles className="w-7 h-7 text-sage" />
+                </div>
+                <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-greige-light/80 border border-greige-light/80 -mt-2" />
               </div>
-              <div className="w-24 h-28 sm:w-28 sm:h-32 rounded-2xl bg-greige-light/80 border border-greige-light -mt-3" />
             </div>
           </div>
         </div>
