@@ -184,7 +184,7 @@ export default function AirbnbDesignPage() {
             Book an Airbnb design consultation and we&apos;ll map out a plan to elevate your guest experience and your
             listing photos.
           </p>
-          <a href="/airbnb-design" className="btn-primary inline-flex items-center">
+          <a href="/airbnb-design" className="btn-primary">
             Book Airbnb Design Consult
           </a>
         </section>

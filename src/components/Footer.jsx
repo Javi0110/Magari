@@ -99,7 +99,7 @@ export default function Footer() {
                 required
                 className="input-field text-sm mb-2"
               />
-              <button type="submit" className="w-full btn-primary py-2.5 text-sm rounded-xl">
+              <button type="submit" className="w-full btn-primary btn-sm">
                 {subscribed ? '✓ Subscribed!' : 'Subscribe'}
               </button>
             </form>

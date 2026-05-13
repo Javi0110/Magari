@@ -180,7 +180,7 @@ export default function VirtualStylingPage() {
             Tell us about your room and we&apos;ll send back a shoppable, easy‑to‑follow plan that turns it into a cozy,
             collected space.
           </p>
-          <a href="/design-services" className="btn-primary inline-flex items-center">
+          <a href="/design-services" className="btn-primary">
             Start Virtual Styling
           </a>
         </section>

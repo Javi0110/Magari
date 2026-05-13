@@ -155,10 +155,10 @@ export default function ProductDetailPage() {
             >
               Back to Shop
             </button>
-            <Link to="/contact#book" className="btn-outline inline-flex items-center justify-center">
+            <Link to="/contact#book" className="btn-outline">
               Book a Consultation
             </Link>
-            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+            <InstagramDmCta className="btn-outline" />
           </div>
         </div>
       </div>
@@ -373,11 +373,11 @@ export default function ProductDetailPage() {
             <div className="flex flex-wrap gap-3 pt-2">
               <Link
                 to="/contact#book"
-                className="btn-outline text-sm inline-flex items-center justify-center px-4 py-2.5"
+                className="btn-outline btn-sm"
               >
                 Book a design consult
               </Link>
-              <InstagramDmCta className="btn-outline text-sm inline-flex items-center justify-center px-4 py-2.5" />
+              <InstagramDmCta className="btn-outline btn-sm" />
             </div>
           </div>
         </div>

@@ -14,7 +14,7 @@ export default function MobileBookNowBar() {
     >
       <BookConsultButton
         variant="modal"
-        className="pointer-events-auto flex items-center justify-center gap-2 w-full rounded-2xl bg-sage text-white font-semibold text-sm sm:text-[15px] tracking-wide py-3.5 shadow-[0_8px_30px_-6px_rgba(0,0,0,0.25)] active:scale-[0.99] transition-transform"
+        className="pointer-events-auto btn-primary btn-block rounded-2xl text-sm sm:text-[15px] font-semibold tracking-wide py-3.5 shadow-[0_8px_30px_-6px_rgba(0,0,0,0.25)] active:scale-[0.99] transition-transform"
       >
         <Calendar className="w-5 h-5 shrink-0" aria-hidden />
         Book a Consultation

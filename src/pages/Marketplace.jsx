@@ -482,10 +482,10 @@ export default function MarketplacePage() {
                   </button>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4 flex-wrap">
-                  <Link to="/contact#book" className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center">
+                  <Link to="/contact#book" className="btn-outline btn-sm">
                     Book Magari services
                   </Link>
-                  <InstagramDmCta className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center" />
+                  <InstagramDmCta className="btn-outline btn-sm" />
                 </div>
               </motion.div>
             </div>
@@ -927,7 +927,7 @@ export default function MarketplacePage() {
                 <Link to="/contact#book" className="btn-outline">
                   Book design with Magari
                 </Link>
-                <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+                <InstagramDmCta className="btn-outline" />
               </div>
             </div>
 

@@ -35,17 +35,17 @@ export default function ServicesPage() {
             real life. Choose a package that fits your season — whether you need a quick refresh or a full transformation.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-            <BookConsultButton variant="modal" className="btn-primary inline-flex items-center justify-center gap-2">
+            <BookConsultButton variant="modal" className="btn-primary">
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
             </BookConsultButton>
-            <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center gap-2">
+            <BookConsultButton variant="page" className="btn-outline">
               Scheduling page (/book)
             </BookConsultButton>
-            <a href="/#lead-magnet" className="btn-outline inline-flex items-center justify-center">
+            <a href="/#lead-magnet" className="btn-outline">
               Download Checklist
             </a>
-            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+            <InstagramDmCta className="btn-outline" />
           </div>
         </div>
       </section>
@@ -168,11 +168,11 @@ export default function ServicesPage() {
             Tell me what you need and I&apos;ll recommend the best package.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-            <BookConsultButton variant="modal" className="btn-primary inline-flex items-center justify-center gap-2 px-10 py-3.5">
+            <BookConsultButton variant="modal" className="btn-primary px-10 py-3.5">
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
             </BookConsultButton>
-            <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center gap-2 px-10 py-3.5">
+            <BookConsultButton variant="page" className="btn-outline px-10 py-3.5">
               Scheduling page (/book)
             </BookConsultButton>
           </div>

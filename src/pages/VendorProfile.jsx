@@ -114,11 +114,11 @@ export default function VendorProfilePage() {
               <div className="flex flex-wrap gap-3 mb-6">
                 <Link
                   to="/contact#book"
-                  className="btn-primary text-sm py-2.5 px-4 inline-flex items-center justify-center"
+                  className="btn-primary btn-sm"
                 >
                   Book Magari design services
                 </Link>
-                <InstagramDmCta className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center" />
+                <InstagramDmCta className="btn-outline btn-sm" />
               </div>
 
               {vendor.story && (

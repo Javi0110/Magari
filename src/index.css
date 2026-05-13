@@ -13,32 +13,48 @@
 }
 
 @layer components {
-  .btn-primary {
-    @apply font-medium px-6 py-3 rounded-xl transition-colors duration-200 text-white;
-    background-color: #6B7C70;
-  }
-  
-  .btn-primary:hover {
-    background-color: #4A5A4E;
-  }
-  
-  .btn-secondary {
-    @apply font-medium px-6 py-3 rounded-xl transition-colors duration-200 text-white;
-    background-color: #A0927C;
-  }
-  
-  .btn-secondary:hover {
-    background-color: #7D6F5C;
-  }
-  
+  /*
+   * Site buttons: shared layout so CTAs align everywhere (no more mixing
+   * inline-flex / py-2 / py-3 ad hoc on every page).
+   */
+  .btn-primary,
+  .btn-secondary,
   .btn-outline {
-    @apply font-medium px-6 py-3 rounded-xl transition-colors duration-200;
-    border: 2px solid #B8C5BA;
-    color: #6B7C70;
+    @apply relative inline-flex shrink-0 items-center justify-center gap-2 text-center font-medium
+      whitespace-normal rounded-xl border-2 border-transparent
+      min-h-[2.75rem] px-6 py-2.5 text-base leading-snug
+      transition-colors duration-200 no-underline
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2 focus-visible:ring-offset-cream
+      disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  
-  .btn-outline:hover {
-    background-color: rgba(184, 197, 186, 0.1);
+
+  .btn-primary {
+    @apply border-sage bg-sage text-white hover:border-sage-dark hover:bg-sage-dark;
+  }
+
+  .btn-secondary {
+    @apply border-earth bg-earth text-white hover:border-earth-dark hover:bg-earth-dark;
+  }
+
+  .btn-outline {
+    @apply border-sage-muted bg-transparent text-sage hover:bg-sage-muted/10;
+  }
+
+  /* Optional size modifiers (combine: class="btn-primary btn-sm") */
+  .btn-sm {
+    @apply min-h-[2.375rem] rounded-lg px-4 py-2 text-sm;
+  }
+
+  .btn-lg {
+    @apply min-h-[3rem] rounded-2xl px-8 py-3 text-base;
+  }
+
+  .btn-pill {
+    @apply rounded-full;
+  }
+
+  .btn-block {
+    @apply w-full justify-center;
   }
   
   .card {

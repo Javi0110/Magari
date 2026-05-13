@@ -77,7 +77,7 @@ export default function LeadMagnetForm({
             <a
               href="/home-prep-checklist.pdf"
               download="Magari-Home-Prep-Checklist.pdf"
-              className="btn-primary inline-flex items-center justify-center gap-2 px-8 py-3.5"
+              className="btn-primary px-8 py-3.5"
             >
               <Download className="w-5 h-5" />
               {successDownloadButtonLabel}
@@ -144,7 +144,7 @@ export default function LeadMagnetForm({
             <button
               type="submit"
               disabled={status === 'sending'}
-              className="w-full btn-primary inline-flex items-center justify-center gap-2 py-3.5 disabled:opacity-60"
+              className="w-full btn-primary py-3.5 disabled:opacity-60"
             >
               {status === 'sending' ? (
                 <>

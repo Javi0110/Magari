@@ -3,6 +3,7 @@ import { useBookingModal } from '../context/BookingModalContext'
 
 /**
  * @param {'modal' | 'page'} variant — `modal` opens Calendly overlay; `page` navigates to `/book`.
+ * Use with `btn-primary`, `btn-outline`, or `btn-secondary` (+ optional `btn-sm`, `btn-pill`, `btn-block`) from `index.css`.
  */
 export default function BookConsultButton({
   variant = 'modal',

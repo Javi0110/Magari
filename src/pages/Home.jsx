@@ -91,26 +91,26 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row flex-wrap gap-3">
                 <BookConsultButton
                   variant="modal"
-                  className="btn-primary text-center inline-flex items-center justify-center gap-2"
+                  className="btn-primary"
                 >
                   Book a Consultation
                   <ArrowRight className="w-4 h-4" />
                 </BookConsultButton>
-                <BookConsultButton variant="page" className="btn-outline text-center inline-flex items-center justify-center gap-2">
+                <BookConsultButton variant="page" className="btn-outline">
                   Scheduling page (/book)
                 </BookConsultButton>
                 <Link
                   to="/real-estate"
-                  className="btn-outline text-center inline-flex items-center justify-center gap-2"
+                  className="btn-outline"
                 >
                   Work With Me (Real Estate)
                 </Link>
-                <Link to="/portfolio" className="btn-secondary text-center inline-flex items-center justify-center gap-2">
+                <Link to="/portfolio" className="btn-secondary">
                   View Portfolio
                 </Link>
               </div>
               <div className="mt-6">
-                <InstagramDmCta className="btn-outline text-center inline-flex items-center justify-center text-sm py-2.5" />
+                <InstagramDmCta className="btn-outline btn-sm" />
               </div>
               <a href="#lead-magnet" className="inline-block mt-5 text-sm font-medium text-sage-dark hover:underline">
                 Download Checklist →
@@ -174,7 +174,7 @@ export default function HomePage() {
                 </ul>
                 <Link
                   to={item.href}
-                  className="btn-outline w-full text-center inline-flex items-center justify-center gap-2 text-sm py-3"
+                  className="btn-outline btn-block text-sm py-3"
                 >
                   {item.cta}
                   <ArrowRight className="w-4 h-4" />
@@ -209,7 +209,7 @@ export default function HomePage() {
                 <p className="text-sm text-neutral-600 leading-relaxed flex-1 mb-5">{pkg.homeBlurb}</p>
                 <Link
                   to={`/contact#book?topic=${encodeURIComponent(pkg.name)}`}
-                  className="btn-primary w-full text-center text-sm py-3 mt-auto"
+                  className="btn-primary btn-block text-sm py-3 mt-auto"
                 >
                   Book Now
                 </Link>
@@ -258,7 +258,7 @@ export default function HomePage() {
                 Real spaces, real upgrades, real impact. Explore my favorite projects and see what&apos;s possible.
               </p>
             </motion.div>
-            <Link to="/portfolio" className="btn-outline self-start md:self-auto inline-flex items-center gap-2 shrink-0">
+            <Link to="/portfolio" className="btn-outline self-start md:self-auto shrink-0">
               View Full Portfolio
               <ArrowRight className="w-4 h-4" />
             </Link>
@@ -343,7 +343,7 @@ export default function HomePage() {
               <p className="text-neutral-600 text-sm leading-relaxed mb-6 max-w-md">
                 Curated home finds, handmade pieces, and favorites that feel like Magari.
               </p>
-              <Link to="/shop" className="btn-outline inline-flex items-center gap-2">
+              <Link to="/shop" className="btn-outline">
                 <ShoppingBag className="w-4 h-4" />
                 Shop Magari
               </Link>
@@ -359,11 +359,11 @@ export default function HomePage() {
                 A marketplace made by moms, for moms. Supporting small businesses and beautiful handmade finds.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 lg:justify-end">
-                <Link to="/momade" className="btn-outline inline-flex items-center justify-center gap-2">
+                <Link to="/momade" className="btn-outline">
                   Explore MOMade
                   <Store className="w-4 h-4" />
                 </Link>
-                <Link to="/become-a-vendor" className="btn-secondary inline-flex items-center justify-center gap-2">
+                <Link to="/become-a-vendor" className="btn-secondary">
                   Become a Vendor
                 </Link>
               </div>
@@ -390,12 +390,12 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
               <BookConsultButton
                 variant="modal"
-                className="btn-primary inline-flex items-center justify-center gap-2 px-10 py-3.5"
+                className="btn-primary px-10 py-3.5"
               >
                 Book a Consultation
                 <ArrowRight className="w-4 h-4" />
               </BookConsultButton>
-              <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center gap-2 px-10 py-3.5">
+              <BookConsultButton variant="page" className="btn-outline px-10 py-3.5">
                 Scheduling page (/book)
               </BookConsultButton>
             </div>

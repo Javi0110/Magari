@@ -324,13 +324,13 @@ export default function ShopPage() {
             >
               Shop All Products
             </button>
-            <BookConsultButton variant="modal" className="btn-outline inline-flex items-center justify-center">
+            <BookConsultButton variant="modal" className="btn-outline">
               Book design help
             </BookConsultButton>
-            <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center">
+            <BookConsultButton variant="page" className="btn-outline">
               Scheduling page (/book)
             </BookConsultButton>
-            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+            <InstagramDmCta className="btn-outline" />
           </div>
           <p className="mt-4 text-sm text-neutral-600">
             Earn points with <button

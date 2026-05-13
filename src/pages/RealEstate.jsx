@@ -31,19 +31,19 @@ export default function RealEstatePage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
             <Link
               to="/contact#book?intent=buyer"
-              className="btn-primary inline-flex items-center justify-center gap-2"
+              className="btn-primary"
             >
               Schedule a Buyer Call
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               to="/contact#book?intent=seller"
-              className="btn-secondary inline-flex items-center justify-center gap-2"
+              className="btn-secondary"
             >
               Sell With Magari
               <ArrowRight className="w-4 h-4" />
             </Link>
-            <InstagramDmCta className="btn-outline inline-flex items-center justify-center w-full sm:w-auto" />
+            <InstagramDmCta className="btn-outline w-full sm:w-auto" />
           </div>
         </div>
       </section>
@@ -79,7 +79,7 @@ export default function RealEstatePage() {
                 </li>
               ))}
             </ul>
-            <Link to="/contact#book?intent=buyer" className="btn-primary w-full sm:w-auto inline-block text-center px-8 py-3">
+            <Link to="/contact#book?intent=buyer" className="btn-primary w-full sm:w-auto px-8 py-3">
               Schedule a Buyer Call
             </Link>
           </motion.div>
@@ -114,7 +114,7 @@ export default function RealEstatePage() {
                 </li>
               ))}
             </ul>
-            <Link to="/contact#book?intent=seller" className="btn-secondary w-full sm:w-auto inline-block text-center px-8 py-3">
+            <Link to="/contact#book?intent=seller" className="btn-secondary w-full sm:w-auto px-8 py-3">
               Sell With Magari
             </Link>
           </motion.div>
@@ -147,14 +147,14 @@ export default function RealEstatePage() {
                 ))}
               </ul>
               <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
-                <Link to="/contact#book?intent=buyer" className="btn-primary inline-flex items-center justify-center gap-2">
+                <Link to="/contact#book?intent=buyer" className="btn-primary">
                   Schedule a Buyer Call
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link to="/services" className="btn-outline inline-flex items-center justify-center">
+                <Link to="/services" className="btn-outline">
                   View services
                 </Link>
-                <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+                <InstagramDmCta className="btn-outline" />
               </div>
             </div>
           </div>
@@ -167,11 +167,11 @@ export default function RealEstatePage() {
           Book a consultation and tell me what you&apos;re looking for.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-          <Link to="/contact#book?intent=buyer" className="btn-primary inline-flex items-center justify-center gap-2 px-8">
+          <Link to="/contact#book?intent=buyer" className="btn-primary px-8">
             Schedule Buyer Consultation
             <ArrowRight className="w-4 h-4" />
           </Link>
-          <Link to="/contact#book?intent=seller" className="btn-secondary inline-flex items-center justify-center gap-2 px-8">
+          <Link to="/contact#book?intent=seller" className="btn-secondary px-8">
             Request Seller Strategy Call
           </Link>
         </div>

@@ -64,10 +64,10 @@ export default function RewardsPage() {
             >
               Join / View my rewards
             </Link>
-            <Link to="/contact#book" className="btn-outline inline-flex items-center justify-center">
+            <Link to="/contact#book" className="btn-outline">
               Book services
             </Link>
-            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+            <InstagramDmCta className="btn-outline" />
           </div>
         </section>
 

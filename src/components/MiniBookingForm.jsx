@@ -136,7 +136,7 @@ export default function MiniBookingForm({ pageLabel, id = 'quick-book' }) {
             <button
               type="submit"
               disabled={status === 'sending'}
-              className="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2 disabled:opacity-50"
+              className="btn-primary w-full sm:w-auto disabled:opacity-50"
             >
               {status === 'sending' ? (
                 <>

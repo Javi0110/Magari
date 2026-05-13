@@ -106,7 +106,7 @@ export default function Header() {
           <div className="hidden lg:flex items-center gap-4 xl:gap-5 relative">
             <BookConsultButton
               variant="modal"
-              className="shrink-0 rounded-full bg-sage px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-95 transition-opacity"
+              className="btn-primary btn-sm btn-pill shrink-0 font-semibold shadow-sm"
             >
               Book a Consultation
             </BookConsultButton>
@@ -207,7 +207,7 @@ export default function Header() {
               <BookConsultButton
                 variant="modal"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block w-full text-center rounded-2xl bg-sage text-white font-semibold py-3"
+                className="btn-primary btn-block rounded-2xl font-semibold"
               >
                 Book a Consultation
               </BookConsultButton>

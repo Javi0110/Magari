@@ -46,13 +46,13 @@ export default function CheckoutSuccessPage() {
             Your payment was successful. We&apos;ve updated stock and will process your order shortly.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap mb-4">
-            <Link to="/shop" className="btn-primary inline-flex items-center justify-center">
+            <Link to="/shop" className="btn-primary">
               Continue shopping
             </Link>
-            <Link to="/contact#book" className="btn-outline inline-flex items-center justify-center">
+            <Link to="/contact#book" className="btn-outline">
               Book a Consultation
             </Link>
-            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+            <InstagramDmCta className="btn-outline" />
           </div>
         </div>
       </div>

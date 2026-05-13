@@ -41,18 +41,18 @@ export default function BecomeVendorPage() {
             <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
               <Link
                 to="/momade/become-a-vendor"
-                className="btn-primary inline-flex items-center justify-center"
+                className="btn-primary"
               >
                 Apply now
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
               <Link
                 to="/momade"
-                className="btn-outline inline-flex items-center justify-center"
+                className="btn-outline"
               >
                 Explore the marketplace
               </Link>
-              <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+              <InstagramDmCta className="btn-outline" />
             </div>
           </div>
 
@@ -317,18 +317,18 @@ export default function BecomeVendorPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
             <Link
               to="/momade/become-a-vendor"
-              className="btn-primary inline-flex items-center justify-center"
+              className="btn-primary"
             >
               Apply now to MOMade Market
               <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
             <Link
               to="/contact"
-              className="btn-outline inline-flex items-center justify-center"
+              className="btn-outline"
             >
               Ask a question first
             </Link>
-            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+            <InstagramDmCta className="btn-outline" />
           </div>
         </section>
       </div>

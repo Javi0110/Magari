@@ -173,10 +173,10 @@ export default function RewardsDashboardPage() {
             </button>
           </form>
           <div className="flex flex-wrap gap-2 mt-4">
-            <Link to="/contact#book" className="btn-outline text-sm py-2 px-3 inline-flex items-center justify-center">
+            <Link to="/contact#book" className="btn-outline btn-sm">
               Book services
             </Link>
-            <InstagramDmCta className="btn-outline text-sm py-2 px-3 inline-flex items-center justify-center" />
+            <InstagramDmCta className="btn-outline btn-sm" />
           </div>
           {error && <p className="mt-3 text-xs text-red-500">{error}</p>}
         </section>

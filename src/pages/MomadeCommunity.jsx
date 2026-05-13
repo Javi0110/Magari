@@ -69,11 +69,11 @@ export default function MomadeCommunityPage() {
             to curated finds, this is a space for small businesses to shine.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-            <Link to="/momade/shop" className="btn-primary inline-flex items-center justify-center gap-2">
+            <Link to="/momade/shop" className="btn-primary">
               Explore Vendors
               <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link to="/become-a-vendor" className="btn-outline inline-flex items-center justify-center gap-2">
+            <Link to="/become-a-vendor" className="btn-outline">
               Become a Vendor
             </Link>
           </div>
@@ -127,7 +127,7 @@ export default function MomadeCommunityPage() {
                 Rotating spotlight — tap through to vendor profiles when live data is connected.
               </p>
             </div>
-            <Link to="/momade/shop" className="btn-outline inline-flex items-center gap-2 shrink-0">
+            <Link to="/momade/shop" className="btn-outline shrink-0">
               <Store className="w-4 h-4" />
               Browse all products
             </Link>
@@ -176,11 +176,11 @@ export default function MomadeCommunityPage() {
           Applications are read by humans — expect a clear yes / not-yet with feedback.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link to="/become-a-vendor" className="btn-primary inline-flex items-center justify-center gap-2">
+          <Link to="/become-a-vendor" className="btn-primary">
             Become a Vendor
             <ArrowRight className="w-4 h-4" />
           </Link>
-          <Link to="/momade/shop" className="btn-outline inline-flex items-center justify-center">
+          <Link to="/momade/shop" className="btn-outline">
             Shop the Marketplace
           </Link>
         </div>

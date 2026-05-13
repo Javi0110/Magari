@@ -155,7 +155,7 @@ export default function StagingForRealtorsPage() {
             Tell us about your upcoming property in Austin, TX and we&apos;ll recommend the best staging approach for you
             and your seller — from light refresh to full vacant staging.
           </p>
-          <a href="/home-staging-austin" className="btn-primary inline-flex items-center">
+          <a href="/home-staging-austin" className="btn-primary">
             Book Staging Consult
           </a>
         </section>

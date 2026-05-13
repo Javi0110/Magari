@@ -12,13 +12,13 @@ export default function CheckoutCancelPage() {
             Your cart is still saved. You can continue shopping or come back to pay later.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap mb-4">
-            <Link to="/shop" className="btn-primary inline-flex items-center justify-center">
+            <Link to="/shop" className="btn-primary">
               Continue shopping
             </Link>
-            <Link to="/" className="btn-outline inline-flex items-center justify-center">
+            <Link to="/" className="btn-outline">
               Back to home
             </Link>
-            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+            <InstagramDmCta className="btn-outline" />
           </div>
         </div>
       </div>

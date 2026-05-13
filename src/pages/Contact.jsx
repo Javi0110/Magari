@@ -124,16 +124,16 @@ export default function ContactPage() {
             Serving Georgetown + Austin, TX (virtual services available anywhere)
           </p>
           <div className="flex flex-wrap gap-2 justify-center">
-            <a href="/#lead-magnet" className="btn-outline text-sm py-2 px-4 inline-flex items-center justify-center">
+            <a href="/#lead-magnet" className="btn-outline btn-sm">
               Download Checklist
             </a>
-            <InstagramDmCta className="btn-outline text-sm py-2 px-4 inline-flex items-center justify-center" />
+            <InstagramDmCta className="btn-outline btn-sm" />
           </div>
           <div className="flex flex-wrap gap-2 justify-center mt-3">
-            <BookConsultButton variant="modal" className="btn-primary text-sm py-2 px-4 inline-flex items-center justify-center">
+            <BookConsultButton variant="modal" className="btn-primary btn-sm">
               Book (Calendly popup)
             </BookConsultButton>
-            <BookConsultButton variant="page" className="btn-outline text-sm py-2 px-4 inline-flex items-center justify-center">
+            <BookConsultButton variant="page" className="btn-outline btn-sm">
               Open /book
             </BookConsultButton>
           </div>
@@ -195,10 +195,10 @@ export default function ContactPage() {
                 — placeholder link until <span className="font-mono text-xs">VITE_CALENDLY_URL</span> is set.
               </p>
               <div className="flex flex-wrap gap-2 mb-4">
-                <BookConsultButton variant="modal" className="btn-primary text-sm py-2 px-3 inline-flex items-center justify-center">
+                <BookConsultButton variant="modal" className="btn-primary btn-sm">
                   Open popup
                 </BookConsultButton>
-                <BookConsultButton variant="page" className="btn-outline text-sm py-2 px-3 inline-flex items-center justify-center">
+                <BookConsultButton variant="page" className="btn-outline btn-sm">
                   Full page (/book)
                 </BookConsultButton>
               </div>
@@ -311,7 +311,7 @@ export default function ContactPage() {
                       placeholder="Timeline, neighborhood, room photos, or what keeps you stuck…"
                     />
                   </div>
-                  <button type="submit" className="w-full btn-primary py-3.5 inline-flex items-center justify-center gap-2">
+                  <button type="submit" className="w-full btn-primary py-3.5">
                     <Send className="w-5 h-5" />
                     Send Message
                   </button>

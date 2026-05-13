@@ -61,16 +61,16 @@ export default function CasaMagariPage() {
               Still fundraising + floor-planning — this page is the honest preview.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 flex-wrap mt-8">
-              <BookConsultButton variant="modal" className="btn-primary inline-flex items-center justify-center">
+              <BookConsultButton variant="modal" className="btn-primary">
                 Book a consult
               </BookConsultButton>
-              <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center">
+              <BookConsultButton variant="page" className="btn-outline">
                 Scheduling page (/book)
               </BookConsultButton>
-              <Link to="/shop" className="btn-outline inline-flex items-center justify-center">
+              <Link to="/shop" className="btn-outline">
                 Shop Magari
               </Link>
-              <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+              <InstagramDmCta className="btn-outline" />
             </div>
           </div>
 

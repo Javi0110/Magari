@@ -42,17 +42,17 @@ export default function PortfolioPage() {
             the same.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-            <BookConsultButton variant="modal" className="btn-primary inline-flex items-center justify-center gap-2">
+            <BookConsultButton variant="modal" className="btn-primary">
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
             </BookConsultButton>
-            <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center gap-2">
+            <BookConsultButton variant="page" className="btn-outline">
               Scheduling page (/book)
             </BookConsultButton>
-            <a href="/#lead-magnet" className="btn-outline inline-flex items-center justify-center">
+            <a href="/#lead-magnet" className="btn-outline">
               Download Checklist
             </a>
-            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+            <InstagramDmCta className="btn-outline" />
           </div>
         </div>
       </section>

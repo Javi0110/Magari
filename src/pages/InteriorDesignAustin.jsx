@@ -184,7 +184,7 @@ export default function InteriorDesignAustinPage() {
             Schedule an interior design consultation and we&apos;ll walk through your home, your goals, and how we can
             bring your vision to life.
           </p>
-          <a href="/design-services/interior-design" className="btn-primary inline-flex items-center">
+          <a href="/design-services/interior-design" className="btn-primary">
             Book Interior Design Consult
           </a>
         </section>

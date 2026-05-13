@@ -148,7 +148,7 @@ export default function RealEstateLeadForm({
             <button
               type="submit"
               disabled={status === 'sending'}
-              className="btn-primary w-full inline-flex items-center justify-center gap-2 disabled:opacity-50"
+              className="btn-primary w-full disabled:opacity-50"
             >
               {status === 'sending' ? (
                 <>
