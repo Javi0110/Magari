@@ -99,13 +99,32 @@ function AdminNotificationsDropdown({ notifications, error, onMarkAsRead, onMark
 
 const ADMIN_EMAIL = 'magaribyelena@gmail.com'
 
+function getAuthErrorDetail(authErr) {
+  const msg = (authErr?.message || '').toLowerCase()
+  const code = authErr?.code || authErr?.status || ''
+  if (msg.includes('email not confirmed') || code === 'email_not_confirmed') {
+    return 'Tu usuario existe pero el correo no está confirmado. En Supabase: Authentication → Providers → Email, desactiva temporalmente "Confirm email" o confirma el usuario desde el panel.'
+  }
+  if (msg.includes('invalid login') || msg.includes('invalid credentials')) {
+    return [
+      '1) Contraseña incorrecta → en Supabase: Authentication → Users → tu usuario → menú (⋮) → Reset password, o usa "Enviar enlace…" abajo.',
+      '2) Si creaste la cuenta solo con Google, no hay contraseña: usa "Continuar con Google".',
+      '3) Comprueba que VITE_SUPABASE_URL en Netlify sea el mismo proyecto donde está el usuario.',
+    ].join(' ')
+  }
+  return ''
+}
+
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [activeTab, setActiveTab] = useState('dashboard')
   const [highlightedApplicationId, setHighlightedApplicationId] = useState(null)
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(ADMIN_EMAIL)
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
+  const [loginInfo, setLoginInfo] = useState('')
+  const [oauthBusy, setOauthBusy] = useState(false)
+  const [resetBusy, setResetBusy] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const { items: notifications, unreadCount, error: notificationsError, fetchForAdmin, markAsRead, markAllAsRead } = useNotificationsStore()
 
@@ -138,6 +157,7 @@ export default function AdminPage() {
   const handleLogin = async (e) => {
     e.preventDefault()
     setLoginError('')
+    setLoginInfo('')
     const trimmedEmail = (email || '').trim().toLowerCase()
     if (trimmedEmail !== ADMIN_EMAIL) {
       setLoginError('Este acceso solo está habilitado para el email de administración.')
@@ -155,14 +175,8 @@ export default function AdminPage() {
 
     if (authErr) {
       const msg = authErr.message || 'Error de autenticación'
-      const lower = msg.toLowerCase()
-      let extra =
-        'La contraseña debe ser la del usuario en Supabase (Authentication → Users → opción de contraseña / reset). El sitio ya no usa una contraseña fija en el código.'
-      if (lower.includes('email not confirmed')) {
-        extra =
-          'En Supabase: Authentication → Providers → Email — desactiva "Confirm email" o abre el enlace de confirmación del usuario.'
-      }
-      setLoginError(`${msg}. ${extra}`)
+      const detail = getAuthErrorDetail(authErr)
+      setLoginError(detail ? `${msg}\n\n${detail}` : msg)
       return
     }
 
@@ -174,6 +188,65 @@ export default function AdminPage() {
     }
 
     setIsLoggedIn(true)
+  }
+
+  const handleGoogleLogin = async () => {
+    setLoginError('')
+    setLoginInfo('')
+    if (!supabase) {
+      setLoginError('Supabase no está configurado.')
+      return
+    }
+    const trimmedEmail = (email || '').trim().toLowerCase()
+    if (trimmedEmail !== ADMIN_EMAIL) {
+      setLoginError('Usa el email de administración antes de continuar con Google.')
+      return
+    }
+    setOauthBusy(true)
+    const redirectTo = `${window.location.origin}/admin`
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo,
+        queryParams: { prompt: 'select_account' },
+      },
+    })
+    if (error) {
+      setOauthBusy(false)
+      setLoginError(
+        `${error.message}. Si no usas Google en Supabase, habilita el proveedor en Authentication → Providers → Google y añade esta URL en Redirect URLs: ${redirectTo}`
+      )
+      return
+    }
+    if (data?.url) {
+      window.location.href = data.url
+      return
+    }
+    setOauthBusy(false)
+    setLoginError('No se recibió la URL de Google. Revisa la configuración del proveedor en Supabase.')
+  }
+
+  const handleSendResetEmail = async () => {
+    setLoginError('')
+    setLoginInfo('')
+    if (!supabase) {
+      setLoginError('Supabase no está configurado.')
+      return
+    }
+    const trimmedEmail = (email || '').trim().toLowerCase()
+    if (trimmedEmail !== ADMIN_EMAIL) {
+      setLoginError('El email debe ser el de administración.')
+      return
+    }
+    setResetBusy(true)
+    const redirectTo = `${window.location.origin}/admin`
+    const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, { redirectTo })
+    setResetBusy(false)
+    if (error) {
+      setLoginError(error.message || 'No se pudo enviar el correo.')
+      return
+    }
+    setLoginInfo(`Revisa la bandeja de ${trimmedEmail} (y spam). Abre el enlace y elige una contraseña nueva; luego vuelve aquí a iniciar sesión. En Supabase → Authentication → URL configuration debe existir: ${redirectTo}`)
   }
 
   if (!isLoggedIn) {
@@ -189,13 +262,19 @@ export default function AdminPage() {
                 Admin Login
               </h1>
               <p className="text-neutral-600 text-sm">
-                Solo personal autorizado. La contraseña es la del usuario en Supabase (Authentication), no una clave distinta del sitio.
+                Solo personal autorizado. Puedes entrar con <strong>contraseña</strong> (la que tengas en Supabase para este
+                email) o con <strong>Google</strong> si la cuenta está vinculada a {ADMIN_EMAIL}.
               </p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
               {loginError && (
-                <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">{loginError}</p>
+                <p className="text-red-700 text-sm bg-red-50 p-3 rounded-lg whitespace-pre-line leading-relaxed">{loginError}</p>
+              )}
+              {loginInfo && (
+                <p className="text-sage-dark text-sm bg-sage-muted/30 border border-sage-muted/50 p-3 rounded-lg whitespace-pre-line leading-relaxed">
+                  {loginInfo}
+                </p>
               )}
               <div>
                 <label className="block text-neutral-700 font-medium mb-2">
@@ -227,6 +306,33 @@ export default function AdminPage() {
 
               <button type="submit" className="w-full btn-primary py-3">
                 Sign In
+              </button>
+
+              <div className="relative py-2">
+                <div className="absolute inset-0 flex items-center" aria-hidden>
+                  <span className="w-full border-t border-greige-light" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-white px-2 text-neutral-500">o</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                disabled={oauthBusy}
+                onClick={handleGoogleLogin}
+                className="w-full btn-outline py-3 text-sm disabled:opacity-60"
+              >
+                {oauthBusy ? 'Abriendo Google…' : 'Continuar con Google'}
+              </button>
+
+              <button
+                type="button"
+                disabled={resetBusy}
+                onClick={handleSendResetEmail}
+                className="w-full text-sm text-sage-dark hover:underline disabled:opacity-60 py-1"
+              >
+                {resetBusy ? 'Enviando…' : '¿Olvidaste la contraseña? Enviar enlace de restablecimiento'}
               </button>
             </form>
 
