@@ -189,21 +189,6 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="card p-6 sm:p-8 border border-greige-light/80 bg-white/95">
-              <h2 className="font-serif text-xl text-neutral-800 mb-2">Prefer Calendly?</h2>
-              <p className="text-sm text-neutral-600 mb-4">
-                Primary scheduling is now on this page (pick a time below). You can still open the legacy Calendly page if needed.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <BookConsultButton variant="modal" className="btn-outline btn-sm">
-                  Calendly popup
-                </BookConsultButton>
-                <BookConsultButton variant="page" className="btn-outline btn-sm">
-                  /book
-                </BookConsultButton>
-              </div>
-            </div>
-
             <div className="card p-8 border border-greige-light/80 bg-white/90">
               <h3 className="font-serif text-xl text-neutral-800 mb-3">What happens after you inquire</h3>
               <ol className="list-decimal list-inside space-y-3 text-sm text-neutral-600 leading-relaxed">
@@ -225,8 +210,8 @@ export default function ContactPage() {
                 <Link to="/real-estate" className="text-sage-dark hover:underline">
                   Real Estate
                 </Link>
-                <Link to="/portfolio" className="text-sage-dark hover:underline">
-                  Portfolio
+                <Link to="/shop" className="text-sage-dark hover:underline">
+                  Shop Magari
                 </Link>
               </div>
             </div>

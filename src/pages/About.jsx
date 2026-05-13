@@ -44,8 +44,8 @@ export default function AboutPage() {
             <BookConsultButton variant="page" className="btn-outline">
               Scheduling page (/book)
             </BookConsultButton>
-            <Link to="/portfolio" className="btn-outline">
-              View Portfolio
+            <Link to="/services" className="btn-outline">
+              Services &amp; pricing
             </Link>
             <a href="/#lead-magnet" className="btn-outline">
               Download Checklist

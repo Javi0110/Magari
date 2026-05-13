@@ -19,7 +19,6 @@ import RewardsPage from './pages/Rewards'
 import RewardsDashboardPage from './pages/RewardsDashboard'
 import ServicesPage from './pages/Services'
 import RealEstatePage from './pages/RealEstate'
-import PortfolioPage from './pages/Portfolio'
 import ContactPage from './pages/Contact'
 import ContactBookingSuccessPage from './pages/ContactBookingSuccess'
 import MarketplacePage from './pages/Marketplace'
@@ -49,10 +48,6 @@ const pageMeta = {
     title: 'Real Estate — Realtor® @ eXp Realty | Magari & Co.',
     description:
       'Real estate services provided through eXp Realty with Elena Fadhel, Realtor® @ eXp Realty. Design and staging by Magari & Co. — a separate studio, not a brokerage.',
-  },
-  '/portfolio': {
-    title: 'Portfolio — Before & After | Magari & Co.',
-    description: 'Before and after transformations from Magari & Co. interior design and staging projects.',
   },
   '/shop': {
     title: 'Shop Magari — Magari & Co.',
@@ -292,7 +287,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/real-estate" element={<RealEstatePage />} />
-          <Route path="/portfolio" element={<PortfolioPage />} />
+          <Route path="/portfolio" element={<Navigate to="/" replace />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/shop/:id" element={<ProductDetailPage />} />
           <Route path="/rewards" element={<RewardsPage />} />

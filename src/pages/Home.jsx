@@ -16,7 +16,6 @@ import LeadMagnetForm from '../components/LeadMagnetForm'
 import InstagramDmCta from '../components/InstagramDmCta'
 import BookConsultButton from '../components/BookConsultButton'
 import { SERVICE_PACKAGES } from '../constants/servicePackages'
-import { PORTFOLIO_ITEMS } from '../data/portfolioGallery'
 
 const fadeUp = {
   initial: { opacity: 0, y: 18 },
@@ -60,8 +59,6 @@ const differentiatorBullets = [
 ]
 
 export default function HomePage() {
-  const previewImages = PORTFOLIO_ITEMS.slice(0, 9)
-
   return (
     <div className="min-h-screen bg-cream pb-24 md:pb-0">
       {/* 1. Hero */}
@@ -107,9 +104,6 @@ export default function HomePage() {
                   className="btn-outline"
                 >
                   Real estate (eXp Realty)
-                </Link>
-                <Link to="/portfolio" className="btn-secondary">
-                  View Portfolio
                 </Link>
               </div>
               <div className="mt-6">
@@ -251,39 +245,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. Portfolio preview */}
-      <section className="py-16 md:py-20 bg-cream border-y border-greige-light/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-12">
-            <motion.div {...fadeUp}>
-              <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-2">Before &amp; After Transformations</h2>
-              <p className="text-neutral-600 max-w-xl text-sm md:text-base">
-                Real spaces, real upgrades, real impact. Explore my favorite projects and see what&apos;s possible.
-              </p>
-            </motion.div>
-            <Link to="/portfolio" className="btn-outline self-start md:self-auto shrink-0">
-              View Full Portfolio
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-            {previewImages.map((img, idx) => (
-              <motion.div
-                key={img.id}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.03 }}
-                className="aspect-square rounded-2xl overflow-hidden border border-greige-light bg-neutral-100"
-              >
-                <img src={img.src} alt={img.title} className="w-full h-full object-cover" loading="lazy" />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Testimonials */}
+      {/* 5. Testimonials */}
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.h2 {...fadeUp} className="font-serif text-3xl md:text-4xl text-center text-neutral-700 mb-12">
@@ -319,7 +281,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 7. Lead magnet */}
+      {/* 6. Lead magnet */}
       <section className="py-16 md:py-24 bg-gradient-to-b from-white to-cream border-t border-greige-light/50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <LeadMagnetForm
@@ -334,7 +296,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 8–9. Secondary: Shop + MOMade — after services path + lead magnet; not in hero */}
+      {/* 7–8. Secondary: Shop + MOMade — after services path + lead magnet; not in hero */}
       <section className="bg-gradient-to-b from-cream to-white border-t border-greige-light/60 py-14 md:py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-xs uppercase tracking-[0.22em] text-neutral-500 text-center mb-10 md:mb-12">
@@ -382,7 +344,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 10. Final CTA */}
+      {/* 9. Final CTA */}
       <section className="py-14 md:py-16 bg-sage/20 border-t border-sage-muted/40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div {...fadeUp}>

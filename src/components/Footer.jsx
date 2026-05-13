@@ -45,11 +45,6 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/portfolio" className="text-neutral-600 hover:text-sage transition-colors">
-                  Portfolio
-                </Link>
-              </li>
-              <li>
                 <BookConsultButton variant="modal" className="text-neutral-600 hover:text-sage transition-colors text-left">
                   Book a Consultation
                 </BookConsultButton>
@@ -137,9 +132,6 @@ export default function Footer() {
             </Link>
             <Link to="/real-estate" className="hover:text-sage transition-colors">
               Real Estate
-            </Link>
-            <Link to="/portfolio" className="hover:text-sage transition-colors">
-              Portfolio
             </Link>
             <Link to="/shop" className="hover:text-sage transition-colors">
               Shop

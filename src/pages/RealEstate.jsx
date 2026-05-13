@@ -190,9 +190,6 @@ export default function RealEstatePage() {
           Real estate brokerage services are provided by Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty. Magari &amp; Co. is
           not a brokerage and does not hold a real estate license.
         </p>
-        <Link to="/portfolio" className="inline-block mt-6 text-sage-dark font-medium hover:underline">
-          View Portfolio →
-        </Link>
       </section>
 
       <PageBottomCta
