@@ -59,3 +59,9 @@ grant execute on function public.get_shop_products_catalog(integer) to anon, aut
 -- Luego en Authentication crea usuario magaribyelena@gmail.com (misma clave que /admin)
 -- para que las pestañas Consultations / Availability lean Supabase con RLS.
 -- -----------------------------------------------------------------------------
+
+-- -----------------------------------------------------------------------------
+-- Listings en /real-estate: ejecuta supabase/migrations/20260513120000_realtor_listings.sql
+-- (usa el trigger realtor_listings_touch_updated_at definido en este archivo).
+-- Admin → pestaña Listings (misma sesión Supabase que Consultations).
+-- -----------------------------------------------------------------------------

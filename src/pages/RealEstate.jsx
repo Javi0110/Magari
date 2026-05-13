@@ -4,6 +4,7 @@ import { Home, KeyRound, Layers, ArrowRight, Check } from 'lucide-react'
 import InstagramDmCta from '../components/InstagramDmCta'
 import RealEstateLeadForm from '../components/RealEstateLeadForm'
 import PageBottomCta from '../components/PageBottomCta'
+import ActiveListingsSection from '../components/realtor/ActiveListingsSection'
 
 export default function RealEstatePage() {
   return (
@@ -46,6 +47,8 @@ export default function RealEstatePage() {
           </div>
         </div>
       </section>
+
+      <ActiveListingsSection />
 
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">

@@ -20,6 +20,7 @@ import {
   Bell,
   Calendar,
   Clock,
+  Building2,
 } from 'lucide-react'
 import { sampleTestimonials } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
@@ -35,6 +36,7 @@ import { sendVendorApprovalEmail, sendVendorRejectionEmail } from '../utils/emai
 import { useNotificationsStore } from '../store/notificationsStore'
 import ConsultationsAdminView from '../components/admin/ConsultationsAdminView'
 import AvailabilityAdminView from '../components/admin/AvailabilityAdminView'
+import ListingsAdminView from '../components/admin/ListingsAdminView'
 
 function slugify(title) {
   const s = String(title || '')
@@ -281,6 +283,7 @@ export default function AdminPage() {
             { id: 'orders', icon: <ShoppingBag className="w-4 h-4" />, label: 'Orders' },
             { id: 'payouts', icon: <DollarSign className="w-4 h-4" />, label: 'Payouts' },
             { id: 'vendors', icon: <Users className="w-4 h-4" />, label: 'Vendors' },
+            { id: 'listings', icon: <Building2 className="w-4 h-4" />, label: 'Listings' },
             { id: 'consultations', icon: <Calendar className="w-4 h-4" />, label: 'Consultations' },
             { id: 'availability', icon: <Clock className="w-4 h-4" />, label: 'Availability' },
             { id: 'services', icon: <Settings className="w-4 h-4" />, label: 'Services' },
@@ -314,6 +317,7 @@ export default function AdminPage() {
             onClearHighlight={() => setHighlightedApplicationId(null)}
           />
         )}
+        {activeTab === 'listings' && <ListingsAdminView />}
         {activeTab === 'consultations' && <ConsultationsAdminView />}
         {activeTab === 'availability' && <AvailabilityAdminView />}
         {activeTab === 'reviews' && <ReviewsView />}
