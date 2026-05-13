@@ -81,7 +81,7 @@ export default function AvailabilityAdminView() {
   const [bulkTo, setBulkTo] = useState('')
   const [bulkStart, setBulkStart] = useState('09:00')
   const [bulkEnd, setBulkEnd] = useState('13:00')
-  const [bulkInterval, setBulkInterval] = useState(30)
+  const [bulkInterval, setBulkInterval] = useState(45)
   const [weekdays, setWeekdays] = useState([1, 2, 3, 4, 5])
   const [saving, setSaving] = useState(false)
 
@@ -267,6 +267,9 @@ export default function AvailabilityAdminView() {
             <Layers className="w-5 h-5 text-sage" />
             Crear en masa
           </h3>
+          <p className="text-xs text-neutral-500 -mt-2">
+            Cada franja es una cita disponible. Por defecto se generan bloques de <strong>45 minutos</strong>; puedes cambiar el intervalo abajo.
+          </p>
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <label className="form-label text-xs">Desde</label>
@@ -287,12 +290,12 @@ export default function AvailabilityAdminView() {
               <input type="time" className="input-field text-sm py-2" value={bulkEnd} onChange={(e) => setBulkEnd(e.target.value)} />
             </div>
             <div>
-              <label className="form-label text-xs">Intervalo (min)</label>
+              <label className="form-label text-xs">Duración de cada cita (min)</label>
               <select className="input-field text-sm py-2" value={bulkInterval} onChange={(e) => setBulkInterval(Number(e.target.value))}>
-                <option value={15}>15</option>
                 <option value={30}>30</option>
                 <option value={45}>45</option>
                 <option value={60}>60</option>
+                <option value={90}>90</option>
               </select>
             </div>
           </div>

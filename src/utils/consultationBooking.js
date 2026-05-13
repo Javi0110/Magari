@@ -68,17 +68,56 @@ export async function fetchAllSlotsForAdmin() {
 
 export async function insertAvailabilitySlots(rows) {
   if (!supabase) return { data: null, error: new Error('Supabase not configured') }
-  return supabase.from('availability_slots').insert(rows).select()
+  const list = Array.isArray(rows) ? rows : []
+  if (list.length === 0) return { data: [], error: null }
+  const rpc = await supabase.rpc('admin_insert_availability_slots', {
+    p_rows: list,
+  })
+  if (!rpc.error) {
+    return { data: Array.isArray(rpc.data) ? rpc.data : rpc.data ? [rpc.data] : [], error: null }
+  }
+  const missing =
+    rpc.error.code === 'PGRST202' ||
+    String(rpc.error.message || '').toLowerCase().includes('could not find') ||
+    String(rpc.error.message || '').toLowerCase().includes('schema cache')
+  if (missing) {
+    return supabase.from('availability_slots').insert(list).select()
+  }
+  return { data: null, error: rpc.error }
 }
 
 export async function deleteAvailabilitySlot(id) {
   if (!supabase) return { data: null, error: new Error('Supabase not configured') }
-  return supabase.from('availability_slots').delete().eq('id', id)
+  const rpc = await supabase.rpc('admin_delete_availability_slot', { p_id: id })
+  if (!rpc.error) return { data: null, error: null }
+  const missing =
+    rpc.error.code === 'PGRST202' ||
+    String(rpc.error.message || '').toLowerCase().includes('could not find') ||
+    String(rpc.error.message || '').toLowerCase().includes('schema cache')
+  if (missing) {
+    return supabase.from('availability_slots').delete().eq('id', id)
+  }
+  return { data: null, error: rpc.error }
 }
 
 export async function toggleSlotAvailability(id, isAvailable) {
   if (!supabase) return { data: null, error: new Error('Supabase not configured') }
-  return supabase.from('availability_slots').update({ is_available: isAvailable }).eq('id', id).select().single()
+  const rpc = await supabase.rpc('admin_set_availability_slot', {
+    p_id: id,
+    p_is_available: isAvailable,
+  })
+  if (!rpc.error) {
+    const row = Array.isArray(rpc.data) ? rpc.data[0] : rpc.data
+    return { data: row ?? null, error: null }
+  }
+  const missing =
+    rpc.error.code === 'PGRST202' ||
+    String(rpc.error.message || '').toLowerCase().includes('could not find') ||
+    String(rpc.error.message || '').toLowerCase().includes('schema cache')
+  if (missing) {
+    return supabase.from('availability_slots').update({ is_available: isAvailable }).eq('id', id).select().single()
+  }
+  return { data: null, error: rpc.error }
 }
 
 export async function updateAdminSettingsRow(id, patch) {
