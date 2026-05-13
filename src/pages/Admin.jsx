@@ -1684,6 +1684,24 @@ function ServicesView() {
                   {contact.address && (
                     <p className="text-xs text-neutral-500 mt-1">{contact.address}</p>
                   )}
+                  {contact.cityZip && (
+                    <p className="text-xs text-neutral-500 mt-1">City / ZIP: {contact.cityZip}</p>
+                  )}
+                  {Array.isArray(payload.intakeSummary) && payload.intakeSummary.length > 0 && (
+                    <div className="mt-3 rounded-xl border border-greige-light bg-cream/40 px-3 py-2">
+                      <p className="text-xs font-semibold text-neutral-800 mb-2 uppercase tracking-wide">
+                        Services form
+                      </p>
+                      <dl className="space-y-1.5 text-xs text-neutral-700">
+                        {payload.intakeSummary.map((row) => (
+                          <div key={row.label} className="grid grid-cols-1 sm:grid-cols-[minmax(0,0.4fr)_minmax(0,1fr)] gap-x-2 gap-y-0.5">
+                            <dt className="text-neutral-500 shrink-0">{row.label}</dt>
+                            <dd className="text-neutral-800 whitespace-pre-wrap break-words">{row.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  )}
                   <p className="text-xs text-neutral-400 mt-1">
                     Enviado: {req.created_at ? new Date(req.created_at).toLocaleString('es-PR') : '—'}
                   </p>

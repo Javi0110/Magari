@@ -148,9 +148,23 @@ exports.handler = async (event) => {
         `Ref: ${escapeHtml(s.reference)}`,
         `Contacto: ${escapeHtml(s.contact?.fullName || s.contact?.name)} / ${escapeHtml(s.contact?.email)}`,
         `Tel: ${escapeHtml(s.contact?.phone || '—')}`,
+        `Ciudad/ZIP: ${escapeHtml(s.contact?.cityZip || '—')}`,
         `Subtotal: $${s.subtotal ?? '0'} · Depósito: $${s.deposit ?? '0'}`,
       ]
-      const internalHtml = `<p><strong>Solicitud de servicio</strong></p><p>${lines.join('<br/>')}</p>`
+      let intakeBlock = ''
+      const rows = s.payload?.intakeSummary
+      if (Array.isArray(rows) && rows.length > 0) {
+        intakeBlock =
+          '<p><strong>Formulario (detalle)</strong></p><ul style="margin:8px 0;padding-left:18px">' +
+          rows
+            .map(
+              (row) =>
+                `<li style="margin:4px 0"><strong>${escapeHtml(row.label)}:</strong> ${escapeHtml(String(row.value || '—')).replace(/\n/g, '<br/>')}</li>`
+            )
+            .join('') +
+          '</ul>'
+      }
+      const internalHtml = `<p><strong>Solicitud de servicio</strong></p><p>${lines.join('<br/>')}</p>${intakeBlock}`
       const r1 = await sendResend(MAGARI_EMAIL, `Servicio: ${s.service} — ${s.reference}`, internalHtml)
       if (!r1.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r1.error }) }
 
