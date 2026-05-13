@@ -43,16 +43,16 @@ const serviceCards = [
   },
   {
     title: 'Real Estate',
-    text: 'Buy and sell with a Realtor® who sees potential before anyone else does.',
+    text: 'Buyer and seller representation with Elena Fadhel, Realtor® @ eXp Realty — paired with Magari design and staging. Magari & Co. is not a brokerage.',
     href: '/real-estate',
     icon: Home,
-    cta: 'Work With Me',
+    cta: 'Elena @ eXp Realty',
     bullets: ['Buyer representation', 'Seller strategy + prep', 'Offer & negotiation support'],
   },
 ]
 
 const differentiatorBullets = [
-  'Realtor® + Designer = better home decisions',
+  'Licensed Realtor® (eXp Realty) + design studio — roles disclosed',
   'Styling that increases perceived value',
   'Simple process, clear steps, no overwhelm',
   'Personalized support from start to finish',
@@ -83,10 +83,13 @@ export default function HomePage() {
                 <span className="text-neutral-500"> | </span>
                 Serving Georgetown + Austin, TX
               </p>
-              <p className="text-base text-neutral-600 max-w-xl mb-8 leading-relaxed">
-                Magari &amp; Co. is where design meets real estate. Whether you&apos;re refreshing your home, preparing to
-                sell, or searching for the perfect property, I help you create a space that feels elevated, intentional,
-                and truly yours.
+              <p className="text-base text-neutral-600 max-w-xl mb-4 leading-relaxed">
+                Magari &amp; Co. is the design and staging studio. Licensed real estate is a separate service: Elena Fadhel,
+                Realtor<sup>®</sup> @ eXp Realty, for buying and selling — so you can refresh, stage, list, or shop with
+                clear lines between the studio and the brokerage relationship.
+              </p>
+              <p className="text-xs text-neutral-500 max-w-xl mb-8 leading-relaxed">
+                Magari &amp; Co. does not hold a real estate license and is not a brokerage.
               </p>
               <div className="flex flex-col sm:flex-row flex-wrap gap-3">
                 <BookConsultButton
@@ -103,7 +106,7 @@ export default function HomePage() {
                   to="/real-estate"
                   className="btn-outline"
                 >
-                  Work With Me (Real Estate)
+                  Real estate (eXp Realty)
                 </Link>
                 <Link to="/portfolio" className="btn-secondary">
                   View Portfolio
@@ -227,9 +230,9 @@ export default function HomePage() {
               Design-driven. Market-smart. Made for real life.
             </h2>
             <p className="text-neutral-600 text-sm md:text-base leading-relaxed">
-              Most people hire a designer <em>or</em> a Realtor®. With Magari, you get both. I combine interior design
-              expertise with real estate strategy to help you make confident decisions — whether you&apos;re buying,
-              selling, or upgrading your space.
+              Most people hire a designer <em>or</em> a Realtor<sup>®</sup>. Here you can work with the same person for
+              both: interiors and staging through Magari &amp; Co., and transaction representation as Elena Fadhel,
+              Realtor<sup>®</sup> @ eXp Realty — always labeled so you know which hat applies.
             </p>
           </motion.div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
@@ -385,7 +388,8 @@ export default function HomePage() {
           <motion.div {...fadeUp}>
             <h2 className="font-serif text-3xl md:text-4xl text-neutral-800 mb-4">Ready to transform your home?</h2>
             <p className="text-neutral-600 mb-8 max-w-lg mx-auto text-sm md:text-base">
-              Whether you need a quick refresh or you&apos;re preparing to buy or sell — I&apos;ve got you.
+              Design and staging through Magari &amp; Co.; buying and selling with Elena Fadhel, Realtor<sup>®</sup> @ eXp
+              Realty — one contact, two clearly separated service lines.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
               <BookConsultButton

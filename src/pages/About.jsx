@@ -30,7 +30,8 @@ export default function AboutPage() {
             </strong>
             , I&apos;m able to
             guide clients not only in design — but in the entire home journey: buying, selling, and creating a space you
-            truly love.
+            truly love. Magari &amp; Co. is not a brokerage; licensed brokerage is only through eXp Realty in my name as
+            Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty.
           </p>
           <p className="font-serif text-2xl md:text-3xl text-neutral-700 italic mb-2">
             From a dream to your reality 🏡✨

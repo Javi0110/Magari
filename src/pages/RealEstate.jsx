@@ -12,21 +12,20 @@ export default function RealEstatePage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 text-center">
           <p className="text-xs uppercase tracking-[0.28em] text-sage-dark mb-4">Real estate</p>
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-neutral-700 mb-4 text-balance">
-            Real Estate, the Magari way.
+            Buy, sell & invest — with design strategy built in
           </h1>
-          <p className="text-lg md:text-xl text-neutral-700 font-medium mb-4">
-            Buy • Sell • Invest — with design strategy built in.
+          <p className="text-sm font-semibold text-sage-dark mb-4">
+            Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty · Georgetown + Austin, TX
           </p>
-          <p className="text-sm font-semibold text-sage-dark mb-6">
-            Elena Fadhel | Realtor<sup>®</sup> @ eXp Realty | Georgetown + Austin, TX
+          <p className="text-xs text-neutral-500 max-w-2xl mx-auto mb-6">
+            Magari &amp; Co. is a design and staging studio — not a brokerage. Licensed real estate is offered only through
+            eXp Realty in the name of Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty.
           </p>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed mb-4">
-            Real estate is more than contracts — it&apos;s lifestyle, design, potential, and long-term value. I help clients
-            buy and sell with confidence by combining real estate expertise with an interior designer&apos;s eye.
-          </p>
-          <p className="text-sm text-neutral-600 max-w-2xl mx-auto leading-relaxed mb-10">
-            Magari &amp; Co. is the design and staging studio — not a brokerage. Licensed real estate services are offered
-            separately through eXp Realty by Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty.
+          <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed mb-10">
+            Real estate is more than contracts — it&apos;s lifestyle, design, potential, and long-term value. As your
+            Realtor<sup>®</sup> with eXp Realty, I help you buy and sell with confidence — and I bring an interior
+            designer&apos;s eye to every decision. Staging and design packages are through Magari &amp; Co.; transaction
+            services are through eXp Realty with Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
             <Link
@@ -40,7 +39,7 @@ export default function RealEstatePage() {
               to="/contact#book?intent=seller"
               className="btn-secondary"
             >
-              Sell With Magari
+              Schedule a Seller Call
               <ArrowRight className="w-4 h-4" />
             </Link>
             <InstagramDmCta className="btn-outline w-full sm:w-auto" />
@@ -115,7 +114,7 @@ export default function RealEstatePage() {
               ))}
             </ul>
             <Link to="/contact#book?intent=seller" className="btn-secondary w-full sm:w-auto px-8 py-3">
-              Sell With Magari
+              Schedule a Seller Call
             </Link>
           </motion.div>
         </div>
@@ -188,7 +187,8 @@ export default function RealEstatePage() {
 
       <section className="max-w-3xl mx-auto px-4 pb-10 text-center">
         <p className="text-sm text-neutral-500 leading-relaxed">
-          Real estate services provided by Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty.
+          Real estate brokerage services are provided by Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty. Magari &amp; Co. is
+          not a brokerage and does not hold a real estate license.
         </p>
         <Link to="/portfolio" className="inline-block mt-6 text-sage-dark font-medium hover:underline">
           View Portfolio →

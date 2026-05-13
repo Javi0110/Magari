@@ -36,9 +36,9 @@ import BookPage from './pages/Book'
 // SEO Meta Tags by Route
 const pageMeta = {
   '/': {
-    title: 'Magari & Co. — Interior Design, Staging & Real Estate | casamagari.com',
+    title: 'Magari & Co. — Design & Staging | Realtor® @ eXp Realty (Elena Fadhel) | casamagari.com',
     description:
-      'Interior design + staging in Austin (and remote). Buying or selling: Elena Fadhel, Realtor® @ eXp Realty — brokerage separate from Magari & Co. Shop + MOMade when you are ready.',
+      'Interior design + staging in Austin (and remote) through Magari & Co. Licensed buying/selling with Elena Fadhel, Realtor® @ eXp Realty — not offered by Magari & Co. Shop + MOMade when you are ready.',
   },
   '/services': {
     title: 'Services & Packages — Magari & Co.',
@@ -168,7 +168,7 @@ function App() {
       '@type': 'LocalBusiness',
       name: 'Magari & Co.',
       description:
-        'Magari & Co. is an Austin-area interior design and home staging studio. Shop Magari and MOMade extend the brand online. Real estate services are offered separately through eXp Realty by Elena Fadhel, Realtor® @ eXp Realty — not by Magari & Co.',
+        'Magari & Co. is an Austin-area interior design and home staging studio (not a brokerage; no real estate license). Shop Magari and MOMade extend the brand online. Licensed real estate is offered separately through eXp Realty by Elena Fadhel, Realtor® @ eXp Realty — not by Magari & Co.',
       url: 'https://casamagari.com',
       image: 'https://casamagari.com/og-image.jpg',
       address: {

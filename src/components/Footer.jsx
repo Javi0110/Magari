@@ -154,7 +154,10 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-greige-light/70 space-y-3 text-center text-xs text-neutral-500 leading-relaxed max-w-3xl mx-auto">
-          <p>Real estate services provided by Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty.</p>
+          <p>
+            Real estate brokerage services are provided by Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty. Magari &amp;
+            Co. is not a brokerage and does not hold a real estate license.
+          </p>
           <p className="text-neutral-400">&copy; {new Date().getFullYear()} Magari &amp; Co. All rights reserved.</p>
         </div>
       </div>
