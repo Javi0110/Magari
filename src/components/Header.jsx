@@ -3,6 +3,7 @@ import { ShoppingCart, Menu, X, LogIn, User } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useCartStore } from '../store/cartStore'
 import { motion, AnimatePresence } from 'framer-motion'
+import BookConsultButton from './BookConsultButton'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -103,12 +104,12 @@ export default function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-4 xl:gap-5 relative">
-            <Link
-              to="/contact#book"
+            <BookConsultButton
+              variant="modal"
               className="shrink-0 rounded-full bg-sage px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-95 transition-opacity"
             >
               Book a Consultation
-            </Link>
+            </BookConsultButton>
             <button
               onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
               className="flex items-center justify-center text-stone hover:text-sage transition-colors"
@@ -203,13 +204,13 @@ export default function Header() {
             className="lg:hidden border-t border-neutral-200 bg-cream"
           >
             <div className="px-4 py-4 space-y-3">
-              <Link
-                to="/contact#book"
+              <BookConsultButton
+                variant="modal"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block w-full text-center rounded-2xl bg-sage text-white font-semibold py-3"
               >
                 Book a Consultation
-              </Link>
+              </BookConsultButton>
               {navigation.map((item) => (
                 <Link
                   key={item.name}

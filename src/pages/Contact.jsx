@@ -5,6 +5,8 @@ import { Mail, Instagram, MapPin, Send } from 'lucide-react'
 import { sendContactFormEmail } from '../utils/emailService'
 import InstagramDmCta from '../components/InstagramDmCta'
 import PageBottomCta from '../components/PageBottomCta'
+import BookConsultButton from '../components/BookConsultButton'
+import CalendlyIframe from '../components/CalendlyIframe'
 
 const SERVICE_OPTIONS = [
   { value: '', label: 'Service needed (select one)' },
@@ -127,6 +129,14 @@ export default function ContactPage() {
             </a>
             <InstagramDmCta className="btn-outline text-sm py-2 px-4 inline-flex items-center justify-center" />
           </div>
+          <div className="flex flex-wrap gap-2 justify-center mt-3">
+            <BookConsultButton variant="modal" className="btn-primary text-sm py-2 px-4 inline-flex items-center justify-center">
+              Book (Calendly popup)
+            </BookConsultButton>
+            <BookConsultButton variant="page" className="btn-outline text-sm py-2 px-4 inline-flex items-center justify-center">
+              Open /book
+            </BookConsultButton>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
@@ -176,6 +186,23 @@ export default function ContactPage() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div className="card p-6 sm:p-8 border border-greige-light/80 bg-white/95">
+              <h2 className="font-serif text-xl text-neutral-800 mb-2">Schedule (Calendly)</h2>
+              <p className="text-sm text-neutral-600 mb-4">
+                Same calendar as <Link to="/book" className="text-sage-dark font-medium hover:underline">/book</Link>
+                — placeholder link until <span className="font-mono text-xs">VITE_CALENDLY_URL</span> is set.
+              </p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <BookConsultButton variant="modal" className="btn-primary text-sm py-2 px-3 inline-flex items-center justify-center">
+                  Open popup
+                </BookConsultButton>
+                <BookConsultButton variant="page" className="btn-outline text-sm py-2 px-3 inline-flex items-center justify-center">
+                  Full page (/book)
+                </BookConsultButton>
+              </div>
+              <CalendlyIframe className="min-h-[480px] md:min-h-[560px]" title="Schedule — Calendly embed" />
             </div>
 
             <div className="card p-8 border border-greige-light/80 bg-white/90">

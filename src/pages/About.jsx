@@ -3,6 +3,7 @@ import { Heart, Target, Users, Baby, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import InstagramDmCta from '../components/InstagramDmCta'
 import PageBottomCta from '../components/PageBottomCta'
+import BookConsultButton from '../components/BookConsultButton'
 
 export default function AboutPage() {
   return (
@@ -35,10 +36,13 @@ export default function AboutPage() {
             From a dream to your reality 🏡✨
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap mt-10">
-            <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
+            <BookConsultButton variant="modal" className="btn-primary inline-flex items-center justify-center gap-2">
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </BookConsultButton>
+            <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center gap-2">
+              Scheduling page (/book)
+            </BookConsultButton>
             <Link to="/portfolio" className="btn-outline inline-flex items-center justify-center">
               View Portfolio
             </Link>
@@ -213,10 +217,13 @@ export default function AboutPage() {
             When you are ready, send photos and your timeline — consult first, shopping later if it fits.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
-            <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
+            <BookConsultButton variant="modal" className="btn-primary inline-flex items-center justify-center gap-2">
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </BookConsultButton>
+            <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center gap-2">
+              Scheduling page (/book)
+            </BookConsultButton>
             <Link to="/services" className="btn-outline">
               View services
             </Link>

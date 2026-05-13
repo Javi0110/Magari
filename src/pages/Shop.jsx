@@ -13,6 +13,7 @@ import { SHOP_MAGARI_CATEGORIES } from '../constants/shopCategories'
 import InlineSelect from '../components/InlineSelect'
 import InstagramDmCta from '../components/InstagramDmCta'
 import PageBottomCta from '../components/PageBottomCta'
+import BookConsultButton from '../components/BookConsultButton'
 
 /** Default + slider max; previously 500 hid everything above $500 */
 const SHOP_PRICE_FILTER_MAX = 50000
@@ -276,12 +277,20 @@ export default function ShopPage() {
           <p className="text-sm text-neutral-700">
             Want your home styled like this? Book a consultation.
           </p>
-          <Link
-            to="/contact#book"
-            className="inline-flex justify-center shrink-0 rounded-full bg-white px-4 py-2 text-sm font-semibold text-sage-dark border border-sage-muted/60 hover:bg-cream transition-colors"
-          >
-            Book a Consultation
-          </Link>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 shrink-0 justify-center sm:justify-end">
+            <BookConsultButton
+              variant="modal"
+              className="inline-flex justify-center shrink-0 rounded-full bg-white px-4 py-2 text-sm font-semibold text-sage-dark border border-sage-muted/60 hover:bg-cream transition-colors"
+            >
+              Book a Consultation
+            </BookConsultButton>
+            <BookConsultButton
+              variant="page"
+              className="inline-flex justify-center shrink-0 rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-700 border border-greige-light hover:bg-cream transition-colors"
+            >
+              /book
+            </BookConsultButton>
+          </div>
         </div>
       </div>
       {/* Breadcrumb Navigation */}
@@ -315,9 +324,12 @@ export default function ShopPage() {
             >
               Shop All Products
             </button>
-            <Link to="/contact#book" className="btn-outline inline-flex items-center justify-center">
+            <BookConsultButton variant="modal" className="btn-outline inline-flex items-center justify-center">
               Book design help
-            </Link>
+            </BookConsultButton>
+            <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center">
+              Scheduling page (/book)
+            </BookConsultButton>
             <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
           </div>
           <p className="mt-4 text-sm text-neutral-600">

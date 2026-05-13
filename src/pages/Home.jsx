@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import LeadMagnetForm from '../components/LeadMagnetForm'
 import InstagramDmCta from '../components/InstagramDmCta'
+import BookConsultButton from '../components/BookConsultButton'
 import { SERVICE_PACKAGES } from '../constants/servicePackages'
 import { PORTFOLIO_ITEMS } from '../data/portfolioGallery'
 
@@ -88,10 +89,16 @@ export default function HomePage() {
                 and truly yours.
               </p>
               <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-                <Link to="/contact#book" className="btn-primary text-center inline-flex items-center justify-center gap-2">
+                <BookConsultButton
+                  variant="modal"
+                  className="btn-primary text-center inline-flex items-center justify-center gap-2"
+                >
                   Book a Consultation
                   <ArrowRight className="w-4 h-4" />
-                </Link>
+                </BookConsultButton>
+                <BookConsultButton variant="page" className="btn-outline text-center inline-flex items-center justify-center gap-2">
+                  Scheduling page (/book)
+                </BookConsultButton>
                 <Link
                   to="/real-estate"
                   className="btn-outline text-center inline-flex items-center justify-center gap-2"
@@ -200,7 +207,10 @@ export default function HomePage() {
                 <p className="text-xs text-neutral-500 mb-1">Starting at</p>
                 <p className="font-serif text-2xl text-sage-dark mb-3">{pkg.price}</p>
                 <p className="text-sm text-neutral-600 leading-relaxed flex-1 mb-5">{pkg.homeBlurb}</p>
-                <Link to="/contact#book" className="btn-primary w-full text-center text-sm py-3 mt-auto">
+                <Link
+                  to={`/contact#book?topic=${encodeURIComponent(pkg.name)}`}
+                  className="btn-primary w-full text-center text-sm py-3 mt-auto"
+                >
                   Book Now
                 </Link>
               </motion.article>
@@ -377,10 +387,18 @@ export default function HomePage() {
             <p className="text-neutral-600 mb-8 max-w-lg mx-auto text-sm md:text-base">
               Whether you need a quick refresh or you&apos;re preparing to buy or sell — I&apos;ve got you.
             </p>
-            <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2 px-10 py-3.5">
-              Book a Consultation
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
+              <BookConsultButton
+                variant="modal"
+                className="btn-primary inline-flex items-center justify-center gap-2 px-10 py-3.5"
+              >
+                Book a Consultation
+                <ArrowRight className="w-4 h-4" />
+              </BookConsultButton>
+              <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center gap-2 px-10 py-3.5">
+                Scheduling page (/book)
+              </BookConsultButton>
+            </div>
           </motion.div>
         </div>
       </section>

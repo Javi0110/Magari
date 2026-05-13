@@ -9,6 +9,7 @@ import Cart from './components/Cart'
 import MobileBookNowBar from './components/MobileBookNowBar'
 import InstagramDmCta from './components/InstagramDmCta'
 import PageBottomCta from './components/PageBottomCta'
+import BookConsultButton from './components/BookConsultButton'
 
 // Page Components
 import HomePage from './pages/Home'
@@ -29,6 +30,7 @@ import AdminPage from './pages/Admin'
 import CasaMagariPage from './pages/CasaMagari'
 import CheckoutSuccessPage from './pages/CheckoutSuccess'
 import CheckoutCancelPage from './pages/CheckoutCancel'
+import BookPage from './pages/Book'
 
 // SEO Meta Tags by Route
 const pageMeta = {
@@ -119,6 +121,11 @@ const pageMeta = {
     title: 'Contact & Book — Magari & Co.',
     description:
       'Book a consult, ask about a package, or flag a shop issue. Typical reply: 24–48 business hours. Buyer/seller routing includes eXp Realty disclosure on the real estate page.',
+  },
+  '/book': {
+    title: 'Book a Consultation — Calendly | Magari & Co.',
+    description:
+      'Schedule time with Magari & Co. via Calendly — interior design, staging, or intro calls. Or use the contact form for detailed messages.',
   },
   '/admin': {
     title: 'Admin Dashboard — Magari & Co.',
@@ -303,6 +310,7 @@ function App() {
           <Route path="/maker/:slug" element={<VendorProfilePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/book" element={<BookPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/casa-magari" element={<CasaMagariPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
@@ -335,9 +343,12 @@ function NotFoundPage() {
             <Link to="/" className="btn-primary inline-flex items-center justify-center">
               Back to Home
             </Link>
-            <Link to="/contact#book" className="btn-outline inline-flex items-center justify-center">
+            <BookConsultButton variant="modal" className="btn-outline inline-flex items-center justify-center">
               Book a Consultation
-            </Link>
+            </BookConsultButton>
+            <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center">
+              Scheduling page (/book)
+            </BookConsultButton>
             <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
           </div>
         </div>

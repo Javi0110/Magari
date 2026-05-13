@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import InstagramDmCta from './InstagramDmCta'
+import BookConsultButton from './BookConsultButton'
 
 export default function PageBottomCta({
   headline = "What's next?",
@@ -8,6 +9,8 @@ export default function PageBottomCta({
   primaryTo = '/contact#book',
   showChecklist = true,
 }) {
+  const useCalendlyModal = primaryTo === '/contact#book'
+
   return (
     <section className="py-14 md:py-16 border-t border-greige-light/60 bg-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -17,9 +20,20 @@ export default function PageBottomCta({
             'Most notes get a reply within 24–48 business hours. On Instagram? Same human — usually faster for quick questions.'}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-          <Link to={primaryTo} className="btn-primary inline-flex items-center justify-center gap-2">
-            {primaryLabel}
-          </Link>
+          {useCalendlyModal ? (
+            <BookConsultButton variant="modal" className="btn-primary inline-flex items-center justify-center gap-2">
+              {primaryLabel}
+            </BookConsultButton>
+          ) : (
+            <Link to={primaryTo} className="btn-primary inline-flex items-center justify-center gap-2">
+              {primaryLabel}
+            </Link>
+          )}
+          {useCalendlyModal && (
+            <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center gap-2">
+              Scheduling page (/book)
+            </BookConsultButton>
+          )}
           {showChecklist && (
             <a href="/#lead-magnet" className="btn-outline inline-flex items-center justify-center">
               Download Checklist

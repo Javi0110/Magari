@@ -5,6 +5,7 @@ import { Sparkles, Home, Palette, Users, Hammer, Mail } from 'lucide-react'
 import { supabase } from '../utils/supabase'
 import InstagramDmCta from '../components/InstagramDmCta'
 import PageBottomCta from '../components/PageBottomCta'
+import BookConsultButton from '../components/BookConsultButton'
 
 export default function CasaMagariPage() {
   const [email, setEmail] = useState('')
@@ -60,9 +61,12 @@ export default function CasaMagariPage() {
               Still fundraising + floor-planning — this page is the honest preview.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 flex-wrap mt-8">
-              <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center">
+              <BookConsultButton variant="modal" className="btn-primary inline-flex items-center justify-center">
                 Book a consult
-              </Link>
+              </BookConsultButton>
+              <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center">
+                Scheduling page (/book)
+              </BookConsultButton>
               <Link to="/shop" className="btn-outline inline-flex items-center justify-center">
                 Shop Magari
               </Link>

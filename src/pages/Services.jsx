@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Monitor, Footprints, Palette, Check, ArrowRight } from 'lucide-react'
 import InstagramDmCta from '../components/InstagramDmCta'
 import PageBottomCta from '../components/PageBottomCta'
+import BookConsultButton from '../components/BookConsultButton'
 import { SERVICE_PACKAGES } from '../constants/servicePackages'
 
 const fade = {
@@ -34,10 +35,13 @@ export default function ServicesPage() {
             real life. Choose a package that fits your season — whether you need a quick refresh or a full transformation.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-            <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
+            <BookConsultButton variant="modal" className="btn-primary inline-flex items-center justify-center gap-2">
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </BookConsultButton>
+            <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center gap-2">
+              Scheduling page (/book)
+            </BookConsultButton>
             <a href="/#lead-magnet" className="btn-outline inline-flex items-center justify-center">
               Download Checklist
             </a>
@@ -163,10 +167,15 @@ export default function ServicesPage() {
           <p className="text-neutral-600 mb-8 text-sm md:text-base">
             Tell me what you need and I&apos;ll recommend the best package.
           </p>
-          <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2 px-10 py-3.5">
-            Book a Consultation
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
+            <BookConsultButton variant="modal" className="btn-primary inline-flex items-center justify-center gap-2 px-10 py-3.5">
+              Book a Consultation
+              <ArrowRight className="w-4 h-4" />
+            </BookConsultButton>
+            <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center gap-2 px-10 py-3.5">
+              Scheduling page (/book)
+            </BookConsultButton>
+          </div>
         </div>
       </section>
 

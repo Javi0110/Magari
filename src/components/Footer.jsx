@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Instagram, Mail, MapPin } from 'lucide-react'
 import { useState } from 'react'
+import BookConsultButton from './BookConsultButton'
 
 export default function Footer() {
   const [email, setEmail] = useState('')
@@ -49,8 +50,13 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/contact#book" className="text-neutral-600 hover:text-sage transition-colors">
+                <BookConsultButton variant="modal" className="text-neutral-600 hover:text-sage transition-colors text-left">
                   Book a Consultation
+                </BookConsultButton>
+              </li>
+              <li>
+                <Link to="/book" className="text-neutral-600 hover:text-sage transition-colors">
+                  Scheduling page (/book)
                 </Link>
               </li>
             </ul>

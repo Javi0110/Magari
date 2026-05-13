@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, X } from 'lucide-react'
 import InstagramDmCta from '../components/InstagramDmCta'
 import PageBottomCta from '../components/PageBottomCta'
+import BookConsultButton from '../components/BookConsultButton'
 import { PORTFOLIO_ITEMS, PORTFOLIO_FILTERS } from '../data/portfolioGallery'
 
 export default function PortfolioPage() {
@@ -41,10 +42,13 @@ export default function PortfolioPage() {
             the same.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-            <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
+            <BookConsultButton variant="modal" className="btn-primary inline-flex items-center justify-center gap-2">
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </BookConsultButton>
+            <BookConsultButton variant="page" className="btn-outline inline-flex items-center justify-center gap-2">
+              Scheduling page (/book)
+            </BookConsultButton>
             <a href="/#lead-magnet" className="btn-outline inline-flex items-center justify-center">
               Download Checklist
             </a>
