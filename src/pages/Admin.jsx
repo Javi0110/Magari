@@ -98,7 +98,6 @@ function AdminNotificationsDropdown({ notifications, error, onMarkAsRead, onMark
 }
 
 const ADMIN_EMAIL = 'magaribyelena@gmail.com'
-const ADMIN_PASSWORD = 'isabella!4'
 
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -108,12 +107,21 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   const [showNotifications, setShowNotifications] = useState(false)
-  const [supabaseAuthNote, setSupabaseAuthNote] = useState('')
   const { items: notifications, unreadCount, error: notificationsError, fetchForAdmin, markAsRead, markAllAsRead } = useNotificationsStore()
 
   useEffect(() => {
     if (isLoggedIn) fetchForAdmin()
   }, [isLoggedIn, fetchForAdmin])
+
+  /** Restore admin session after refresh; keep in sync with Supabase auth. */
+  useEffect(() => {
+    if (!supabase) return undefined
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      const em = (session?.user?.email || '').trim().toLowerCase()
+      setIsLoggedIn(Boolean(session && em === ADMIN_EMAIL))
+    })
+    return () => sub.subscription.unsubscribe()
+  }, [])
 
   const handleNotificationClick = (notification) => {
     const payload = notification?.payload || {}
@@ -130,25 +138,41 @@ export default function AdminPage() {
   const handleLogin = async (e) => {
     e.preventDefault()
     setLoginError('')
-    setSupabaseAuthNote('')
     const trimmedEmail = (email || '').trim().toLowerCase()
-    if (trimmedEmail !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
-      setLoginError('Email o contraseña incorrectos.')
+    if (trimmedEmail !== ADMIN_EMAIL) {
+      setLoginError('Este acceso solo está habilitado para el email de administración.')
       return
     }
-    if (supabase) {
-      const { error: authErr } = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
-        password,
-      })
-      if (authErr) {
-        setSupabaseAuthNote(
-          `Consultas / Disponibilidad: sesión Supabase no iniciada (${authErr.message}). Crea en Supabase → Authentication un usuario con email ${ADMIN_EMAIL} y la misma contraseña del panel, o revisa la clave.`
-        )
-      }
-    } else {
-      setSupabaseAuthNote('Supabase no está configurado (variables VITE_SUPABASE_*).')
+    if (!supabase) {
+      setLoginError('Supabase no está configurado. Añade VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en el entorno y vuelve a desplegar.')
+      return
     }
+
+    const { data, error: authErr } = await supabase.auth.signInWithPassword({
+      email: trimmedEmail,
+      password,
+    })
+
+    if (authErr) {
+      const msg = authErr.message || 'Error de autenticación'
+      const lower = msg.toLowerCase()
+      let extra =
+        'La contraseña debe ser la del usuario en Supabase (Authentication → Users → opción de contraseña / reset). El sitio ya no usa una contraseña fija en el código.'
+      if (lower.includes('email not confirmed')) {
+        extra =
+          'En Supabase: Authentication → Providers → Email — desactiva "Confirm email" o abre el enlace de confirmación del usuario.'
+      }
+      setLoginError(`${msg}. ${extra}`)
+      return
+    }
+
+    const sessionEmail = (data?.user?.email || '').trim().toLowerCase()
+    if (sessionEmail !== ADMIN_EMAIL) {
+      await supabase.auth.signOut()
+      setLoginError('Cuenta no autorizada para este panel.')
+      return
+    }
+
     setIsLoggedIn(true)
   }
 
@@ -165,7 +189,7 @@ export default function AdminPage() {
                 Admin Login
               </h1>
               <p className="text-neutral-600 text-sm">
-                Solo personal autorizado
+                Solo personal autorizado. La contraseña es la del usuario en Supabase (Authentication), no una clave distinta del sitio.
               </p>
             </div>
 
@@ -260,7 +284,6 @@ export default function AdminPage() {
                   /* ignore */
                 }
                 setIsLoggedIn(false)
-                setSupabaseAuthNote('')
               }}
               className="btn-outline"
             >
@@ -268,13 +291,6 @@ export default function AdminPage() {
             </button>
           </div>
         </div>
-
-        {/* Navigation Tabs */}
-        {supabaseAuthNote && (
-          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-            {supabaseAuthNote}
-          </div>
-        )}
 
         <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
           {[
