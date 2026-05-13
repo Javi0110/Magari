@@ -34,7 +34,7 @@ export default function AboutPage() {
             Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty.
           </p>
           <p className="font-serif text-2xl md:text-3xl text-neutral-700 italic mb-2">
-            From a dream to your reality 🏡✨
+            From a dream to your reality
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap mt-10">
             <BookConsultButton variant="modal" className="btn-primary">

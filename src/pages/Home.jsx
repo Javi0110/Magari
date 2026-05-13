@@ -68,7 +68,7 @@ export default function HomePage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
               <p className="text-xs uppercase tracking-[0.28em] text-sage-dark mb-4">Magari &amp; Co.</p>
               <h1 className="font-serif text-4xl sm:text-5xl lg:text-[3.25rem] leading-[1.08] text-neutral-800 mb-4 text-balance">
-                From a dream to your reality 🏡✨
+                From a dream to your reality
               </h1>
               <p className="text-lg sm:text-xl text-neutral-700 mb-4 font-medium tracking-wide">
                 Interior Design • Home Staging • Real Estate
