@@ -8,6 +8,9 @@ import {
   Check,
   ArrowRight,
 } from 'lucide-react'
+import InstagramDmCta from '../components/InstagramDmCta'
+import MiniBookingForm from '../components/MiniBookingForm'
+import PageBottomCta from '../components/PageBottomCta'
 
 const packages = [
   {
@@ -69,7 +72,7 @@ export default function ServicesPage() {
             Choose a package that matches where you are today. Every engagement starts with listening, then a
             roadmap you can actually follow.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
             <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
@@ -77,6 +80,7 @@ export default function ServicesPage() {
             <a href="/#lead-magnet" className="btn-outline inline-flex items-center justify-center">
               Download Free Home Prep Checklist
             </a>
+            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
           </div>
         </div>
       </section>
@@ -121,7 +125,11 @@ export default function ServicesPage() {
           ))}
         </div>
 
-        <div className="mt-16 text-center">
+        <div className="mt-16 mb-16">
+          <MiniBookingForm pageLabel="Services" id="quick-book-services" />
+        </div>
+
+        <div className="mt-4 text-center">
           <p className="text-neutral-600 mb-4 max-w-xl mx-auto text-sm md:text-base">
             Not sure which option fits? Book a consultation — we&apos;ll recommend the right entry point.
           </p>
@@ -130,6 +138,11 @@ export default function ServicesPage() {
           </Link>
         </div>
       </section>
+
+      <PageBottomCta
+        headline="Let&apos;s make a plan for your space"
+        body="Book a consultation, grab the free prep checklist, or DM us on Instagram — whichever feels easiest."
+      />
     </div>
   )
 }

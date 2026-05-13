@@ -6,6 +6,8 @@ import { useProductsStore } from '../store/productsStore'
 import { useCartStore } from '../store/cartStore'
 import { useWishlistStore } from '../store/wishlistStore'
 import { supabase } from '../utils/supabase'
+import InstagramDmCta from '../components/InstagramDmCta'
+import PageBottomCta from '../components/PageBottomCta'
 
 export default function ProductDetailPage() {
   const { id } = useParams()
@@ -145,13 +147,19 @@ export default function ProductDetailPage() {
           <p className="text-neutral-600 mb-6">
             The piece you&apos;re looking for may have been moved or is no longer available.
           </p>
-          <button
-            type="button"
-            onClick={() => navigate('/shop')}
-            className="btn-primary"
-          >
-            Back to Shop
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
+            <button
+              type="button"
+              onClick={() => navigate('/shop')}
+              className="btn-primary"
+            >
+              Back to Shop
+            </button>
+            <Link to="/contact#book" className="btn-outline inline-flex items-center justify-center">
+              Book a Consultation
+            </Link>
+            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+          </div>
         </div>
       </div>
     )
@@ -362,6 +370,15 @@ export default function ProductDetailPage() {
                 {isInWishlist(product.id) ? 'Saved' : 'Save to wishlist'}
               </button>
             </div>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <Link
+                to="/contact#book"
+                className="btn-outline text-sm inline-flex items-center justify-center px-4 py-2.5"
+              >
+                Book a design consult
+              </Link>
+              <InstagramDmCta className="btn-outline text-sm inline-flex items-center justify-center px-4 py-2.5" />
+            </div>
           </div>
         </div>
 
@@ -511,6 +528,11 @@ export default function ProductDetailPage() {
           </motion.div>
         </div>
       </div>
+
+      <PageBottomCta
+        headline="Need help choosing?"
+        body="We can suggest pairings for your room or book a styling pass — reach out anytime."
+      />
     </div>
   )
 }

@@ -11,6 +11,8 @@ import { useWishlistStore } from '../store/wishlistStore'
 import { supabase } from '../utils/supabase'
 import { SHOP_MAGARI_CATEGORIES } from '../constants/shopCategories'
 import InlineSelect from '../components/InlineSelect'
+import InstagramDmCta from '../components/InstagramDmCta'
+import PageBottomCta from '../components/PageBottomCta'
 
 /** Default + slider max; previously 500 hid everything above $500 */
 const SHOP_PRICE_FILTER_MAX = 50000
@@ -289,7 +291,7 @@ export default function ShopPage() {
           <p className="text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto mb-5">
             Curated decor and home goods selected to bring warmth, texture, and story into your everyday spaces.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
             <button
               type="button"
               onClick={() => {
@@ -300,6 +302,10 @@ export default function ShopPage() {
             >
               Shop All Products
             </button>
+            <Link to="/contact#book" className="btn-outline inline-flex items-center justify-center">
+              Book design help
+            </Link>
+            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
           </div>
           <p className="mt-4 text-sm text-neutral-600">
             Earn points with <button
@@ -927,6 +933,12 @@ export default function ShopPage() {
             </div>
           </div>
         </div>
+
+        <PageBottomCta
+          headline="Shopping for a bigger project?"
+          body="Pair pieces with a consultation — we can help you layer what you already own with new finds."
+          primaryLabel="Book a Consultation"
+        />
       </div>
 
     </div>

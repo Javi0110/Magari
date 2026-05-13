@@ -5,6 +5,8 @@ import { sampleVendors } from '../data/sampleData'
 import { useCartStore } from '../store/cartStore'
 import { useVendorProductsStore } from '../store/vendorProductsStore'
 import { useState } from 'react'
+import InstagramDmCta from '../components/InstagramDmCta'
+import PageBottomCta from '../components/PageBottomCta'
 
 export default function VendorProfilePage() {
   const { slug } = useParams()
@@ -108,6 +110,16 @@ export default function VendorProfilePage() {
               <p className="text-lg text-stone mb-6 leading-relaxed">
                 {vendor.bio}
               </p>
+
+              <div className="flex flex-wrap gap-3 mb-6">
+                <Link
+                  to="/contact#book"
+                  className="btn-primary text-sm py-2.5 px-4 inline-flex items-center justify-center"
+                >
+                  Book Magari design services
+                </Link>
+                <InstagramDmCta className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center" />
+              </div>
 
               {vendor.story && (
                 <div className="p-6 bg-cream rounded-xl border border-sage-muted/20">
@@ -311,6 +323,11 @@ export default function VendorProfilePage() {
             </>
           )}
         </AnimatePresence>
+
+        <PageBottomCta
+          headline="Shopping for a whole room?"
+          body="We can help you layer marketplace finds with Magari styling — book a consult or DM us photos."
+        />
       </div>
     </div>
   )

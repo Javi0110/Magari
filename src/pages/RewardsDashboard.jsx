@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Gift, ArrowRight, Star, LogOut } from 'lucide-react'
+import InstagramDmCta from '../components/InstagramDmCta'
+import PageBottomCta from '../components/PageBottomCta'
 
 const TIERS = [
   { id: 'dreamer', label: 'Dreamer', min: 0, max: 199 },
@@ -170,6 +172,12 @@ export default function RewardsDashboardPage() {
               {loading ? 'Loading…' : 'View my rewards'}
             </button>
           </form>
+          <div className="flex flex-wrap gap-2 mt-4">
+            <Link to="/contact#book" className="btn-outline text-sm py-2 px-3 inline-flex items-center justify-center">
+              Book services
+            </Link>
+            <InstagramDmCta className="btn-outline text-sm py-2 px-3 inline-flex items-center justify-center" />
+          </div>
           {error && <p className="mt-3 text-xs text-red-500">{error}</p>}
         </section>
 
@@ -365,6 +373,11 @@ export default function RewardsDashboardPage() {
           </>
         )}
       </div>
+
+      <PageBottomCta
+        headline="Need a hand with rewards or an order?"
+        body="We read every message — reach out on the contact form or Instagram."
+      />
     </div>
   )
 }

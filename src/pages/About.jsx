@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
-import { Heart, Target, Users, Sparkles, Baby } from 'lucide-react'
+import { Heart, Target, Users, Sparkles, Baby, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import InstagramDmCta from '../components/InstagramDmCta'
+import PageBottomCta from '../components/PageBottomCta'
 
 export default function AboutPage() {
   return (
@@ -18,6 +20,19 @@ export default function AboutPage() {
           <p className="text-xl text-neutral-500 leading-relaxed">
             From a dream to your reality — creating beautiful, accessible spaces and supporting mom-made businesses.
           </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap mt-10">
+            <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
+              Book a Consultation
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link to="/services" className="btn-outline inline-flex items-center justify-center">
+              View services
+            </Link>
+            <a href="/#lead-magnet" className="btn-outline inline-flex items-center justify-center">
+              Free Home Prep Checklist
+            </a>
+            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+          </div>
         </motion.div>
 
         {/* Founder story */}
@@ -206,15 +221,21 @@ export default function AboutPage() {
           <h2 className="font-serif text-4xl text-neutral-700 mb-6">
             Ready to work together?
           </h2>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
             <Link to="/services" className="btn-primary">
               Book Design Services
             </Link>
             <Link to="/shop" className="btn-outline">
               Shop Collection
             </Link>
+            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
           </div>
         </div>
+
+        <PageBottomCta
+          headline="Still browsing?"
+          body="When you are ready, we are here — book through the contact page or say hello on Instagram."
+        />
       </div>
     </div>
   )

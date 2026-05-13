@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Sparkles, Home, Palette, Users, Hammer, Mail } from 'lucide-react'
 import { supabase } from '../utils/supabase'
+import InstagramDmCta from '../components/InstagramDmCta'
+import PageBottomCta from '../components/PageBottomCta'
 
 export default function CasaMagariPage() {
   const [email, setEmail] = useState('')
@@ -58,6 +60,15 @@ export default function CasaMagariPage() {
               mom-made pieces, every corner styled with intention, and every object tagged so you can
               shop what you see.
             </p>
+            <div className="flex flex-col sm:flex-row gap-3 flex-wrap mt-8">
+              <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center">
+                Book a consult
+              </Link>
+              <Link to="/shop" className="btn-outline inline-flex items-center justify-center">
+                Shop Magari
+              </Link>
+              <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+            </div>
           </div>
 
           <motion.div
@@ -132,7 +143,7 @@ export default function CasaMagariPage() {
             We&apos;re exploring locations, planning layouts, and dreaming up experiences that feel like a retreat
             for both design lovers and tired moms who need a soft place to land.
           </p>
-          <p className="text-neutral600 text-sm md:text-base mb-4">
+          <p className="text-neutral-600 text-sm md:text-base mb-4">
             As we move through each phase—finding the right house, designing each room, selecting makers—you&apos;ll
             get to follow along from the very beginning.
           </p>
@@ -191,6 +202,11 @@ export default function CasaMagariPage() {
           )}
         </section>
       </div>
+
+      <PageBottomCta
+        headline="Dreaming with us?"
+        body="Join the email list above, book time to talk design, or DM us on Instagram with your wish list."
+      />
     </div>
   )
 }

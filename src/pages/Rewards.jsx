@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Gift, Star, Users, ArrowRight } from 'lucide-react'
+import InstagramDmCta from '../components/InstagramDmCta'
+import PageBottomCta from '../components/PageBottomCta'
 
 export default function RewardsPage() {
   const [email, setEmail] = useState('')
@@ -55,13 +57,17 @@ export default function RewardsPage() {
               You were invited — join below to get started.
             </p>
           )}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
             <Link
               to={refCode ? `/rewards/dashboard?ref=${encodeURIComponent(refCode)}` : '/rewards/dashboard'}
               className="btn-primary"
             >
               Join / View my rewards
             </Link>
+            <Link to="/contact#book" className="btn-outline inline-flex items-center justify-center">
+              Book services
+            </Link>
+            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
           </div>
         </section>
 
@@ -135,6 +141,11 @@ export default function RewardsPage() {
           </div>
         </section>
       </div>
+
+      <PageBottomCta
+        headline="Questions about points or perks?"
+        body="Reach out through the contact form or Instagram and we will help you sort it out."
+      />
     </div>
   )
 }

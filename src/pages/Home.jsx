@@ -12,6 +12,7 @@ import {
   ShoppingBag,
 } from 'lucide-react'
 import LeadMagnetForm from '../components/LeadMagnetForm'
+import InstagramDmCta from '../components/InstagramDmCta'
 
 const fadeUp = {
   initial: { opacity: 0, y: 18 },
@@ -53,6 +54,7 @@ export default function HomePage() {
                 >
                   Sell With Magari
                 </Link>
+                <InstagramDmCta className="btn-outline text-center inline-flex items-center justify-center" />
               </div>
               <a
                 href="#lead-magnet"
@@ -322,6 +324,7 @@ export default function HomePage() {
               <Link to="/contact" className="btn-outline inline-flex items-center justify-center gap-2">
                 Contact
               </Link>
+              <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
             </div>
           </motion.div>
         </div>

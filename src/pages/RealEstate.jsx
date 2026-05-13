@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Home, KeyRound, Layers, Phone, ArrowRight, Check } from 'lucide-react'
+import InstagramDmCta from '../components/InstagramDmCta'
+import MiniBookingForm from '../components/MiniBookingForm'
+import PageBottomCta from '../components/PageBottomCta'
 
 export default function RealEstatePage() {
   return (
@@ -30,6 +33,7 @@ export default function RealEstatePage() {
               Sell With Magari
               <ArrowRight className="w-4 h-4" />
             </Link>
+            <InstagramDmCta className="btn-outline inline-flex items-center justify-center w-full sm:w-auto" />
           </div>
         </div>
       </section>
@@ -124,7 +128,7 @@ export default function RealEstatePage() {
                 For sellers, the same fluency means prep that actually photographs, flows for open houses, and reads
                 as cohesive — not last-minute scatter fixes.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
                 <Link to="/contact#book?intent=buy-design" className="btn-primary inline-flex items-center justify-center gap-2">
                   Book a Consultation
                   <ArrowRight className="w-4 h-4" />
@@ -132,10 +136,15 @@ export default function RealEstatePage() {
                 <Link to="/services" className="btn-outline inline-flex items-center justify-center">
                   View design packages
                 </Link>
+                <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
               </div>
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        <MiniBookingForm pageLabel="Real Estate" id="quick-book-real-estate" />
       </section>
 
       <section className="max-w-3xl mx-auto px-4 py-16 text-center">
@@ -147,6 +156,13 @@ export default function RealEstatePage() {
           See before &amp; after transformations →
         </Link>
       </section>
+
+      <PageBottomCta
+        headline="Buying, selling, or both?"
+        body="Schedule a buyer or seller call through the contact form, or message us on Instagram for a quick hello."
+        primaryLabel="Book a real estate consult"
+        primaryTo="/contact#book"
+      />
     </div>
   )
 }

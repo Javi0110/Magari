@@ -11,6 +11,8 @@ import { useNotificationsStore } from '../store/notificationsStore'
 import { useCartStore } from '../store/cartStore'
 import { normalizeMarketplaceProductForCart } from '../utils/fulfillment'
 import { isLikelySupabaseProductId, rowToVendorProduct, vendorProductToDbRow } from '../utils/marketplaceProductDb'
+import InstagramDmCta from '../components/InstagramDmCta'
+import PageBottomCta from '../components/PageBottomCta'
 
 export default function MarketplacePage() {
   const location = useLocation()
@@ -465,7 +467,7 @@ export default function MarketplacePage() {
                   Every piece is made by a mom-owned business and selected by Magari &amp; Co.
                 </p>
                 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6 flex-wrap">
                   <button onClick={scrollToShop} className="btn-primary">
                     <ShoppingBag className="inline-block w-5 h-5 mr-2" />
                     Shop all MOMade
@@ -478,6 +480,12 @@ export default function MarketplacePage() {
                     <LogIn className="inline-block w-5 h-5 mr-2" />
                     Vendor Login
                   </button>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4 flex-wrap">
+                  <Link to="/contact#book" className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center">
+                    Book Magari services
+                  </Link>
+                  <InstagramDmCta className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center" />
                 </div>
               </motion.div>
             </div>
@@ -915,7 +923,19 @@ export default function MarketplacePage() {
               <button onClick={() => setView('apply')} className="btn-primary">
                 Apply Now
               </button>
+              <div className="mt-6 flex flex-wrap gap-3 justify-center">
+                <Link to="/contact#book" className="btn-outline">
+                  Book design with Magari
+                </Link>
+                <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+              </div>
             </div>
+
+            <PageBottomCta
+              headline="Love the marketplace?"
+              body="Shop mom-made pieces, explore Magari design services, or say hi on Instagram."
+              primaryLabel="Book a Consultation"
+            />
           </>
         )}
 

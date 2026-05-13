@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Heart, Store, TrendingUp, Users, DollarSign, CheckCircle2, ArrowRight } from 'lucide-react'
+import InstagramDmCta from '../components/InstagramDmCta'
+import PageBottomCta from '../components/PageBottomCta'
 
 export default function BecomeVendorPage() {
   return (
@@ -36,7 +38,7 @@ export default function BecomeVendorPage() {
               We handle the storefront, marketing, and customer experience so you can stay
               focused on designing, making, and shipping beautiful pieces.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
               <Link
                 to="/momade/become-a-vendor"
                 className="btn-primary inline-flex items-center justify-center"
@@ -50,6 +52,7 @@ export default function BecomeVendorPage() {
               >
                 Explore the marketplace
               </Link>
+              <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
             </div>
           </div>
 
@@ -311,7 +314,7 @@ export default function BecomeVendorPage() {
             helps us understand your business, your products, and whether MOMade Market is
             the right fit for your next chapter.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
             <Link
               to="/momade/become-a-vendor"
               className="btn-primary inline-flex items-center justify-center"
@@ -325,9 +328,15 @@ export default function BecomeVendorPage() {
             >
               Ask a question first
             </Link>
+            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
           </div>
         </section>
       </div>
+
+      <PageBottomCta
+        headline="Curious about Magari services too?"
+        body="We love mom makers — and we also design and stage homes. Book a consult or DM us anytime."
+      />
     </div>
   )
 }

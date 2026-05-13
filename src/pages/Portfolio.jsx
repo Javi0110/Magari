@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
+import InstagramDmCta from '../components/InstagramDmCta'
+import PageBottomCta from '../components/PageBottomCta'
 
 const projects = [
   { title: 'Living room refresh', location: 'Austin, TX', type: 'Staging + styling' },
@@ -51,7 +53,7 @@ export default function PortfolioPage() {
             A quiet preview of the kind of transformation we chase: calmer sightlines, warmer layers, and spaces
             that feel finished — not fussy.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
             <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
               Book a Consultation
               <ArrowRight className="w-4 h-4" />
@@ -59,6 +61,7 @@ export default function PortfolioPage() {
             <a href="/#lead-magnet" className="btn-outline inline-flex items-center justify-center">
               Download Free Home Prep Checklist
             </a>
+            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
           </div>
         </div>
       </section>
@@ -71,7 +74,7 @@ export default function PortfolioPage() {
         </div>
       </section>
 
-      <section className="max-w-3xl mx-auto px-4 pb-20 text-center">
+      <section className="max-w-3xl mx-auto px-4 pb-10 text-center">
         <p className="text-neutral-600 mb-6">
           Want your home featured in our next case study? Mention it when you book — we love documenting thoughtful
           reveals (with your approval, always).
@@ -80,6 +83,11 @@ export default function PortfolioPage() {
           Explore services &amp; packages →
         </Link>
       </section>
+
+      <PageBottomCta
+        headline="Love what you see?"
+        body="Book a consultation to talk scope and timeline, or DM us on Instagram with photos of your space."
+      />
     </div>
   )
 }

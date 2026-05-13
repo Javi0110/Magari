@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
+import { Routes, Route, useLocation, Navigate, Link } from 'react-router-dom'
 import { useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 
@@ -7,6 +7,8 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import Cart from './components/Cart'
 import MobileBookNowBar from './components/MobileBookNowBar'
+import InstagramDmCta from './components/InstagramDmCta'
+import PageBottomCta from './components/PageBottomCta'
 
 // Page Components
 import HomePage from './pages/Home'
@@ -315,18 +317,27 @@ function App() {
 // 404 Page Component
 function NotFoundPage() {
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center py-12">
-      <div className="text-center px-4">
-        <h1 className="font-serif text-6xl md:text-8xl text-neutral-600 mb-4">
-          404
-        </h1>
-        <p className="text-2xl text-neutral-600 mb-8">
-          Page not found
-        </p>
-        <a href="/" className="btn-primary">
-          Back to Home
-        </a>
+    <div className="min-h-screen bg-cream flex flex-col">
+      <div className="flex-1 flex items-center justify-center py-12 px-4">
+        <div className="text-center max-w-lg">
+          <h1 className="font-serif text-6xl md:text-8xl text-neutral-600 mb-4">
+            404
+          </h1>
+          <p className="text-2xl text-neutral-600 mb-8">
+            Page not found
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
+            <Link to="/" className="btn-primary inline-flex items-center justify-center">
+              Back to Home
+            </Link>
+            <Link to="/contact#book" className="btn-outline inline-flex items-center justify-center">
+              Book a Consultation
+            </Link>
+            <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
+          </div>
+        </div>
       </div>
+      <PageBottomCta headline="Let us point you in the right direction" body="Head home, book time with us, or DM on Instagram — we are happy to help." />
     </div>
   )
 }

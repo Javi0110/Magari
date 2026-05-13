@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, Instagram, MapPin, Send } from 'lucide-react'
 import { sendContactFormEmail } from '../utils/emailService'
+import InstagramDmCta from '../components/InstagramDmCta'
+import PageBottomCta from '../components/PageBottomCta'
 
 export default function ContactPage() {
   const [searchParams] = useSearchParams()
@@ -65,6 +67,10 @@ export default function ContactPage() {
         {/* Header */}
         <div className="text-center mb-10 max-w-2xl mx-auto">
           <div className="flex flex-col sm:flex-row flex-wrap gap-2 justify-center mb-8">
+            <Link to="/contact#book" className="btn-primary text-sm py-2.5 px-4 inline-flex items-center justify-center">
+              Book / message form
+            </Link>
+            <InstagramDmCta className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center" />
             <a href="/#lead-magnet" className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center">
               Free checklist (form)
             </a>
@@ -302,6 +308,11 @@ export default function ContactPage() {
             </div>
           </motion.div>
         </div>
+
+        <PageBottomCta
+          headline="Prefer to keep it simple?"
+          body="Use the form above for project details, or tap below for a faster back-and-forth on Instagram."
+        />
       </div>
     </div>
   )
