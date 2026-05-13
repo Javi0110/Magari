@@ -85,7 +85,7 @@ export default function ContactPage() {
               Schedule a Buyer Call
             </Link>
             <Link to="/real-estate#sell" className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center">
-              Sell With Magari
+              Discuss selling (eXp Realty)
             </Link>
           </div>
         </div>

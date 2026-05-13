@@ -21,8 +21,9 @@ export default function Footer() {
           <div>
             <h3 className="font-serif text-2xl text-neutral-700 font-medium mb-3">Magari &amp; Co.</h3>
             <p className="text-neutral-600 text-sm leading-relaxed mb-4">
-              Interior design, home staging, and real estate — with Shop Magari &amp; MOMade as a beautiful bonus when
-              you&apos;re ready to layer in goods.
+              Magari &amp; Co. is an interior design and home staging studio. Shop Magari &amp; MOMade are here when
+              you&apos;re ready to layer in goods. Buying and selling guidance is offered separately by Elena Fadhel,
+              Realtor<sup>®</sup> @ eXp Realty — not by Magari &amp; Co.
             </p>
             <p className="text-xs text-neutral-500">Serving Austin, TX &amp; select remote projects.</p>
           </div>
@@ -120,7 +121,8 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t border-greige-light/70 space-y-3 text-center text-xs text-neutral-500 leading-relaxed max-w-3xl mx-auto">
           <p>
-            Real estate services provided by Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty.
+            Real estate services provided through eXp Realty. Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty.
+            Magari &amp; Co. is not a real estate brokerage.
           </p>
           <p className="text-neutral-400">&copy; {new Date().getFullYear()} Magari &amp; Co. All rights reserved.</p>
         </div>

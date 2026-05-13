@@ -52,7 +52,7 @@ export default function HomePage() {
                   to="/real-estate#sell"
                   className="btn-secondary text-center inline-flex items-center justify-center gap-2"
                 >
-                  Sell With Magari
+                  Discuss selling (eXp Realty)
                 </Link>
                 <InstagramDmCta className="btn-outline text-center inline-flex items-center justify-center" />
               </div>

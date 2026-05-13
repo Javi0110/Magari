@@ -42,9 +42,9 @@ const pageMeta = {
       'Virtual design, staging walkthroughs, listing prep, and full interior design projects with clear starting prices. Book a consultation.',
   },
   '/real-estate': {
-    title: 'Real Estate — Buy & Sell With Magari & Co.',
+    title: 'Real Estate — Realtor® @ eXp Realty | Magari & Co.',
     description:
-      'Buy and sell with design-aware guidance. Schedule a buyer call, explore listing prep, and learn about the Buy + Design Advantage.',
+      'Real estate services provided through eXp Realty with Elena Fadhel, Realtor® @ eXp Realty. Design and staging by Magari & Co. — a separate studio, not a brokerage.',
   },
   '/portfolio': {
     title: 'Portfolio — Before & After | Magari & Co.',
