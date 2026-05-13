@@ -12,15 +12,20 @@ export default function Header() {
   const { openCart, getItemCount } = useCartStore()
   const itemCount = getItemCount()
 
-  const navigation = [
+  /** Core studio pages — single line, no wrap */
+  const primaryNavigation = [
     { name: 'Home', href: '/' },
     { name: 'Services', href: '/services' },
     { name: 'Real Estate', href: '/real-estate' },
     { name: 'Portfolio', href: '/portfolio' },
-    { name: 'Shop', href: '/shop' },
-    { name: 'MOMade Marketplace', href: '/momade', isIcon: true },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
+  ]
+
+  /** E-commerce / marketplace — visually secondary */
+  const secondaryNavigation = [
+    { name: 'Shop Magari', href: '/shop' },
+    { name: 'MOMade Marketplace', href: '/momade', isIcon: true },
   ]
 
   useEffect(() => {
@@ -46,9 +51,9 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-cream/98 backdrop-blur-md border-b border-greige-light/40">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-28 md:h-36">
+        <div className="flex items-center justify-between gap-3 lg:gap-4 h-28 md:h-36 min-h-[7rem] md:min-h-[9rem]">
           {/* Logo - Replace /logo.png with your actual logo file */}
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex shrink-0 items-center">
             <img 
               src="/logo.png" 
               alt="Magari & Co" 
@@ -69,41 +74,61 @@ export default function Header() {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-6 xl:space-x-7">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={
-                  item.isIcon
-                    ? 'flex items-center gap-2 text-stone hover:text-sage transition-colors font-medium tracking-wide'
-                    : 'text-stone hover:text-sage transition-colors font-medium tracking-wide'
-                }
-                aria-label={item.isIcon ? 'MOMade Marketplace' : item.name}
-              >
-                {item.isIcon ? (
-                  <>
-                    <img
-                      src="/momade-logo.png"
-                      alt=""
-                      className="h-11 w-auto object-contain opacity-90"
-                      onError={(e) => {
-                        e.target.style.display = 'none'
-                      }}
-                    />
-                    <span className="hidden xl:inline">MOMade Marketplace</span>
-                    <span className="xl:hidden">MOMade</span>
-                  </>
-                ) : (
-                  item.name
-                )}
-              </Link>
-            ))}
+          {/* Desktop: primary nav (center) + secondary shops (subtle, one row) */}
+          <div className="hidden lg:flex flex-1 min-w-0 items-center justify-center gap-4 xl:gap-6 2xl:gap-8 px-2">
+            <nav
+              aria-label="Main"
+              className="flex items-center gap-x-4 xl:gap-x-6 flex-nowrap whitespace-nowrap overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {primaryNavigation.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className="shrink-0 text-sm xl:text-base text-stone hover:text-sage transition-colors font-medium tracking-wide"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+            <span className="hidden md:inline-block shrink-0 w-px h-5 bg-greige-light" aria-hidden />
+            <nav
+              aria-label="Shop and marketplace"
+              className="flex items-center gap-x-3 xl:gap-x-4 flex-nowrap shrink-0"
+            >
+              {secondaryNavigation.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  title={item.name}
+                  className={
+                    item.isIcon
+                      ? 'flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs xl:text-sm text-neutral-500 hover:text-sage transition-colors font-medium'
+                      : 'shrink-0 whitespace-nowrap text-xs xl:text-sm text-neutral-500 hover:text-sage transition-colors font-medium'
+                  }
+                  aria-label={item.isIcon ? 'MOMade Marketplace' : item.name}
+                >
+                  {item.isIcon ? (
+                    <>
+                      <img
+                        src="/momade-logo.png"
+                        alt=""
+                        className="h-8 w-auto object-contain opacity-80 xl:h-9"
+                        onError={(e) => {
+                          e.target.style.display = 'none'
+                        }}
+                      />
+                      <span>MOMade</span>
+                    </>
+                  ) : (
+                    item.name
+                  )}
+                </Link>
+              ))}
+            </nav>
           </div>
 
           {/* Desktop CTA */}
-          <div className="hidden lg:flex items-center gap-4 xl:gap-5 relative">
+          <div className="hidden lg:flex items-center gap-3 xl:gap-4 shrink-0 relative">
             <BookConsultButton
               variant="modal"
               className="btn-primary btn-sm btn-pill shrink-0 font-semibold shadow-sm"
@@ -163,7 +188,7 @@ export default function Header() {
           </div>
 
           {/* Cart & Mobile Menu */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               onClick={openCart}
               className="relative p-2 text-stone hover:text-sage transition-colors"
@@ -203,32 +228,46 @@ export default function Header() {
             exit={{ opacity: 0, height: 0 }}
             className="lg:hidden border-t border-neutral-200 bg-cream"
           >
-            <div className="px-4 py-4 space-y-3">
+            <div className="px-4 py-4 space-y-1">
               <BookConsultButton
                 variant="modal"
                 onClick={() => setMobileMenuOpen(false)}
-                className="btn-primary btn-block rounded-2xl font-semibold"
+                className="btn-primary btn-block rounded-2xl font-semibold mb-3"
               >
                 Book a Consultation
               </BookConsultButton>
-              {navigation.map((item) => (
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 pt-2 pb-1">Menu</p>
+              {primaryNavigation.map((item) => (
                 <Link
                   key={item.name}
                   to={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2 py-2 text-stone hover:text-sage transition-colors font-medium"
+                  className="block py-2.5 text-stone hover:text-sage transition-colors font-medium"
+                >
+                  {item.name}
+                </Link>
+              ))}
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 pt-4 pb-1 border-t border-greige-light/80 mt-2">
+                Shop &amp; marketplace
+              </p>
+              {secondaryNavigation.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 py-2.5 text-neutral-600 hover:text-sage transition-colors text-sm font-medium"
                 >
                   {item.isIcon ? (
                     <>
-                      <img 
-                        src="/momade-logo.png" 
-                        alt="MOMade Marketplace" 
-                        className="h-12 w-auto"
+                      <img
+                        src="/momade-logo.png"
+                        alt=""
+                        className="h-9 w-auto object-contain opacity-90"
                         onError={(e) => {
                           e.target.style.display = 'none'
                         }}
                       />
-                      <span>MOMade Marketplace</span>
+                      <span>{item.name}</span>
                     </>
                   ) : (
                     item.name
