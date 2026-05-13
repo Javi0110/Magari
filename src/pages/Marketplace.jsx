@@ -795,7 +795,7 @@ export default function MarketplacePage() {
                 {makers.map((vendor, index) => (
                   <Link
                     key={vendor.id}
-                    to={vendor.slug ? `/maker/${vendor.slug}` : '/marketplace'}
+                    to={vendor.slug ? `/maker/${vendor.slug}` : '/momade/shop'}
                     className="block"
                   >
                     <motion.div

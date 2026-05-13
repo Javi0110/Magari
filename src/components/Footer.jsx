@@ -121,10 +121,36 @@ export default function Footer() {
           </div>
         </div>
 
+        <div className="mt-10 pt-6 border-t border-greige-light/60">
+          <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-neutral-600">
+            <Link to="/" className="hover:text-sage transition-colors">
+              Home
+            </Link>
+            <Link to="/services" className="hover:text-sage transition-colors">
+              Services
+            </Link>
+            <Link to="/real-estate" className="hover:text-sage transition-colors">
+              Real Estate
+            </Link>
+            <Link to="/portfolio" className="hover:text-sage transition-colors">
+              Portfolio
+            </Link>
+            <Link to="/shop" className="hover:text-sage transition-colors">
+              Shop
+            </Link>
+            <Link to="/momade" className="hover:text-sage transition-colors">
+              MOMade
+            </Link>
+            <Link to="/contact" className="hover:text-sage transition-colors">
+              Contact
+            </Link>
+          </nav>
+        </div>
+
         <div className="mt-12 pt-8 border-t border-greige-light/70 space-y-3 text-center text-xs text-neutral-500 leading-relaxed max-w-3xl mx-auto">
           <p>
-            Real estate services provided through eXp Realty. Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty. Magari
-            &amp; Co. is not a brokerage.
+            Real estate services provided by Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty. Magari &amp; Co. is not a
+            brokerage.
           </p>
           <p className="text-neutral-400">&copy; {new Date().getFullYear()} Magari &amp; Co. All rights reserved.</p>
         </div>

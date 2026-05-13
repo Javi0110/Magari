@@ -21,6 +21,7 @@ import RealEstatePage from './pages/RealEstate'
 import PortfolioPage from './pages/Portfolio'
 import ContactPage from './pages/Contact'
 import MarketplacePage from './pages/Marketplace'
+import MomadeCommunityPage from './pages/MomadeCommunity'
 import BecomeVendorPage from './pages/BecomeVendor'
 import VendorProfilePage from './pages/VendorProfile'
 import AboutPage from './pages/About'
@@ -85,9 +86,9 @@ const pageMeta = {
       'Ceramics, textiles, gifts, and more — vetted mom-owned brands. Shop filters by maker and category.',
   },
   '/momade': {
-    title: 'MOMade Market — Mom-Made Goods',
+    title: 'MOMade Marketplace — Community & Mom-Made Goods | Magari & Co.',
     description:
-      'Curated marketplace by Magari & Co. Mom-made pieces with clear maker stories. Apply to sell if you fit the brief.',
+      'What MOMade is, featured makers, and how to shop or apply. Marketplace checkout lives at /momade/shop.',
   },
   '/momade-market': {
     title: 'MOMade Market — Curated Marketplace for Mom Makers',
@@ -110,8 +111,9 @@ const pageMeta = {
     description: 'Apply to become a vendor on the MOMade Market, a curated marketplace for mom-made products and creative businesses.'
   },
   '/about': {
-    title: 'About — Magari & Co.',
-    description: 'Learn about Elena and the story behind Magari & Co. — creating accessible design and supporting mom makers.'
+    title: 'About Elena & Magari & Co.',
+    description:
+      'Founder Elena Fadhel: interior design and staging studio, Realtor® @ eXp Realty, mission “From a dream to your reality.” Shop Magari and MOMade when you are ready.',
   },
   '/contact': {
     title: 'Contact & Book — Magari & Co.',
@@ -290,10 +292,10 @@ function App() {
           <Route path="/airbnb-design" element={<Navigate to="/services" replace />} />
           <Route path="/staging-for-realtors" element={<Navigate to="/real-estate" replace />} />
 
-          {/* MOMade market routes */}
-          <Route path="/marketplace" element={<MarketplacePage />} />
-          <Route path="/momade" element={<MarketplacePage />} />
-          <Route path="/momade-market" element={<MarketplacePage />} />
+          {/* MOMade: community landing + marketplace (shop/vendor routes unchanged) */}
+          <Route path="/marketplace" element={<Navigate to="/momade" replace />} />
+          <Route path="/momade-market" element={<Navigate to="/momade" replace />} />
+          <Route path="/momade" element={<MomadeCommunityPage />} />
           <Route path="/momade/shop" element={<MarketplacePage />} />
           <Route path="/momade/become-a-vendor" element={<MarketplacePage />} />
           <Route path="/momade/vendor-login" element={<MarketplacePage />} />

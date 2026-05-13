@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Heart, Target, Users, Sparkles, Baby, ArrowRight } from 'lucide-react'
+import { Heart, Target, Users, Baby, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import InstagramDmCta from '../components/InstagramDmCta'
 import PageBottomCta from '../components/PageBottomCta'
@@ -18,7 +18,9 @@ export default function AboutPage() {
             About Magari & Co.
           </h1>
           <p className="text-xl text-neutral-600 leading-relaxed max-w-2xl mx-auto">
-            Design studio + shop + MOMade — run by Elena out of Austin (and wherever the laptop lands).
+            Elena Fadhel is the founder of Magari &amp; Co. — interior design and home staging — and a Realtor
+            <sup>®</sup> @ eXp Realty for buying and selling. Mission:{' '}
+            <span className="font-serif italic text-neutral-700">&ldquo;From a dream to your reality.&rdquo;</span>
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap mt-10">
             <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
@@ -57,27 +59,27 @@ export default function AboutPage() {
               <h2 className="font-serif text-3xl text-neutral-700">
                 Meet Elena
               </h2>
-              <p className="text-neutral-500">Founder & Creative Director</p>
+              <p className="text-neutral-500">Founder · Interior design background · Realtor® @ eXp Realty</p>
             </div>
           </div>
 
           <div className="prose prose-lg max-w-none text-neutral-600 space-y-4">
             <p>
               I started as an artist — sketching, painting, clay on the table — long before Magari &amp; Co. had a
-              name. I still think in layers: color, texture, light, and the small objects that make a room feel like
-              someone lives there on purpose.
+              name. Interiors became the through-line: color, texture, light, and the small objects that make a room feel
+              lived-in on purpose.
             </p>
 
             <p>
-              Motherhood turned the volume up on everything: less time, louder ideas, zero interest in choosing
-              between family and building something of my own. Magari is the answer to that — art, business, and home
-              under one roof.
+              Motherhood turned the volume up on everything: less time, louder ideas, zero interest in choosing between
+              family and building something of my own. Magari is the answer — art, business, and home under one roof,
+              with packages written in plain English.
             </p>
 
             <p>
-              Today the studio does interiors and staging; the shops layer in goods when clients are ready. MOMade
-              exists because I kept meeting moms building brands between nap schedules — they deserved one curated
-              shelf, not a buried Instagram tab.
+              On the real estate side I hang my license with eXp Realty as Elena Fadhel, Realtor<sup>®</sup> @ eXp
+              Realty — separate from the Magari studio, always labeled. Today the studio does interiors and staging; Shop
+              Magari and MOMade layer in when clients are ready for goods, not before the plan is clear.
             </p>
 
             <p className="font-serif text-xl md:text-2xl text-neutral-700 italic">
@@ -193,14 +195,18 @@ export default function AboutPage() {
         {/* CTA */}
         <div className="text-center mt-16">
           <h2 className="font-serif text-4xl text-neutral-700 mb-6">
-            Ready when you are
+            From a dream to your reality
           </h2>
+          <p className="text-neutral-600 max-w-lg mx-auto mb-8">
+            When you are ready, send photos and your timeline — consult first, shopping later if it fits.
+          </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
-            <Link to="/services" className="btn-primary">
-              Book Design Services
+            <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
+              Book a Consultation
+              <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link to="/shop" className="btn-outline">
-              Shop Collection
+            <Link to="/services" className="btn-outline">
+              View services
             </Link>
             <InstagramDmCta className="btn-outline inline-flex items-center justify-center" />
           </div>

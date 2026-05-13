@@ -17,7 +17,7 @@ export default function Header() {
     { name: 'Real Estate', href: '/real-estate' },
     { name: 'Portfolio', href: '/portfolio' },
     { name: 'Shop', href: '/shop' },
-    { name: 'MOMade', href: '/momade', isIcon: true },
+    { name: 'MOMade Marketplace', href: '/momade', isIcon: true },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
   ]
@@ -91,7 +91,8 @@ export default function Header() {
                         e.target.style.display = 'none'
                       }}
                     />
-                    <span>MOMade</span>
+                    <span className="hidden xl:inline">MOMade Marketplace</span>
+                    <span className="xl:hidden">MOMade</span>
                   </>
                 ) : (
                   item.name
@@ -106,7 +107,7 @@ export default function Header() {
               to="/contact#book"
               className="shrink-0 rounded-full bg-sage px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-95 transition-opacity"
             >
-              Book a Consultation
+              Book Now
             </Link>
             <button
               onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
@@ -207,7 +208,7 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="block w-full text-center rounded-2xl bg-sage text-white font-semibold py-3"
               >
-                Book a Consultation
+                Book Now
               </Link>
               {navigation.map((item) => (
                 <Link
@@ -226,7 +227,7 @@ export default function Header() {
                           e.target.style.display = 'none'
                         }}
                       />
-                      <span>MOMade</span>
+                      <span>MOMade Marketplace</span>
                     </>
                   ) : (
                     item.name

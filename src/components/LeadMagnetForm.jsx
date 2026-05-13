@@ -3,13 +3,11 @@ import { Send, Loader2, Download } from 'lucide-react'
 import { sendLeadMagnetChecklistEmail, isEmailRelayConfigured } from '../utils/emailService'
 
 const SERVICE_OPTIONS = [
-  { value: '', label: 'Main interest (pick one)' },
-  { value: 'interior-design', label: 'Interior design' },
-  { value: 'staging', label: 'Home staging' },
-  { value: 'real-estate-buy', label: 'Buying a home' },
-  { value: 'real-estate-sell', label: 'Selling a home' },
-  { value: 'listing-prep', label: 'Listing prep' },
-  { value: 'not-sure', label: 'Not sure yet' },
+  { value: '', label: 'Interested in (pick one)' },
+  { value: 'interior-design', label: 'Interior Design' },
+  { value: 'staging', label: 'Staging' },
+  { value: 'buying', label: 'Buying' },
+  { value: 'selling', label: 'Selling' },
 ]
 
 export default function LeadMagnetForm({
@@ -126,7 +124,7 @@ export default function LeadMagnetForm({
               />
             </div>
             <div>
-              <label className="form-label">Service interest</label>
+              <label className="form-label">Interested in</label>
               <select
                 className="input-field !rounded-xl"
                 value={form.serviceInterest}

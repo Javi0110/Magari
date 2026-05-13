@@ -271,6 +271,19 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-cream">
+      <div className="bg-sage/15 border-b border-sage-muted/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-center sm:text-left">
+          <p className="text-sm text-neutral-700">
+            Want your home styled like this? Book a consultation.
+          </p>
+          <Link
+            to="/services"
+            className="inline-flex justify-center shrink-0 rounded-full bg-white px-4 py-2 text-sm font-semibold text-sage-dark border border-sage-muted/60 hover:bg-cream transition-colors"
+          >
+            View services
+          </Link>
+        </div>
+      </div>
       {/* Breadcrumb Navigation */}
       <div className="bg-white border-b border-cream-dark/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">

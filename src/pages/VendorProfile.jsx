@@ -31,7 +31,7 @@ export default function VendorProfilePage() {
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="text-center">
           <h1 className="font-serif text-4xl text-sage-dark mb-4">Vendor Not Found</h1>
-          <Link to="/marketplace" className="text-sage hover:underline">
+          <Link to="/momade/shop" className="text-sage hover:underline">
             ← Back to Marketplace
           </Link>
         </div>
@@ -55,7 +55,7 @@ export default function VendorProfilePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <Link 
-          to="/marketplace" 
+          to="/momade/shop" 
           className="inline-flex items-center text-stone hover:text-sage transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
