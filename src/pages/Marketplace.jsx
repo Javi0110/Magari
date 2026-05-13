@@ -462,9 +462,9 @@ export default function MarketplacePage() {
                   MOMade Marketplace
                 </h1>
                 <p className="text-xl md:text-2xl text-stone max-w-3xl mx-auto mb-6">
-                  A curated marketplace of mom-made ceramics, textiles, decor, paper goods and gifts.
+                  Ceramics, textiles, paper goods, gifts — all from mom-owned brands.
                   <br />
-                  Every piece is made by a mom-owned business and selected by Magari &amp; Co.
+                  We curate for quality and story; you shop like a design studio, not a flea scroll.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6 flex-wrap">
@@ -932,8 +932,8 @@ export default function MarketplacePage() {
             </div>
 
             <PageBottomCta
-              headline="Love the marketplace?"
-              body="Shop mom-made pieces, explore Magari design services, or say hi on Instagram."
+              headline="Shopping MOMade + fixing up your house?"
+              body="Design help lives on Magari services pages. Brokerage is separate (eXp Realty). DM for quick links."
               primaryLabel="Book a Consultation"
             />
           </>

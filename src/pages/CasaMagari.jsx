@@ -49,16 +49,15 @@ export default function CasaMagariPage() {
         <section className="grid md:grid-cols-[1.4fr,1fr] gap-10 md:gap-14 items-center">
           <div>
             <h1 className="font-serif text-4xl md:text-5xl text-neutral-800 mb-4">
-              Casa Magari — a future place for slow, beautiful living.
+              Casa Magari — the stay we&apos;re sketching in slow motion.
             </h1>
-            <p className="text-lg text-neutral-600 mb-4">
-              Casa Magari is the long-term dream: a real-life home where design studio, curated shop,
-              and MOMade makers all live under one roof.
+            <p className="text-lg text-neutral-600 mb-3">
+              One physical house: studio work, Magari shop shelves, and MOMade makers in rotation — not three
+              disconnected brands.
             </p>
-            <p className="text-neutral-600">
-              Think: an Airbnb that feels like staying inside a design story. Every room curated with
-              mom-made pieces, every corner styled with intention, and every object tagged so you can
-              shop what you see.
+            <p className="text-neutral-600 text-sm md:text-base">
+              Goal: sleep there like an Airbnb guest, touch the textiles, scan a tag, buy the mug on the way out.
+              Still fundraising + floor-planning — this page is the honest preview.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 flex-wrap mt-8">
               <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center">
@@ -81,12 +80,10 @@ export default function CasaMagariPage() {
               The concept
             </p>
             <p className="text-neutral-700 mb-3 text-sm">
-              Casa Magari isn&apos;t open yet. This is the dreaming, sketching, and gathering phase—the part no one
-              usually gets to see.
+              Not built yet — you&apos;re seeing sketches, budgets, and mood boards in public on purpose.
             </p>
             <p className="text-neutral-700 text-sm">
-              By joining the list now, you&apos;ll be the first to know about the Airbnb launch, design
-              retreats, and early booking windows when we&apos;re ready to open the doors.
+              Email list = first heads-up on stays, open studios, and maker weekends. No spam folder novels.
             </p>
           </motion.div>
         </section>
@@ -204,8 +201,8 @@ export default function CasaMagariPage() {
       </div>
 
       <PageBottomCta
-        headline="Dreaming with us?"
-        body="Join the email list above, book time to talk design, or DM us on Instagram with your wish list."
+        headline="Want updates only when it&apos;s real?"
+        body="Join the email list above, book a consult for your own place today, or DM with the word Casa and we&apos;ll add you manually if forms hate you."
       />
     </div>
   )

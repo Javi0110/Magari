@@ -19,9 +19,9 @@ const packages = [
     tag: 'Remote · fast turnaround',
     icon: Monitor,
     bullets: [
-      'Mood direction + shoppable links',
-      'One revision round',
-      'Perfect for a single room refresh',
+      'Direction board + shoppable links',
+      'One revision pass',
+      'Best for a single room reset',
     ],
   },
   {
@@ -30,9 +30,9 @@ const packages = [
     tag: 'On-site or virtual walkthrough',
     icon: Footprints,
     bullets: [
-      'Room-by-room staging priorities',
-      'Photo-ready punch list',
-      'Vendor-neutral guidance you can act on quickly',
+      'Room-by-room priorities',
+      'Photo-day punch list',
+      'Vendor-neutral — act on it yourself or hire out',
     ],
   },
   {
@@ -41,9 +41,9 @@ const packages = [
     tag: 'Get market-ready',
     icon: Sparkles,
     bullets: [
-      'Coordinated prep plan for sellers',
-      'Styling + flow for showings',
-      'Designed to support a faster, stronger launch',
+      'Seller prep roadmap',
+      'Show-ready styling notes',
+      'Built to support a clean launch week',
     ],
   },
   {
@@ -53,8 +53,8 @@ const packages = [
     icon: Palette,
     bullets: [
       'Concept through install support',
-      'Custom layouts, finishes, and procurement',
-      'Tailored scope for primary homes & select STRs',
+      'Layouts, finishes, sourcing',
+      'Primary homes + select short-term rentals',
     ],
   },
 ]
@@ -66,11 +66,13 @@ export default function ServicesPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 text-center">
           <p className="text-xs uppercase tracking-[0.28em] text-sage-dark mb-4">Magari &amp; Co.</p>
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-neutral-700 mb-6 text-balance">
-            Interior design, staging &amp; listing prep — with clarity from day one.
+            Design, staging, and listing prep — priced where you can start.
           </h1>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed mb-10">
-            Choose a package that matches where you are today. Every engagement starts with listening, then a
-            roadmap you can actually follow.
+          <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed mb-4">
+            Tell us the room or the deadline. We&apos;ll match you to a package or build a short custom scope.
+          </p>
+          <p className="text-sm text-neutral-500 max-w-xl mx-auto mb-10">
+            No jargon decks — you leave with a written plan you can execute or hand to a contractor.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
             <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
@@ -131,17 +133,17 @@ export default function ServicesPage() {
 
         <div className="mt-4 text-center">
           <p className="text-neutral-600 mb-4 max-w-xl mx-auto text-sm md:text-base">
-            Not sure which option fits? Book a consultation — we&apos;ll recommend the right entry point.
+            Between packages? Book a consult — we&apos;ll point you to the right door.
           </p>
           <Link to="/real-estate" className="text-sage-dark font-medium hover:underline">
-            Buying or selling a home? Explore real estate services →
+            Buying or selling → see real estate (eXp Realty) + design together
           </Link>
         </div>
       </section>
 
       <PageBottomCta
-        headline="Let&apos;s make a plan for your space"
-        body="Book a consultation, grab the free prep checklist, or DM us on Instagram — whichever feels easiest."
+        headline="Next step: pick a time"
+        body="Book a consult, grab the free prep checklist, or DM us on Instagram — whatever is fastest for you."
       />
     </div>
   )

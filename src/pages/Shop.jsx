@@ -289,7 +289,7 @@ export default function ShopPage() {
             Shop Magari &amp; Co.
           </h1>
           <p className="text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto mb-5">
-            Curated decor and home goods selected to bring warmth, texture, and story into your everyday spaces.
+            Decor, textiles, and small goods we&apos;d put in a real install — not trend-chasing shelf filler.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
             <button
@@ -935,8 +935,8 @@ export default function ShopPage() {
         </div>
 
         <PageBottomCta
-          headline="Shopping for a bigger project?"
-          body="Pair pieces with a consultation — we can help you layer what you already own with new finds."
+          headline="Stuck pairing pieces?"
+          body="Book a short consult — we can point to sizes, finishes, or a fuller room plan. Or DM a photo; we&apos;ll steer if it&apos;s quick."
           primaryLabel="Book a Consultation"
         />
       </div>

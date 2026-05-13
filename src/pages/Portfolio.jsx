@@ -33,9 +33,7 @@ function BeforeAfterCard({ title, location, type, index }) {
       <p className="mt-3 text-xs text-neutral-500">
         {type} · {location}
       </p>
-      <p className="text-[11px] text-neutral-400 mt-1">
-        Replace placeholders with project photography when available.
-      </p>
+      <p className="text-[11px] text-neutral-400 mt-1">Project photos coming soon — placeholders for now.</p>
     </motion.div>
   )
 }
@@ -50,8 +48,7 @@ export default function PortfolioPage() {
             Before &amp; After
           </h1>
           <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed mb-10">
-            A quiet preview of the kind of transformation we chase: calmer sightlines, warmer layers, and spaces
-            that feel finished — not fussy.
+            Real transformations: calmer layout, better light, layers that read “finished” on camera and in person.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
             <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
@@ -76,8 +73,7 @@ export default function PortfolioPage() {
 
       <section className="max-w-3xl mx-auto px-4 pb-10 text-center">
         <p className="text-neutral-600 mb-6">
-          Want your home featured in our next case study? Mention it when you book — we love documenting thoughtful
-          reveals (with your approval, always).
+          Want your project in a future case study? Say so when you book — we only publish with your OK.
         </p>
         <Link to="/services" className="text-sage-dark font-medium hover:underline">
           Explore services &amp; packages →
@@ -85,8 +81,8 @@ export default function PortfolioPage() {
       </section>
 
       <PageBottomCta
-        headline="Love what you see?"
-        body="Book a consultation to talk scope and timeline, or DM us on Instagram with photos of your space."
+        headline="Like this direction?"
+        body="Send photos + your timeline. We&apos;ll tell you honest next steps — consult, package, or wait until paint dries."
       />
     </div>
   )

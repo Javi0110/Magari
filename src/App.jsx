@@ -34,7 +34,7 @@ const pageMeta = {
   '/': {
     title: 'Magari & Co. — Interior Design, Staging & Real Estate | casamagari.com',
     description:
-      'Book interior design, home staging, and real estate services with Magari & Co. Shop Magari and MOMade Marketplace when you are ready — Austin, TX & beyond.',
+      'Interior design + staging in Austin (and remote). Buying or selling: Elena Fadhel, Realtor® @ eXp Realty — brokerage separate from Magari & Co. Shop + MOMade when you are ready.',
   },
   '/services': {
     title: 'Services & Packages — Magari & Co.',
@@ -52,7 +52,8 @@ const pageMeta = {
   },
   '/shop': {
     title: 'Shop Magari — Magari & Co.',
-    description: 'Browse our collection of handcrafted decor and curated home pieces. Unique, artisan items shipped to USA & PR.'
+    description:
+      'Curated decor and home goods — USA + PR shipping. Earn Magari Rewards points on qualifying purchases.',
   },
   '/design-services': {
     title: 'Design Services — Magari & Co.',
@@ -79,12 +80,14 @@ const pageMeta = {
     description: 'Dedicated home staging services and partnership program for realtors in Austin, TX who want listings that show and sell better.'
   },
   '/marketplace': {
-    title: 'MOMade Marketplace — Supporting Mom Makers',
-    description: 'A curated marketplace celebrating mom-made businesses. Handcrafted with love, sold with purpose.'
+    title: 'MOMade Marketplace — Mom-Made Goods',
+    description:
+      'Ceramics, textiles, gifts, and more — vetted mom-owned brands. Shop filters by maker and category.',
   },
   '/momade': {
-    title: 'MOMade Market — Supporting Mom Makers',
-    description: 'Explore the MOMade Market curated by Magari & Co., featuring products made by mom-owned businesses.'
+    title: 'MOMade Market — Mom-Made Goods',
+    description:
+      'Curated marketplace by Magari & Co. Mom-made pieces with clear maker stories. Apply to sell if you fit the brief.',
   },
   '/momade-market': {
     title: 'MOMade Market — Curated Marketplace for Mom Makers',
@@ -113,7 +116,7 @@ const pageMeta = {
   '/contact': {
     title: 'Contact & Book — Magari & Co.',
     description:
-      'Book a consultation, schedule a buyer or seller call, or download the free home prep checklist. Magari & Co. replies within 24–48 hours.',
+      'Book a consult, ask about a package, or flag a shop issue. Typical reply: 24–48 business hours. Buyer/seller routing includes eXp Realty disclosure on the real estate page.',
   },
   '/admin': {
     title: 'Admin Dashboard — Magari & Co.',
@@ -151,7 +154,7 @@ function App() {
       '@type': 'LocalBusiness',
       name: 'Magari & Co.',
       description:
-        'Magari & Co. offers interior design, home staging, and real estate services in Austin, Texas, plus Shop Magari and the MOMade marketplace.',
+        'Magari & Co. is an Austin-area interior design and home staging studio. Shop Magari and MOMade extend the brand online. Real estate services are offered separately through eXp Realty by Elena Fadhel, Realtor® @ eXp Realty — not by Magari & Co.',
       url: 'https://casamagari.com',
       image: 'https://casamagari.com/og-image.jpg',
       address: {

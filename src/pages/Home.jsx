@@ -30,12 +30,14 @@ export default function HomePage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
               <p className="text-xs uppercase tracking-[0.28em] text-sage-dark mb-4">Magari &amp; Co.</p>
               <h1 className="font-serif text-4xl sm:text-5xl lg:text-[3.25rem] leading-[1.08] text-neutral-800 mb-5 text-balance">
-                Interior design, home staging &amp; real estate — one calm, cohesive team.
+                Design, staging, and help buying or selling — without the runaround.
               </h1>
-              <p className="text-lg text-neutral-600 leading-relaxed max-w-xl mb-8">
-                We help you prepare, polish, and present your home — whether you&apos;re staying, selling, or
-                searching for what&apos;s next. Shop Magari and MOMade are here when you&apos;re ready; services come
-                first.
+              <p className="text-lg text-neutral-600 leading-relaxed max-w-xl mb-3">
+                Staying, listing, or house-hunting: we focus on what moves the needle — layout, prep, photos, and
+                clear next steps.
+              </p>
+              <p className="text-base text-neutral-600 max-w-xl mb-8">
+                Shop Magari and MOMade when you want to layer in pieces. Consults and packages come first.
               </p>
               <div className="flex flex-col sm:flex-row flex-wrap gap-3">
                 <Link to="/contact#book" className="btn-primary text-center inline-flex items-center justify-center gap-2">
@@ -81,7 +83,7 @@ export default function HomePage() {
               />
               <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8 bg-gradient-to-t from-black/45 via-black/10 to-transparent">
                 <p className="text-white/95 font-serif text-xl md:text-2xl leading-snug">
-                  Organic modern warmth — designed for real life.
+                  Warm, modern, lived-in — on purpose.
                 </p>
               </div>
             </motion.div>
@@ -93,34 +95,34 @@ export default function HomePage() {
       <section className="py-16 md:py-20 bg-white border-b border-greige-light/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-12 md:mb-14">
-            <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-3">Services overview</h2>
+            <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-3">What we do</h2>
             <p className="text-neutral-600 leading-relaxed">
-              Start where you need the most clarity — we&apos;ll guide the rest with transparent packages and calm
-              communication.
+              Pick an entry point. You&apos;ll get plain-language scope, posted starting prices on packages, and
+              steady updates — no mystery phases.
             </p>
           </motion.div>
           <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
             {[
               {
                 title: 'Interior design',
-                desc: 'Virtual express, full-service projects, and everything between.',
+                desc: 'Express virtual refresh through full-room projects — scoped to your budget.',
                 href: '/services',
                 icon: Palette,
-                cta: 'View packages',
+                cta: 'See packages',
               },
               {
                 title: 'Home staging',
-                desc: 'Walkthroughs, listing prep, and photo-ready layering.',
+                desc: 'Walkthroughs, punch lists, and layering so photos and open houses read “finished.”',
                 href: '/services#packages',
                 icon: Sofa,
-                cta: 'Explore staging',
+                cta: 'Staging options',
               },
               {
                 title: 'Real estate',
-                desc: 'Buy and sell with a design-aware partner at the table.',
+                desc: 'Buying and selling with Elena, Realtor® @ eXp Realty — plus Magari design in the loop.',
                 href: '/real-estate',
                 icon: Home,
-                cta: 'Buy or sell',
+                cta: 'How it works',
               },
             ].map((item, i) => (
               <motion.div key={item.title} {...fadeUp} transition={{ delay: i * 0.06 }}>
@@ -153,15 +155,17 @@ export default function HomePage() {
       <section className="py-16 md:py-20 bg-cream">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-3">Why Magari is different</h2>
-            <p className="text-neutral-600">Fewer handoffs. More cohesion. A single aesthetic point of view.</p>
+            <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-3">Why people hire us</h2>
+            <p className="text-neutral-600">
+              One visual direction. Fewer “ask your other person” loops between agent, stager, and designer.
+            </p>
           </motion.div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              'Design + staging + real estate fluency in one studio',
-              'Warm minimalism — elevated but never cold',
-              'Packages with starting prices so expectations stay clear',
-              'Shop & marketplace support makers without hijacking your project timeline',
+              'Design, staging, and brokerage questions answered in plain English',
+              'Warm minimal — edited, not sparse',
+              'Published starting prices on packages (no “TBD” games)',
+              'Shop + MOMade stay optional so your project timeline stays sane',
             ].map((text, i) => (
               <motion.div
                 key={text}
@@ -183,7 +187,9 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-12">
             <motion.div {...fadeUp}>
               <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-2">Before / After</h2>
-              <p className="text-neutral-600 max-w-xl">A glimpse of the transformations we document for clients.</p>
+              <p className="text-neutral-600 max-w-xl">
+                Real rooms: calmer layout, better light, layers that photograph. More photography coming soon.
+              </p>
             </motion.div>
             <Link to="/portfolio" className="btn-outline self-start md:self-auto inline-flex items-center gap-2">
               Full portfolio
@@ -209,23 +215,23 @@ export default function HomePage() {
       <section className="py-16 md:py-20 bg-cream">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.h2 {...fadeUp} className="font-serif text-3xl md:text-4xl text-center text-neutral-700 mb-12">
-            Client words
+            What clients say
           </motion.h2>
           <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
             {[
               {
                 quote:
-                  'Elena made our listing feel like a home buyers wanted to stay in — not a sterile showroom. The prep list alone saved us weeks.',
+                  'Our listing felt like a home people wanted to linger in — not a showroom. The prep list alone saved us weeks.',
                 who: 'Seller · Austin',
               },
               {
                 quote:
-                  'Having someone who speaks both design and real estate meant we didn’t waste tours on houses that would never work for our family.',
-                who: 'Buyer couple · Central TX',
+                  'She speaks design and real estate in the same meeting. We stopped burning Saturdays on houses that would never fit us.',
+                who: 'Buyers · Central TX',
               },
               {
                 quote:
-                  'Virtual design express was fast, clear, and actually shoppable. Our living room finally feels finished.',
+                  'Virtual express was fast, specific, and shoppable. The living room finally feels done.',
                 who: 'Remote client · USA',
               },
             ].map((t, i) => (
@@ -249,8 +255,8 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <LeadMagnetForm
             id="lead-magnet"
-            title="Free Home Prep Checklist (Sell Faster & Look Better)"
-            subtitle="Practical steps for photos, walkthroughs, and first impressions — plus a gentle nudge on what to leave to the pros."
+            title="Free home prep checklist"
+            subtitle="A one-page punch list: photos, walk-through flow, quick wins, and what to hand off to a pro."
             source="Homepage — Home Prep Checklist"
           />
         </div>
@@ -264,8 +270,8 @@ export default function HomePage() {
               <p className="text-xs uppercase tracking-[0.22em] text-neutral-500 mb-2">When you&apos;re ready to shop</p>
               <h2 className="font-serif text-3xl text-neutral-700 mb-3">Shop Magari</h2>
               <p className="text-neutral-600 text-sm leading-relaxed mb-6">
-                Curated decor and pieces selected to layer warmth into your space — a complement to our services, not
-                a distraction.
+                Decor and small goods we&apos;d actually use on installs — for when you want the room to feel finished,
+                not busy.
               </p>
               <Link to="/shop" className="btn-outline inline-flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4" />
@@ -289,8 +295,8 @@ export default function HomePage() {
               <p className="text-xs uppercase tracking-[0.22em] text-neutral-500 mb-2">Support mom makers</p>
               <h2 className="font-serif text-3xl text-neutral-700 mb-3">MOMade Marketplace</h2>
               <p className="text-neutral-600 text-sm leading-relaxed mb-6">
-                Discover mom-made ceramics, textiles, and gifts. A joyful extra — your project timeline always comes
-                first.
+                Ceramics, textiles, gifts — mom-made, vetted for quality. Fun add-on; your remodel or listing timeline
+                still leads.
               </p>
               <Link to="/momade" className="btn-outline inline-flex items-center gap-2 lg:flex-row-reverse">
                 Explore MOMade
@@ -312,10 +318,9 @@ export default function HomePage() {
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div {...fadeUp}>
-            <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-4">Ready when you are</h2>
+            <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-4">Tell us what&apos;s on your plate</h2>
             <p className="text-neutral-600 mb-8 max-w-xl mx-auto leading-relaxed">
-              Tell us what you&apos;re dreaming up — or what you&apos;re listing next. We&apos;ll reply with clear next
-              steps.
+              New house, refresh, or listing date on the calendar — we&apos;ll answer with a simple plan and timing.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
               <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">

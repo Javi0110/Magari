@@ -3,7 +3,7 @@ import { Send, Loader2, Download } from 'lucide-react'
 import { sendLeadMagnetChecklistEmail, isEmailRelayConfigured } from '../utils/emailService'
 
 const SERVICE_OPTIONS = [
-  { value: '', label: 'What are you most interested in?' },
+  { value: '', label: 'Main interest (pick one)' },
   { value: 'interior-design', label: 'Interior design' },
   { value: 'staging', label: 'Home staging' },
   { value: 'real-estate-buy', label: 'Buying a home' },
@@ -14,8 +14,8 @@ const SERVICE_OPTIONS = [
 
 export default function LeadMagnetForm({
   id = 'lead-magnet',
-  title = 'Free Home Prep Checklist',
-  subtitle = 'Sell faster & look better — get our curated prep list for photos, walkthroughs, and first impressions.',
+  title = 'Free home prep checklist',
+  subtitle = 'Photos, walk-through flow, quick wins — plus what to leave to a pro. One PDF, no fluff.',
   source = 'Homepage lead magnet',
   compact = false,
 }) {
@@ -71,7 +71,7 @@ export default function LeadMagnetForm({
             </div>
             <h3 className="font-serif text-2xl text-neutral-700 mb-2">You&apos;re in.</h3>
             <p className="text-neutral-600 text-sm md:text-base mb-6">
-              Download your checklist below. We also emailed you a copy of this link — check spam if needed.
+              PDF below. Same link is in your email — peek spam if you don&apos;t see it in a few minutes.
             </p>
             <a
               href="/home-prep-checklist.pdf"

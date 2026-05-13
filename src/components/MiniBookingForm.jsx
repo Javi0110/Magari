@@ -55,11 +55,11 @@ export default function MiniBookingForm({ pageLabel, id = 'quick-book' }) {
   return (
     <section id={id} className="max-w-2xl mx-auto scroll-mt-28">
       <div className="text-center mb-6">
-        <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-2">Request a call or time slot</h2>
+        <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-2">Quick request</h2>
         <p className="text-neutral-600 text-sm md:text-base leading-relaxed">
-          Short note is fine — we&apos;ll follow up by email. Prefer the long form?{' '}
+          A few lines is enough — we reply by email. Full form:{' '}
           <Link to="/contact#book" className="text-sage-dark font-medium hover:underline">
-            Open the full contact form
+            contact page
           </Link>
           .
         </p>

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import InstagramDmCta from './InstagramDmCta'
 
 export default function PageBottomCta({
-  headline = 'Ready for the next step?',
+  headline = "What's next?",
   body = null,
   primaryLabel = 'Book a Consultation',
   primaryTo = '/contact#book',
@@ -14,7 +14,7 @@ export default function PageBottomCta({
         <h2 className="font-serif text-3xl text-neutral-700 mb-3">{headline}</h2>
         <p className="text-neutral-600 mb-8 leading-relaxed">
           {body ??
-            'Tell us what you need — we typically reply within 24–48 business hours. For quick questions, message us on Instagram.'}
+            'Most notes get a reply within 24–48 business hours. On Instagram? Same human — usually faster for quick questions.'}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
           <Link to={primaryTo} className="btn-primary inline-flex items-center justify-center gap-2">

@@ -17,8 +17,8 @@ export default function AboutPage() {
           <h1 className="font-serif text-5xl md:text-6xl text-neutral-600 mb-6">
             About Magari & Co.
           </h1>
-          <p className="text-xl text-neutral-500 leading-relaxed">
-            From a dream to your reality — creating beautiful, accessible spaces and supporting mom-made businesses.
+          <p className="text-xl text-neutral-600 leading-relaxed max-w-2xl mx-auto">
+            Design studio + shop + MOMade — run by Elena out of Austin (and wherever the laptop lands).
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap mt-10">
             <Link to="/contact#book" className="btn-primary inline-flex items-center justify-center gap-2">
@@ -63,59 +63,32 @@ export default function AboutPage() {
 
           <div className="prose prose-lg max-w-none text-neutral-600 space-y-4">
             <p>
-              I&apos;ve always seen the world in layers: color on top of texture, light on top of shadow,
-              stories woven into everyday objects. Long before Magari &amp; Co. existed, I was an artist—
-              sketching, painting, and shaping clay into little altars for daily life.
+              I started as an artist — sketching, painting, clay on the table — long before Magari &amp; Co. had a
+              name. I still think in layers: color, texture, light, and the small objects that make a room feel like
+              someone lives there on purpose.
             </p>
 
             <p>
-              My background as an artist lives at the center of everything I do. I&apos;m obsessed with the way a
-              hand-thrown mug sits in your palm, the way a textile softens a room, the way a simple object can
-              make a space feel like a quiet exhale. Design, for me, has never been about perfection—it&apos;s about
-              emotion, memory, and the stories we hold in our homes.
+              Motherhood turned the volume up on everything: less time, louder ideas, zero interest in choosing
+              between family and building something of my own. Magari is the answer to that — art, business, and home
+              under one roof.
             </p>
 
             <p>
-              Then came motherhood—and with it, a different kind of creativity. Overnight, my days were divided
-              between feedings and nap schedules, but the ideas didn&apos;t slow down. If anything, they got louder.
-              In the middle of the mess and magic of being a mom, I realized I didn&apos;t want to choose between
-              being present with my child and building something of my own.
-            </p>
-
-            <p>
-              Magari &amp; Co. was born from that tension: the desire to create a life where art, motherhood, and
-              entrepreneurship could live together under one roof. What started as small ceramic pieces on my
-              kitchen table has grown into a design studio and curated marketplace that serves clients and
-              customers in Puerto Rico and beyond.
+              Today the studio does interiors and staging; the shops layer in goods when clients are ready. MOMade
+              exists because I kept meeting moms building brands between nap schedules — they deserved one curated
+              shelf, not a buried Instagram tab.
             </p>
 
             <p className="font-serif text-xl md:text-2xl text-neutral-700 italic">
-              “Magari” means “if only” in Italian—whispered wishes, quiet daydreams, the version of your home
-              you imagine when you close your eyes. My work is about turning those “if onlys” into something
-              you can actually walk through, touch, and live inside.
+              “Magari” is Italian for “if only” — the version of your home you picture when you close your eyes. My
+              job is to drag that daydream into real square footage you can live in.
             </p>
 
             <p>
-              As Magari grew, I kept meeting other moms who were also creating—from their dining tables, garages,
-              and borrowed studio corners—trying to build sustainable businesses between school pick-ups and bedtime
-              routines. Their work was beautiful. Their stories were powerful. And yet, it was hard to find them all
-              in one place.
-            </p>
-
-            <p>
-              That&apos;s where <strong>MOMade Market</strong> comes in. It&apos;s the marketplace I wished existed when I
-              was first starting: a curated home for mom-owned brands where the story of the maker matters as much
-              as the product. Every piece in the market is selected through the lens of design and storytelling,
-              so when you shop, you&apos;re not just buying “things”—you&apos;re investing in a mom&apos;s dream, a family,
-              a future.
-            </p>
-
-            <p>
-              Long term, my dream is <strong>Casa Magari</strong>: a physical space that holds all of this under one roof.
-              A studio, a shop, and a gathering place where you can feel the work of mom makers with your own hands;
-              where design clients, makers, and families can come together for workshops, pop-ups, and slow, beautiful
-              moments. Until then, this online home is the first chapter—the place where we start turning “if only”
-              into “this is our life now.”
+              <strong>Casa Magari</strong> is the someday file: a real building where studio, shop, and makers share
+              walls. Until then, this site is chapter one — honest process posts, shoppable rooms, and consults that
+              start on time.
             </p>
           </div>
         </motion.div>
@@ -125,24 +98,24 @@ export default function AboutPage() {
           {[
             {
               icon: <Heart className="w-8 h-8" />,
-              title: 'Handmade First',
-              description: 'We celebrate artisans and makers, prioritizing quality handcrafted pieces over mass production.'
+              title: 'Handmade first',
+              description: 'Small batches, real hands, pieces that age well — not landfill filler.',
             },
             {
               icon: <Baby className="w-8 h-8" />,
-              title: 'Motherhood & Entrepreneurship',
-              description: 'We believe motherhood can be a birthplace for ideas, not the end of your creative dreams.'
+              title: 'Parents who build',
+              description: 'Kids and deadlines coexist here. We plan work like adults and laugh like humans.',
             },
             {
               icon: <Users className="w-8 h-8" />,
-              title: 'Community Driven',
-              description: 'Supporting mom-made businesses and building a community that lifts each other up.'
+              title: 'Lift while we climb',
+              description: 'MOMade spotlights other mom makers — shelf space and storytelling, not gatekeeping.',
             },
             {
               icon: <Target className="w-8 h-8" />,
-              title: 'Art-Led, Story-First',
-              description: 'Every service, product, and partnership is guided by an artistic eye and a human story.'
-            }
+              title: 'Art-led decisions',
+              description: 'Color, proportion, narrative — every install and product edit starts there.',
+            },
           ].map((value, index) => (
             <motion.div
               key={value.title}
@@ -173,16 +146,16 @@ export default function AboutPage() {
           className="card p-8 mb-12"
         >
           <h2 className="font-serif text-3xl text-neutral-700 mb-8 text-center">
-            From kitchen table to Casa Magari (one day)
+            Timeline — kitchen table to Casa Magari
           </h2>
 
           <div className="space-y-6">
             {[
-              { year: 'Before Magari', event: 'Years of making art—on paper, in clay, in sketchbooks—while dreaming of a home for all of it.' },
-              { year: 'Early Magari', event: 'Started creating ceramic pieces at the kitchen table and styling corners of our own home.' },
-              { year: 'Design Studio', event: 'Magari & Co. grows into a design studio, blending artful styling with accessible interiors.' },
-              { year: 'MOMade Market', event: 'The idea for a curated marketplace of mom-made products becomes real—MOMade Market is born.' },
-              { year: 'Casa Magari (someday)', event: 'A physical space where the studio, the market, and the community can gather under one roof.' }
+              { year: 'Before Magari', event: 'Art school habits: sketchbooks, clay tests, late-night “what if” floor plans.' },
+              { year: 'Early Magari', event: 'First mugs sold off the kitchen table; friends asked for room help — staging showed up naturally.' },
+              { year: 'Studio', event: 'Formal packages: consults, listing prep, installs — still one visual voice.' },
+              { year: 'MOMade', event: 'Marketplace launch so mom makers share a cart, not just a hashtag.' },
+              { year: 'Casa (someday)', event: 'Brick space: stay, shop, workshop — still fundraising and floor-planning.' },
             ].map((milestone, index) => (
               <div key={index} className="flex gap-6">
                 <div className="flex-shrink-0 w-20 text-right">
@@ -206,20 +179,21 @@ export default function AboutPage() {
           className="card p-8 text-center bg-gradient-to-br from-sage/10 to-taupe/10"
         >
           <h2 className="font-serif text-3xl text-neutral-700 mb-2">
-            2nd Saturday Market Days — Georgetown Square
+            Georgetown Square — 2nd Saturday
           </h2>
-          <p className="text-neutral-600 mb-4">
-            We pop up on the second Saturday of every month <span className="font-semibold">(except December)</span> at the historic Georgetown Square.
+          <p className="text-neutral-600 mb-3 text-sm md:text-base">
+            We set up most second Saturdays <span className="font-semibold">(not December)</span>. Cash + card; inventory
+            rotates.
           </p>
           <p className="text-neutral-500 text-sm">
-            Tip: Follow us on Instagram for any weather updates or special holiday schedules.
+            Weather or holiday hour changes post first on Instagram — save the handle before you drive in.
           </p>
         </motion.div>
 
         {/* CTA */}
         <div className="text-center mt-16">
           <h2 className="font-serif text-4xl text-neutral-700 mb-6">
-            Ready to work together?
+            Ready when you are
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
             <Link to="/services" className="btn-primary">
@@ -233,8 +207,8 @@ export default function AboutPage() {
         </div>
 
         <PageBottomCta
-          headline="Still browsing?"
-          body="When you are ready, we are here — book through the contact page or say hello on Instagram."
+          headline="Still reading?"
+          body="No pressure — when you have dates or photos, drop them in the contact form or DM. We answer in plain English."
         />
       </div>
     </div>

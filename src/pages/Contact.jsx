@@ -27,7 +27,7 @@ export default function ContactPage() {
         message = message || 'I would like to schedule a buyer call.'
       } else if (intent === 'seller') {
         subject = 'real-estate-selling'
-        message = message || 'I am interested in selling with Magari — please share next steps.'
+        message = message || 'I would like to discuss selling my home. (Real estate through eXp Realty — Elena Fadhel, Realtor.)'
       } else if (intent === 'buy-design') {
         subject = 'real-estate-buy-design'
         message = message || 'I am interested in the Buy + Design Advantage — book a consultation.'
@@ -68,11 +68,11 @@ export default function ContactPage() {
         <div className="text-center mb-10 max-w-2xl mx-auto">
           <div className="flex flex-col sm:flex-row flex-wrap gap-2 justify-center mb-8">
             <Link to="/contact#book" className="btn-primary text-sm py-2.5 px-4 inline-flex items-center justify-center">
-              Book / message form
+              Book / full form
             </Link>
             <InstagramDmCta className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center" />
             <a href="/#lead-magnet" className="btn-outline text-sm py-2.5 px-4 inline-flex items-center justify-center">
-              Free checklist (form)
+              Checklist (email gate)
             </a>
             <a
               href="/home-prep-checklist.pdf"
@@ -92,10 +92,13 @@ export default function ContactPage() {
 
         <div className="text-center mb-16">
           <h1 className="font-serif text-5xl md:text-6xl text-neutral-600 mb-4">
-            Get in Touch
+            Contact
           </h1>
-          <p className="text-xl text-neutral-500 max-w-2xl mx-auto">
-            Have a question? Want to collaborate? We'd love to hear from you.
+          <p className="text-lg text-neutral-500 max-w-2xl mx-auto mb-3">
+            Book a consult, ask about a package, or flag a shop issue — one inbox, clear subject lines.
+          </p>
+          <p className="text-sm text-neutral-500 max-w-xl mx-auto">
+            Average reply: 24–48 business hours. Instagram DMs are fine for quick questions.
           </p>
         </div>
 
@@ -109,7 +112,9 @@ export default function ContactPage() {
               <h2 className="font-serif text-3xl text-neutral-700 mb-2">
                 Send us a message
               </h2>
-              <p className="text-sm text-neutral-500 mb-6">Book a consultation, ask about a package, or say hello.</p>
+              <p className="text-sm text-neutral-500 mb-6">
+                Consults, packages, collaborations, press — say which one in the first line.
+              </p>
 
               {submitted ? (
                 <div className="text-center py-12">
@@ -309,10 +314,10 @@ export default function ContactPage() {
           </motion.div>
         </div>
 
-        <PageBottomCta
-          headline="Prefer to keep it simple?"
-          body="Use the form above for project details, or tap below for a faster back-and-forth on Instagram."
-        />
+      <PageBottomCta
+        headline="Rather keep it light?"
+        body="Short ask on Instagram works. For anything with dates, money, or contracts, the form above keeps us organized."
+      />
       </div>
     </div>
   )
