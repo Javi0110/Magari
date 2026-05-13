@@ -65,3 +65,8 @@ grant execute on function public.get_shop_products_catalog(integer) to anon, aut
 -- (usa el trigger realtor_listings_touch_updated_at definido en este archivo).
 -- Admin → pestaña Listings (misma sesión Supabase que Consultations).
 -- -----------------------------------------------------------------------------
+
+-- -----------------------------------------------------------------------------
+-- Fotos listings (subida desde Admin): supabase/migrations/20260514120000_realtor_listings_storage.sql
+-- Bucket público realtor-listings; subir archivos requiere JWT magaribyelena@gmail.com.
+-- -----------------------------------------------------------------------------

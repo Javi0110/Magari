@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Loader2, RefreshCw, Plus, Trash2, Save, ExternalLink } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Loader2, RefreshCw, Plus, Trash2, Save, ExternalLink, ImageUp, X } from 'lucide-react'
 import { supabase } from '../../utils/supabase'
 import { REALTOR_LISTING_STATUS_OPTIONS } from '../../constants/realtorListings'
 import { normalizeGalleryUrls } from '../../utils/realtorListings'
+import { uploadRealtorListingImage } from '../../utils/realtorListingStorage'
 
 const emptyForm = () => ({
   headline: '',
@@ -13,15 +14,32 @@ const emptyForm = () => ({
   baths: '',
   sqft: '',
   listing_url: '',
-  cover_image_url: '',
-  gallery_text: '',
   status: 'draft',
   sort_order: 0,
 })
 
-function galleryTextFromRow(row) {
-  const arr = normalizeGalleryUrls(row.gallery_urls)
-  return arr.join('\n')
+const numOrNull = (v) => {
+  if (v === '' || v == null) return null
+  const n = Number(v)
+  return Number.isFinite(n) ? n : null
+}
+
+function payloadCore(f) {
+  return {
+    headline: f.headline.trim(),
+    price_display: f.price_display.trim(),
+    address_display: f.address_display.trim(),
+    summary: f.summary.trim(),
+    beds: numOrNull(f.beds),
+    baths: numOrNull(f.baths),
+    sqft: (() => {
+      const s = numOrNull(f.sqft)
+      return s != null ? Math.round(s) : null
+    })(),
+    listing_url: f.listing_url.trim(),
+    status: f.status,
+    sort_order: Number(f.sort_order) || 0,
+  }
 }
 
 export default function ListingsAdminView() {
@@ -31,6 +49,21 @@ export default function ListingsAdminView() {
   const [savingId, setSavingId] = useState(null)
   const [creating, setCreating] = useState(false)
   const [newRow, setNewRow] = useState(emptyForm)
+  const [createCoverFile, setCreateCoverFile] = useState(null)
+  const [createGalleryFiles, setCreateGalleryFiles] = useState([])
+  const [createCoverPreviewUrl, setCreateCoverPreviewUrl] = useState(null)
+  const createCoverInputRef = useRef(null)
+  const createGalleryInputRef = useRef(null)
+
+  useEffect(() => {
+    if (!createCoverFile) {
+      setCreateCoverPreviewUrl(null)
+      return
+    }
+    const u = URL.createObjectURL(createCoverFile)
+    setCreateCoverPreviewUrl(u)
+    return () => URL.revokeObjectURL(u)
+  }, [createCoverFile])
 
   const load = useCallback(async () => {
     if (!supabase) {
@@ -58,55 +91,69 @@ export default function ListingsAdminView() {
     load()
   }, [load])
 
-  const parseGallery = (text) => {
-    const lines = String(text || '')
-      .split(/\n|,/)
-      .map((s) => s.trim())
-      .filter(Boolean)
-    return lines
-  }
-
-  const numOrNull = (v) => {
-    if (v === '' || v == null) return null
-    const n = Number(v)
-    return Number.isFinite(n) ? n : null
-  }
-
-  const payloadFromForm = (f) => ({
-    headline: f.headline.trim(),
-    price_display: f.price_display.trim(),
-    address_display: f.address_display.trim(),
-    summary: f.summary.trim(),
-    beds: numOrNull(f.beds),
-    baths: numOrNull(f.baths),
-    sqft: (() => {
-      const s = numOrNull(f.sqft)
-      return s != null ? Math.round(s) : null
-    })(),
-    listing_url: f.listing_url.trim(),
-    cover_image_url: f.cover_image_url.trim(),
-    gallery_urls: parseGallery(f.gallery_text),
-    status: f.status,
-    sort_order: Number(f.sort_order) || 0,
-  })
-
   const createListing = async (e) => {
     e.preventDefault()
     if (!supabase) return
-    const p = payloadFromForm(newRow)
-    if (!p.headline) {
+    const core = payloadCore(newRow)
+    if (!core.headline) {
       alert('Añade al menos un título (headline).')
       return
     }
     setCreating(true)
-    const { data, error: insErr } = await supabase.from('realtor_listings').insert(p).select('*').single()
-    setCreating(false)
+    const { data, error: insErr } = await supabase
+      .from('realtor_listings')
+      .insert({ ...core, cover_image_url: '', gallery_urls: [] })
+      .select('*')
+      .single()
     if (insErr) {
+      setCreating(false)
       alert(insErr.message || 'Error al crear')
       return
     }
-    setRows((prev) => [data, ...prev])
+    const id = data.id
+    let coverUrl = data.cover_image_url || ''
+    const galleryUrls = normalizeGalleryUrls(data.gallery_urls)
+
+    if (createCoverFile) {
+      const { url, error: upErr } = await uploadRealtorListingImage(supabase, id, createCoverFile, { folder: 'cover' })
+      if (upErr) {
+        setCreating(false)
+        alert(upErr.message || 'Error al subir la portada')
+        setRows((prev) => [data, ...prev])
+        setNewRow(emptyForm())
+        setCreateCoverFile(null)
+        setCreateGalleryFiles([])
+        return
+      }
+      if (url) coverUrl = url
+    }
+    for (const file of createGalleryFiles) {
+      const { url, error: gErr } = await uploadRealtorListingImage(supabase, id, file, { folder: 'gallery' })
+      if (gErr) {
+        alert(gErr.message || 'Error al subir una imagen de galería')
+        break
+      }
+      if (url) galleryUrls.push(url)
+    }
+
+    let finalRow = data
+    if (coverUrl || galleryUrls.length) {
+      const { data: updated, error: upRowErr } = await supabase
+        .from('realtor_listings')
+        .update({ cover_image_url: coverUrl, gallery_urls: galleryUrls })
+        .eq('id', id)
+        .select('*')
+        .single()
+      if (!upRowErr && updated) finalRow = updated
+    }
+
+    setRows((prev) => [finalRow, ...prev])
     setNewRow(emptyForm())
+    setCreateCoverFile(null)
+    setCreateGalleryFiles([])
+    if (createCoverInputRef.current) createCoverInputRef.current.value = ''
+    if (createGalleryInputRef.current) createGalleryInputRef.current.value = ''
+    setCreating(false)
   }
 
   const saveRow = async (id, patch) => {
@@ -148,8 +195,9 @@ export default function ListingsAdminView() {
       <div className="rounded-2xl border border-greige-light bg-white p-6">
         <h2 className="font-serif text-xl text-neutral-800 mb-2">Añadir listing</h2>
         <p className="text-sm text-neutral-600 mb-4">
-          Solo los marcados <strong>Active</strong> aparecen en la página Real Estate. Pega URLs de fotos (portal/MLS o
-          imágenes alojadas donde permita tu licencia).
+          Solo los marcados <strong>Active</strong> aparecen en Real Estate. Sube fotos desde tu ordenador (bucket{' '}
+          <code className="text-xs bg-cream px-1 rounded">realtor-listings</code> — ejecuta la migración de Storage en
+          Supabase).
         </p>
         <form onSubmit={createListing} className="grid gap-4 md:grid-cols-2">
           <label className="md:col-span-2">
@@ -250,23 +298,84 @@ export default function ListingsAdminView() {
               placeholder="https://"
             />
           </label>
-          <label className="md:col-span-2">
-            <span className="text-xs font-medium text-neutral-600">Imagen principal (URL)</span>
-            <input
-              className="input-field mt-1"
-              value={newRow.cover_image_url}
-              onChange={(e) => setNewRow({ ...newRow, cover_image_url: e.target.value })}
-              placeholder="https://…jpg"
-            />
-          </label>
-          <label className="md:col-span-2">
-            <span className="text-xs font-medium text-neutral-600">Galería — una URL por línea (opcional)</span>
-            <textarea
-              className="input-field mt-1 min-h-[64px] font-mono text-xs"
-              value={newRow.gallery_text}
-              onChange={(e) => setNewRow({ ...newRow, gallery_text: e.target.value })}
-            />
-          </label>
+
+          <div className="md:col-span-2 rounded-xl border border-greige-light bg-cream/40 p-4 space-y-4">
+            <p className="text-xs font-semibold text-neutral-700 uppercase tracking-wide">Fotos</p>
+            <div>
+              <span className="text-xs font-medium text-neutral-600 block mb-2">Portada</span>
+              <div className="flex flex-wrap items-center gap-3">
+                {createCoverPreviewUrl && (
+                  <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-greige-light shrink-0">
+                    <img src={createCoverPreviewUrl} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      className="absolute top-1 right-1 p-0.5 rounded bg-black/50 text-white"
+                      onClick={() => {
+                        setCreateCoverFile(null)
+                        if (createCoverInputRef.current) createCoverInputRef.current.value = ''
+                      }}
+                      aria-label="Quitar portada"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+                <label className="btn-outline btn-sm cursor-pointer gap-2">
+                  <ImageUp className="w-4 h-4" />
+                  Elegir imagen
+                  <input
+                    ref={createCoverInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0]
+                      setCreateCoverFile(f || null)
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+            <div>
+              <span className="text-xs font-medium text-neutral-600 block mb-2">Galería (varias)</span>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {createGalleryFiles.map((f, i) => (
+                  <span
+                    key={`${f.name}-${i}`}
+                    className="inline-flex items-center gap-1 text-xs bg-white px-2 py-1 rounded border border-greige-light max-w-[200px] truncate"
+                    title={f.name}
+                  >
+                    {f.name}
+                    <button
+                      type="button"
+                      className="text-neutral-500 hover:text-red-600 shrink-0"
+                      onClick={() => setCreateGalleryFiles((prev) => prev.filter((_, j) => j !== i))}
+                      aria-label="Quitar"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <label className="btn-outline btn-sm cursor-pointer gap-2">
+                <ImageUp className="w-4 h-4" />
+                Añadir fotos
+                <input
+                  ref={createGalleryInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const list = e.target.files ? Array.from(e.target.files) : []
+                    if (list.length) setCreateGalleryFiles((prev) => [...prev, ...list])
+                    e.target.value = ''
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
           <div className="md:col-span-2">
             <button type="submit" disabled={creating} className="btn-primary gap-2">
               {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
@@ -310,10 +419,14 @@ function ListingEditorCard({ row, saving, onSave, onDelete }) {
     sqft: row.sqft != null ? String(row.sqft) : '',
     listing_url: row.listing_url || '',
     cover_image_url: row.cover_image_url || '',
-    gallery_text: galleryTextFromRow(row),
+    gallery_urls: normalizeGalleryUrls(row.gallery_urls),
     status: row.status || 'draft',
     sort_order: row.sort_order ?? 0,
   }))
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const [uploadingGallery, setUploadingGallery] = useState(false)
+  const coverInputRef = useRef(null)
+  const galleryInputRef = useRef(null)
 
   useEffect(() => {
     setForm({
@@ -326,7 +439,7 @@ function ListingEditorCard({ row, saving, onSave, onDelete }) {
       sqft: row.sqft != null ? String(row.sqft) : '',
       listing_url: row.listing_url || '',
       cover_image_url: row.cover_image_url || '',
-      gallery_text: galleryTextFromRow(row),
+      gallery_urls: normalizeGalleryUrls(row.gallery_urls),
       status: row.status || 'draft',
       sort_order: row.sort_order ?? 0,
     })
@@ -334,32 +447,47 @@ function ListingEditorCard({ row, saving, onSave, onDelete }) {
 
   const submit = (e) => {
     e.preventDefault()
-    const lines = String(form.gallery_text || '')
-      .split(/\n|,/)
-      .map((s) => s.trim())
-      .filter(Boolean)
-    const numOrNull = (v) => {
-      if (v === '' || v == null) return null
-      const n = Number(v)
-      return Number.isFinite(n) ? n : null
-    }
     onSave({
-      headline: form.headline.trim(),
-      price_display: form.price_display.trim(),
-      address_display: form.address_display.trim(),
-      summary: form.summary.trim(),
-      beds: numOrNull(form.beds),
-      baths: numOrNull(form.baths),
-      sqft: (() => {
-        const s = numOrNull(form.sqft)
-        return s != null ? Math.round(s) : null
-      })(),
-      listing_url: form.listing_url.trim(),
+      ...payloadCore(form),
       cover_image_url: form.cover_image_url.trim(),
-      gallery_urls: lines,
-      status: form.status,
-      sort_order: Number(form.sort_order) || 0,
+      gallery_urls: form.gallery_urls,
     })
+  }
+
+  const handleCoverFile = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file || !supabase) return
+    setUploadingCover(true)
+    const { url, error: err } = await uploadRealtorListingImage(supabase, row.id, file, { folder: 'cover' })
+    setUploadingCover(false)
+    if (err) {
+      alert(err.message || 'Error al subir portada')
+      return
+    }
+    if (url) setForm((f) => ({ ...f, cover_image_url: url }))
+  }
+
+  const handleGalleryFiles = async (e) => {
+    const files = e.target.files ? Array.from(e.target.files) : []
+    e.target.value = ''
+    if (!files.length || !supabase) return
+    setUploadingGallery(true)
+    const next = [...form.gallery_urls]
+    for (const file of files) {
+      const { url, error: err } = await uploadRealtorListingImage(supabase, row.id, file, { folder: 'gallery' })
+      if (err) {
+        alert(err.message || 'Error al subir una imagen')
+        break
+      }
+      if (url) next.push(url)
+    }
+    setForm((f) => ({ ...f, gallery_urls: next }))
+    setUploadingGallery(false)
+  }
+
+  const removeGalleryUrl = (url) => {
+    setForm((f) => ({ ...f, gallery_urls: f.gallery_urls.filter((u) => u !== url) }))
   }
 
   return (
@@ -433,14 +561,56 @@ function ListingEditorCard({ row, saving, onSave, onDelete }) {
           <span className="text-xs font-medium text-neutral-600">URL listing</span>
           <input className="input-field mt-1" value={form.listing_url} onChange={(e) => setForm({ ...form, listing_url: e.target.value })} />
         </label>
-        <label className="md:col-span-2">
-          <span className="text-xs font-medium text-neutral-600">Imagen portada (URL)</span>
-          <input className="input-field mt-1" value={form.cover_image_url} onChange={(e) => setForm({ ...form, cover_image_url: e.target.value })} />
-        </label>
-        <label className="md:col-span-2">
-          <span className="text-xs font-medium text-neutral-600">Galería (una URL por línea)</span>
-          <textarea className="input-field mt-1 min-h-[56px] font-mono text-xs" value={form.gallery_text} onChange={(e) => setForm({ ...form, gallery_text: e.target.value })} />
-        </label>
+
+        <div className="md:col-span-2 rounded-xl border border-greige-light bg-cream/40 p-4 space-y-4">
+          <p className="text-xs font-semibold text-neutral-700 uppercase tracking-wide">Fotos (subir desde equipo)</p>
+          <div>
+            <span className="text-xs font-medium text-neutral-600 block mb-2">Portada</span>
+            <div className="flex flex-wrap items-center gap-3">
+              {form.cover_image_url && (
+                <div className="relative w-28 h-28 rounded-lg overflow-hidden border border-greige-light">
+                  <img src={form.cover_image_url} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    className="absolute top-1 right-1 p-0.5 rounded bg-black/50 text-white"
+                    onClick={() => setForm((f) => ({ ...f, cover_image_url: '' }))}
+                    aria-label="Quitar portada"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+              <label className={`btn-outline btn-sm gap-2 cursor-pointer ${uploadingCover ? 'opacity-60 pointer-events-none' : ''}`}>
+                {uploadingCover ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageUp className="w-4 h-4" />}
+                Subir portada
+                <input ref={coverInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" className="hidden" onChange={handleCoverFile} />
+              </label>
+            </div>
+          </div>
+          <div>
+            <span className="text-xs font-medium text-neutral-600 block mb-2">Galería</span>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {form.gallery_urls.map((url) => (
+                <div key={url} className="relative w-16 h-16 rounded-lg overflow-hidden border border-greige-light group">
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    className="absolute top-0.5 right-0.5 p-0.5 rounded bg-black/50 text-white"
+                    onClick={() => removeGalleryUrl(url)}
+                    aria-label="Quitar de galería"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <label className={`btn-outline btn-sm gap-2 cursor-pointer ${uploadingGallery ? 'opacity-60 pointer-events-none' : ''}`}>
+              {uploadingGallery ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageUp className="w-4 h-4" />}
+              Añadir fotos
+              <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple className="hidden" onChange={handleGalleryFiles} />
+            </label>
+          </div>
+        </div>
       </div>
       <button type="submit" disabled={saving} className="btn-primary btn-sm gap-2">
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
