@@ -51,7 +51,7 @@ export default function LeadMagnetForm({
       setForm({ name: '', email: '', phone: '', serviceInterest: '' })
       return
     }
-    setError(result.error || 'Could not send right now. Please email hello@magariandco.com.')
+    setError(result.error || 'Could not send right now. Please email magaribyelena@gmail.com.')
     setStatus('error')
   }
 

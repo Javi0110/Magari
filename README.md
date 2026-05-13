@@ -278,7 +278,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 const sendOrderConfirmation = async (order) => {
   await sgMail.send({
     to: order.email,
-    from: 'hello@magariandco.com',
+    from: 'magaribyelena@gmail.com',
     subject: 'Order Confirmation — Magari & Co.',
     html: `<p>Thanks for your order! Order #${order.id}</p>`
   })
@@ -534,7 +534,7 @@ Default marketplace commission is 12%. Change in Admin → Settings page (curren
 
 For questions about this codebase, contact: [your-email@example.com]
 
-For Magari & Co. inquiries: hello@magariandco.com
+For Magari & Co. inquiries: magaribyelena@gmail.com · Instagram @magari.andco
 
 ---
 

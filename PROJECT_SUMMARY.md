@@ -212,7 +212,7 @@ For technical questions about this codebase:
 - All integration points marked with `🔌 INTEGRATION:` in code
 
 For business/content questions:
-- Contact: hello@magariandco.com
+- Contact: magaribyelena@gmail.com · Instagram @magari.andco
 
 ---
 

@@ -115,7 +115,7 @@ vercel                     # Deploy to Vercel
 
 **Need help?** See README.md for detailed guides.
 
-**Questions?** hello@magariandco.com
+**Questions?** magaribyelena@gmail.com
 
 **Built for Magari & Co. with ❤️**
 

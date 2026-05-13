@@ -131,7 +131,7 @@ async function main() {
   y -= 6
   drawLines(
     wrapParagraph(
-      'Magari and Co.  |  casamagari.com  |  hello@magariandco.com',
+      'Magari and Co.  |  casamagari.com  |  magaribyelena@gmail.com  |  @magari.andco',
       maxW,
       font,
       9

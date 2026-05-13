@@ -220,8 +220,8 @@ export default function ConsultationBookingWizard() {
             ) : grouped.length === 0 ? (
               <p className="text-sm text-neutral-600 bg-cream border border-greige-light rounded-xl p-4">
                 No open slots right now. Email{' '}
-                <a href="mailto:hello@magariandco.com" className="text-sage-dark font-medium underline">
-                  hello@magariandco.com
+                <a href="mailto:magaribyelena@gmail.com" className="text-sage-dark font-medium underline">
+                  magaribyelena@gmail.com
                 </a>{' '}
                 and we&apos;ll follow up.
               </p>

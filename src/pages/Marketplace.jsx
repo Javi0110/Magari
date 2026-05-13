@@ -255,7 +255,11 @@ export default function MarketplacePage() {
       localStorage.setItem('magari-current-user', JSON.stringify(user))
       return
     }
-    const isMagariAccount = email.includes('magari') || email === 'magari@magariandco.com'
+    const normalized = (email || '').toLowerCase().trim()
+    const isMagariAccount =
+      normalized === 'magaribyelena@gmail.com' ||
+      normalized === 'magari@magariandco.com' ||
+      email.includes('magari')
     setIsLoggedIn(true)
     setView('dashboard')
     const user = {

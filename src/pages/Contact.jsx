@@ -151,8 +151,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="font-medium text-neutral-800 mb-1">Email</p>
-                    <a href="mailto:hello@magariandco.com" className="text-sage-dark hover:underline">
-                      hello@magariandco.com
+                    <a href="mailto:magaribyelena@gmail.com" className="text-sage-dark hover:underline">
+                      magaribyelena@gmail.com
                     </a>
                   </div>
                 </div>
@@ -163,12 +163,12 @@ export default function ContactPage() {
                   <div>
                     <p className="font-medium text-neutral-800 mb-1">Instagram</p>
                     <a
-                      href="https://instagram.com/magari.andco"
+                      href="https://www.instagram.com/magari.andco/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-earth-dark hover:underline"
                     >
-                      @magariandco
+                      @magari.andco
                     </a>
                   </div>
                 </div>

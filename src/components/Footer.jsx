@@ -95,7 +95,7 @@ export default function Footer() {
             </form>
             <div className="flex space-x-4">
               <a
-                href="https://instagram.com/magari.andco"
+                href="https://www.instagram.com/magari.andco/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-neutral-500 hover:text-sage transition-colors"
@@ -104,7 +104,7 @@ export default function Footer() {
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                href="mailto:hello@magariandco.com"
+                href="mailto:magaribyelena@gmail.com"
                 className="text-neutral-500 hover:text-sage transition-colors"
                 aria-label="Email"
               >

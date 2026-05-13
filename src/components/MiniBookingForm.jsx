@@ -48,7 +48,7 @@ export default function MiniBookingForm({ pageLabel, id = 'quick-book' }) {
       setMessage('')
       return
     }
-    setError(result.error || 'Could not send right now. Try the full contact form or email hello@magariandco.com.')
+    setError(result.error || 'Could not send right now. Try the full contact form or email magaribyelena@gmail.com.')
     setStatus('error')
   }
 

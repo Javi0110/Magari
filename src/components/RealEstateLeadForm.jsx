@@ -55,7 +55,7 @@ export default function RealEstateLeadForm({
       setRole('buyer')
       return
     }
-    setError(result.error || 'Could not send. Try hello@magariandco.com.')
+    setError(result.error || 'Could not send. Try magaribyelena@gmail.com.')
     setStatus('error')
   }
 
