@@ -70,3 +70,8 @@ grant execute on function public.get_shop_products_catalog(integer) to anon, aut
 -- Fotos listings (subida desde Admin): supabase/migrations/20260514120000_realtor_listings_storage.sql
 -- Bucket público realtor-listings; subir archivos requiere JWT magaribyelena@gmail.com.
 -- -----------------------------------------------------------------------------
+
+-- -----------------------------------------------------------------------------
+-- RPC listings activos (web pública): supabase/migrations/20260515120000_get_active_realtor_listings_rpc.sql
+-- Asegura que /real-estate pueda leer listings sin depender solo de RLS directo.
+-- -----------------------------------------------------------------------------

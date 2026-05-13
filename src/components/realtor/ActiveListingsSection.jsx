@@ -1,24 +1,28 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, BedDouble, Bath, Ruler } from 'lucide-react'
+import { ArrowRight, BedDouble, Bath, Ruler, Loader2 } from 'lucide-react'
 import { fetchActiveRealtorListings, normalizeGalleryUrls } from '../../utils/realtorListings'
 
 export default function ActiveListingsSection() {
   const [listings, setListings] = useState([])
   const [loadState, setLoadState] = useState('loading')
+  const [fetchError, setFetchError] = useState(null)
 
   useEffect(() => {
     let cancelled = false
     ;(async () => {
+      setLoadState('loading')
+      setFetchError(null)
       const { data, error } = await fetchActiveRealtorListings()
       if (cancelled) return
       if (error) {
         setListings([])
+        setFetchError(error)
         setLoadState('error')
         return
       }
-      setListings(data)
+      setListings(Array.isArray(data) ? data : [])
       setLoadState('ok')
     })()
     return () => {
@@ -26,10 +30,12 @@ export default function ActiveListingsSection() {
     }
   }, [])
 
-  if (loadState === 'loading' || listings.length === 0) return null
-
   return (
-    <section className="bg-cream border-b border-greige-light/50 py-14 md:py-20" aria-labelledby="active-listings-heading">
+    <section
+      id="active-listings"
+      className="bg-cream border-b border-greige-light/50 py-14 md:py-20 scroll-mt-28"
+      aria-labelledby="active-listings-heading"
+    >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-10 md:mb-12">
           <p className="text-xs uppercase tracking-[0.28em] text-sage-dark mb-3">On the market</p>
@@ -41,11 +47,48 @@ export default function ActiveListingsSection() {
             (MLS / brokerage rules apply).
           </p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {listings.map((L, i) => (
-            <ListingCard key={L.id} listing={L} index={i} />
-          ))}
-        </div>
+
+        {loadState === 'loading' && (
+          <div className="flex flex-col items-center justify-center gap-3 py-12 text-neutral-500">
+            <Loader2 className="w-8 h-8 animate-spin text-sage" aria-hidden />
+            <p className="text-sm">Loading listings…</p>
+          </div>
+        )}
+
+        {loadState === 'error' && (
+          <div className="max-w-xl mx-auto rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-center text-sm text-amber-950">
+            <p className="font-medium mb-1">We couldn&apos;t load listings right now.</p>
+            <p className="text-amber-900/90 text-xs leading-relaxed">
+              {fetchError?.message ? (
+                <span className="font-mono text-[11px] break-all">{fetchError.message}</span>
+              ) : (
+                'Check that Supabase env vars are set and that the database migrations for realtor listings have been run.'
+              )}
+            </p>
+          </div>
+        )}
+
+        {loadState === 'ok' && listings.length === 0 && (
+          <div className="max-w-lg mx-auto text-center rounded-2xl border border-greige-light bg-white/90 px-6 py-10">
+            <p className="font-serif text-lg text-neutral-800 mb-2">No active listings at the moment</p>
+            <p className="text-sm text-neutral-600 leading-relaxed mb-6">
+              There aren&apos;t any properties marked as active for public display. When new homes hit the market,
+              they&apos;ll show up here — or reach out and we&apos;ll match you with what fits.
+            </p>
+            <Link to="/contact#book?intent=buyer" className="btn-primary inline-flex">
+              Talk to Elena about what you&apos;re looking for
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
+
+        {loadState === 'ok' && listings.length > 0 && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            {listings.map((L, i) => (
+              <ListingCard key={L.id} listing={L} index={i} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )
@@ -54,6 +97,10 @@ export default function ActiveListingsSection() {
 function ListingCard({ listing, index }) {
   const extra = normalizeGalleryUrls(listing.gallery_urls).slice(0, 3)
   const hasLink = Boolean(listing.listing_url && listing.listing_url.startsWith('http'))
+  const sqftLabel =
+    listing.sqft != null && listing.sqft !== ''
+      ? Number(listing.sqft).toLocaleString(undefined, { maximumFractionDigits: 0 })
+      : null
 
   return (
     <motion.article
@@ -96,10 +143,10 @@ function ListingCard({ listing, index }) {
               {listing.baths} bath{Number(listing.baths) === 1 ? '' : 's'}
             </span>
           )}
-          {listing.sqft != null && (
+          {sqftLabel != null && !Number.isNaN(Number(listing.sqft)) && (
             <span className="inline-flex items-center gap-1">
               <Ruler className="w-3.5 h-3.5 text-sage" aria-hidden />
-              {listing.sqft.toLocaleString()} sq ft
+              {sqftLabel} sq ft
             </span>
           )}
         </div>

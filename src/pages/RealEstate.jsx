@@ -44,6 +44,9 @@ export default function RealEstatePage() {
               <ArrowRight className="w-4 h-4" />
             </Link>
             <InstagramDmCta className="btn-outline w-full sm:w-auto" />
+            <a href="#active-listings" className="btn-outline w-full sm:w-auto">
+              Active listings
+            </a>
           </div>
         </div>
       </section>
