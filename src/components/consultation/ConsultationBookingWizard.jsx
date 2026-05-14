@@ -82,6 +82,33 @@ export default function ConsultationBookingWizard() {
   }, [step, loadSlots])
 
   const grouped = useMemo(() => groupSlotsByChicagoDay(slots), [slots])
+  const [selectedDayKey, setSelectedDayKey] = useState(null)
+
+  useEffect(() => {
+    if (grouped.length === 0) {
+      setSelectedDayKey(null)
+      return
+    }
+    setSelectedDayKey((prev) => {
+      if (prev && grouped.some((g) => g.dateKey === prev)) return prev
+      return grouped[0].dateKey
+    })
+  }, [grouped])
+
+  const daySlots = useMemo(() => {
+    const g = grouped.find((x) => x.dateKey === selectedDayKey)
+    return g?.slots ?? []
+  }, [grouped, selectedDayKey])
+
+  const selectDay = (key) => {
+    setSelectedDayKey(key)
+    setSelectedSlot((current) => {
+      if (!current) return null
+      const nextDay = grouped.find((g) => g.dateKey === key)
+      if (nextDay?.slots.some((s) => s.id === current.id)) return current
+      return null
+    })
+  }
 
   const canNext1 = !!serviceType
   const canNext2 = !!selectedSlot
@@ -200,12 +227,12 @@ export default function ConsultationBookingWizard() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -8 }}
             transition={{ duration: 0.2 }}
-            className="space-y-4"
+            className="flex flex-col gap-3 min-h-0"
           >
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="text-sm text-sage-dark hover:underline inline-flex items-center gap-1 mb-2"
+              className="text-sm text-sage-dark hover:underline inline-flex items-center gap-1 shrink-0"
             >
               <ChevronLeft className="w-4 h-4" />
               Back
@@ -226,44 +253,66 @@ export default function ConsultationBookingWizard() {
                 and we&apos;ll follow up.
               </p>
             ) : (
-              <div className="space-y-6 max-h-[420px] overflow-y-auto pr-1 -mr-1">
-                {grouped.map(({ dateKey, label, slots: daySlots }) => (
-                  <div key={dateKey}>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">{label}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {daySlots.map((slot) => {
-                        const active = selectedSlot?.id === slot.id
-                        return (
-                          <button
-                            key={slot.id}
-                            type="button"
-                            onClick={() => setSelectedSlot(slot)}
-                            className={`rounded-full px-3.5 py-2 text-sm font-medium border transition-all ${
-                              active
-                                ? 'border-sage bg-sage text-white shadow-sm'
-                                : 'border-greige-light bg-white text-neutral-700 hover:border-sage-muted hover:bg-sage-muted/10'
-                            }`}
-                          >
-                            {new Date(slot.start_time).toLocaleTimeString('en-US', {
-                              timeZone: 'America/Chicago',
-                              hour: 'numeric',
-                              minute: '2-digit',
-                            })}
-                            {' – '}
-                            {new Date(slot.end_time).toLocaleTimeString('en-US', {
-                              timeZone: 'America/Chicago',
-                              hour: 'numeric',
-                              minute: '2-digit',
-                            })}
-                          </button>
-                        )
-                      })}
-                    </div>
+              <>
+                <p className="text-xs text-neutral-500 shrink-0">
+                  Pick a day, then a time. Swipe the date row sideways if there are many days.
+                </p>
+                <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 shrink-0 overscroll-x-contain touch-pan-x">
+                  {grouped.map(({ dateKey, label }) => {
+                    const active = selectedDayKey === dateKey
+                    return (
+                      <button
+                        key={dateKey}
+                        type="button"
+                        onClick={() => selectDay(dateKey)}
+                        className={`shrink-0 rounded-xl px-3 py-2 text-left text-sm font-medium border transition-all max-w-[11rem] ${
+                          active
+                            ? 'border-sage bg-sage text-white shadow-sm'
+                            : 'border-greige-light bg-white text-neutral-700 hover:border-sage-muted hover:bg-sage-muted/10'
+                        }`}
+                      >
+                        <span className="block text-xs font-normal opacity-90 line-clamp-2">{label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="rounded-xl border border-greige-light/80 bg-cream/30 min-h-0 max-h-[min(42dvh,320px)] overflow-y-auto overscroll-y-contain px-3 py-3 -mx-0.5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2 sticky top-0 bg-cream/95 backdrop-blur-sm py-1 -mt-1">
+                    Times this day
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {daySlots.map((slot) => {
+                      const active = selectedSlot?.id === slot.id
+                      return (
+                        <button
+                          key={slot.id}
+                          type="button"
+                          onClick={() => setSelectedSlot(slot)}
+                          className={`rounded-full px-3.5 py-2 text-sm font-medium border transition-all ${
+                            active
+                              ? 'border-sage bg-sage text-white shadow-sm'
+                              : 'border-greige-light bg-white text-neutral-700 hover:border-sage-muted hover:bg-sage-muted/10'
+                          }`}
+                        >
+                          {new Date(slot.start_time).toLocaleTimeString('en-US', {
+                            timeZone: 'America/Chicago',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          })}
+                          {' – '}
+                          {new Date(slot.end_time).toLocaleTimeString('en-US', {
+                            timeZone: 'America/Chicago',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          })}
+                        </button>
+                      )
+                    })}
                   </div>
-                ))}
-              </div>
+                </div>
+              </>
             )}
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 pt-2 mt-auto shrink-0 border-t border-greige-light/70 bg-white/95">
               <button type="button" onClick={() => setStep(1)} className="btn-outline flex-1">
                 Back
               </button>
