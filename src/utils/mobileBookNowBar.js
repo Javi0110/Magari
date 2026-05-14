@@ -1,19 +1,12 @@
 /**
  * Whether the fixed mobile "Book a Consultation" bar should render.
- * Hide where it is redundant (Contact), blocks flows (checkout, cart), or clashes with MOMade vendor UI.
+ * Opt-in only on a few marketing pages so it never blocks shop, rewards, MOMade, product detail, etc.
  */
+const MOBILE_BOOK_BAR_PATHS = new Set(['/', '/services', '/about', '/real-estate', '/casa-magari'])
+
 export function shouldShowMobileBookNowBar(pathname, cartOpen) {
   if (cartOpen) return false
-  const p = pathname || ''
-  if (p.startsWith('/admin')) return false
-  if (p.startsWith('/contact')) return false
-  if (p.startsWith('/checkout')) return false
-  if (
-    p.startsWith('/momade/shop') ||
-    p.startsWith('/momade/vendor-login') ||
-    p.startsWith('/momade/become-a-vendor')
-  ) {
-    return false
-  }
-  return true
+  let p = (pathname || '').replace(/\/+$/, '')
+  if (p === '') p = '/'
+  return MOBILE_BOOK_BAR_PATHS.has(p)
 }
