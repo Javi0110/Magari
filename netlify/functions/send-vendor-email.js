@@ -1,6 +1,6 @@
 /**
- * Netlify Function: email relay para aprobación/rechazo de vendors.
- * Envía el correo vía Resend. Variable de entorno en Netlify: RESEND_API_KEY
+ * Netlify Function: vendor approval / rejection emails via Resend.
+ * Netlify env: RESEND_API_KEY
  */
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
@@ -39,7 +39,7 @@ function buildApprovalHtml({ name, email, accessCode, loginUrl }) {
 }
 
 function buildRejectionHtml({ name, businessName }) {
-  const business = businessName || 'tu negocio'
+  const business = businessName || 'your business'
   return `
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"></head>
@@ -99,10 +99,10 @@ exports.handler = async (event) => {
     if (!accessCode) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing accessCode for approval' }) }
     }
-    subject = '¡Aprobada! Tu cuenta de vendor MOMade está lista'
+    subject = 'Approved — your MOMade vendor account is ready'
     html = buildApprovalHtml({ name: name || 'Vendor', email, accessCode, loginUrl })
   } else if (type === 'rejection') {
-    subject = 'Actualización de tu solicitud MOMade Marketplace'
+    subject = 'Update on your MOMade Marketplace application'
     html = buildRejectionHtml({ name: name || 'Vendor', businessName })
   } else {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid type' }) }

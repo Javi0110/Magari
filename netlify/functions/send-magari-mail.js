@@ -1,6 +1,6 @@
 /**
- * Relay unificado: contacto, vendor application, lead magnet, service request.
- * Resend (plan gratuito). Netlify: RESEND_API_KEY (+ opcional RESEND_FROM_EMAIL).
+ * Unified relay: contact, vendor application, lead magnet, service request, consultation.
+ * Resend. Netlify: RESEND_API_KEY (+ optional RESEND_FROM_EMAIL).
  */
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
@@ -68,17 +68,17 @@ exports.handler = async (event) => {
       if (!email || !message) {
         return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'Missing email or message' }) }
       }
-      const internalHtml = `<p><strong>Contacto web</strong></p>
-<p>De: ${escapeHtml(name)}<br/>Email: ${escapeHtml(email)}<br/>Asunto: ${escapeHtml(subj || '—')}</p>
+      const internalHtml = `<p><strong>Website contact</strong></p>
+<p>From: ${escapeHtml(name)}<br/>Email: ${escapeHtml(email)}<br/>Subject: ${escapeHtml(subj || '—')}</p>
 <p>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>`
-      const r1 = await sendResend(MAGARI_EMAIL, `Contacto: ${subj || 'Nuevo mensaje'}`, internalHtml)
+      const r1 = await sendResend(MAGARI_EMAIL, `Contact: ${subj || 'New message'}`, internalHtml)
       if (!r1.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r1.error }) }
 
-      const replyHtml = `<p>Hola ${escapeHtml(name)},</p>
-<p>Gracias por escribirnos. Hemos recibido tu mensaje y te responderemos lo antes posible (24–48 h hábiles).</p>
-<p><em>Tu mensaje:</em><br/>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>
+      const replyHtml = `<p>Hi ${escapeHtml(name)},</p>
+<p>Thank you for reaching out. We’ve received your message and will reply as soon as we can (typically within 24–48 business hours).</p>
+<p><em>Your message:</em><br/>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>
 <p>— Magari &amp; Co.<br/><a href="mailto:${MAGARI_EMAIL}">${MAGARI_EMAIL}</a></p>`
-      const r2 = await sendResend(email, 'Gracias por contactar a Magari & Co.', replyHtml)
+      const r2 = await sendResend(email, 'Thanks for contacting Magari & Co.', replyHtml)
       if (!r2.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r2.error }) }
       return { statusCode: 200, headers: cors, body: JSON.stringify({ ok: true }) }
     }
@@ -90,22 +90,22 @@ exports.handler = async (event) => {
       }
       const internalHtml = `<p><strong>${escapeHtml(source || 'Lead magnet')}</strong></p>
 <ul>
-<li>Nombre: ${escapeHtml(name)}</li>
+<li>Name: ${escapeHtml(name)}</li>
 <li>Email: ${escapeHtml(email)}</li>
-<li>Teléfono: ${escapeHtml(phone || '—')}</li>
-<li>Interés: ${escapeHtml(serviceInterest || '—')}</li>
+<li>Phone: ${escapeHtml(phone || '—')}</li>
+<li>Interest: ${escapeHtml(serviceInterest || '—')}</li>
 </ul>
 <p>PDF: <a href="${CHECKLIST_PDF_URL}">${CHECKLIST_PDF_URL}</a></p>`
       const r1 = await sendResend(MAGARI_EMAIL, `Home Prep Checklist — ${name}`, internalHtml)
       if (!r1.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r1.error }) }
 
-      const replyHtml = `<p>Hola ${escapeHtml(name)},</p>
-<p>Gracias por solicitar el <strong>Home Prep Checklist</strong>. Descarga el PDF aquí:</p>
+      const replyHtml = `<p>Hi ${escapeHtml(name)},</p>
+<p>Thank you for requesting the <strong>Home Prep Checklist</strong>. Download the PDF here:</p>
 <p><a href="${CHECKLIST_PDF_URL}">${CHECKLIST_PDF_URL}</a></p>
-<p>Si el enlace no abre, responde a este correo y te lo enviamos adjunto.</p>
-<p>Reservar consulta: <a href="https://casamagari.com/contact#book">casamagari.com/contact</a></p>
+<p>If the link doesn’t open, reply to this email and we’ll send it as an attachment.</p>
+<p>Book a consultation: <a href="https://casamagari.com/contact#book">casamagari.com/contact</a></p>
 <p>— Magari &amp; Co.</p>`
-      const r2 = await sendResend(email, 'Tu checklist — Magari & Co.', replyHtml)
+      const r2 = await sendResend(email, 'Your checklist — Magari & Co.', replyHtml)
       if (!r2.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r2.error }) }
       return { statusCode: 200, headers: cors, body: JSON.stringify({ ok: true }) }
     }
@@ -114,29 +114,29 @@ exports.handler = async (event) => {
       const a = body.applicationData || body
       const categoriesList = (a.categories || []).join(', ') || 'N/A'
       const imageCount = a.sampleImages?.length || 0
-      const internalHtml = `<p><strong>Nueva solicitud vendor MOMade</strong></p>
+      const internalHtml = `<p><strong>New MOMade vendor application</strong></p>
 <ul>
-<li>Nombre: ${escapeHtml(a.name)}</li>
-<li>Negocio: ${escapeHtml(a.businessName)}</li>
+<li>Name: ${escapeHtml(a.name)}</li>
+<li>Business: ${escapeHtml(a.businessName)}</li>
 <li>Email: ${escapeHtml(a.email)}</li>
-<li>Tel: ${escapeHtml(a.phone || '—')}</li>
-<li>IG: ${escapeHtml(a.instagram || '—')}</li>
-<li>Categorías: ${escapeHtml(categoriesList)}</li>
+<li>Phone: ${escapeHtml(a.phone || '—')}</li>
+<li>Instagram: ${escapeHtml(a.instagram || '—')}</li>
+<li>Categories: ${escapeHtml(categoriesList)}</li>
 <li>Bio: ${escapeHtml(a.bio || '—')}</li>
-<li>Imágenes muestra: ${imageCount}</li>
-<li>Pago: ${escapeHtml(a.payoutMethod || '—')} / ${escapeHtml(a.payoutEmail || '—')}</li>
+<li>Sample images: ${imageCount}</li>
+<li>Payout: ${escapeHtml(a.payoutMethod || '—')} / ${escapeHtml(a.payoutEmail || '—')}</li>
 </ul>`
       const r1 = await sendResend(
         MAGARI_EMAIL,
-        `Vendor: ${a.businessName || a.name || 'solicitud'}`,
+        `Vendor: ${a.businessName || a.name || 'application'}`,
         internalHtml
       )
       if (!r1.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r1.error }) }
 
-      const replyHtml = `<p>Hola ${escapeHtml(a.name)},</p>
-<p>Hemos recibido tu solicitud para el MOMade Marketplace. Revisaremos tu perfil y te contactamos en 3–5 días hábiles.</p>
+      const replyHtml = `<p>Hi ${escapeHtml(a.name)},</p>
+<p>We’ve received your application for the MOMade Marketplace. We’ll review your profile and get back to you within 3–5 business days.</p>
 <p>— Magari &amp; Co.</p>`
-      const r2 = await sendResend(a.email, 'Solicitud recibida — MOMade / Magari & Co.', replyHtml)
+      const r2 = await sendResend(a.email, 'Application received — MOMade / Magari & Co.', replyHtml)
       if (!r2.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r2.error }) }
       return { statusCode: 200, headers: cors, body: JSON.stringify({ ok: true }) }
     }
@@ -144,18 +144,18 @@ exports.handler = async (event) => {
     if (kind === 'service_request') {
       const s = body.serviceData || body
       const lines = [
-        `Servicio: ${escapeHtml(s.service)}`,
+        `Service: ${escapeHtml(s.service)}`,
         `Ref: ${escapeHtml(s.reference)}`,
-        `Contacto: ${escapeHtml(s.contact?.fullName || s.contact?.name)} / ${escapeHtml(s.contact?.email)}`,
-        `Tel: ${escapeHtml(s.contact?.phone || '—')}`,
-        `Ciudad/ZIP: ${escapeHtml(s.contact?.cityZip || '—')}`,
-        `Subtotal: $${s.subtotal ?? '0'} · Depósito: $${s.deposit ?? '0'}`,
+        `Contact: ${escapeHtml(s.contact?.fullName || s.contact?.name)} / ${escapeHtml(s.contact?.email)}`,
+        `Phone: ${escapeHtml(s.contact?.phone || '—')}`,
+        `City / ZIP: ${escapeHtml(s.contact?.cityZip || '—')}`,
+        `Subtotal: $${s.subtotal ?? '0'} · Deposit: $${s.deposit ?? '0'}`,
       ]
       let intakeBlock = ''
       const rows = s.payload?.intakeSummary
       if (Array.isArray(rows) && rows.length > 0) {
         intakeBlock =
-          '<p><strong>Formulario (detalle)</strong></p><ul style="margin:8px 0;padding-left:18px">' +
+          '<p><strong>Form (details)</strong></p><ul style="margin:8px 0;padding-left:18px">' +
           rows
             .map(
               (row) =>
@@ -164,16 +164,16 @@ exports.handler = async (event) => {
             .join('') +
           '</ul>'
       }
-      const internalHtml = `<p><strong>Solicitud de servicio</strong></p><p>${lines.join('<br/>')}</p>${intakeBlock}`
-      const r1 = await sendResend(MAGARI_EMAIL, `Servicio: ${s.service} — ${s.reference}`, internalHtml)
+      const internalHtml = `<p><strong>Service request</strong></p><p>${lines.join('<br/>')}</p>${intakeBlock}`
+      const r1 = await sendResend(MAGARI_EMAIL, `Service: ${s.service} — ${s.reference}`, internalHtml)
       if (!r1.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r1.error }) }
 
       const em = s.contact?.email
       if (em) {
-        const replyHtml = `<p>Hola ${escapeHtml(s.contact?.fullName || s.contact?.name || 'hola')},</p>
-<p>Hemos recibido tu solicitud <strong>${escapeHtml(s.reference)}</strong>. Te contactamos en 24–48 h.</p>
+        const replyHtml = `<p>Hi ${escapeHtml(s.contact?.fullName || s.contact?.name || 'there')},</p>
+<p>We’ve received your request <strong>${escapeHtml(s.reference)}</strong>. We’ll be in touch within 24–48 hours.</p>
 <p>— Magari &amp; Co.</p>`
-        const r2 = await sendResend(em, `Confirmación — ${s.reference}`, replyHtml)
+        const r2 = await sendResend(em, `Confirmation — ${s.reference}`, replyHtml)
         if (!r2.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r2.error }) }
       }
       return { statusCode: 200, headers: cors, body: JSON.stringify({ ok: true }) }
@@ -184,26 +184,26 @@ exports.handler = async (event) => {
       if (!guestEmail || !serviceLabel || !slotLabel) {
         return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'Missing fields' }) }
       }
-      const internalHtml = `<p><strong>Nueva solicitud de consulta (calendario interno)</strong></p>
+      const internalHtml = `<p><strong>New consultation request</strong></p>
 <ul>
 <li>ID: ${escapeHtml(requestId || '—')}</li>
-<li>Nombre: ${escapeHtml(guestName || '—')}</li>
+<li>Name: ${escapeHtml(guestName || '—')}</li>
 <li>Email: ${escapeHtml(guestEmail)}</li>
-<li>Servicio: ${escapeHtml(serviceLabel)}</li>
-<li>Horario: ${escapeHtml(slotLabel)}</li>
+<li>Service: ${escapeHtml(serviceLabel)}</li>
+<li>Time: ${escapeHtml(slotLabel)}</li>
 </ul>
-<p><a href="https://casamagari.com/admin">Abrir Admin → Consultations</a></p>`
-      const r1 = await sendResend(MAGARI_EMAIL, `Consulta: ${serviceLabel}`, internalHtml)
+<p><a href="https://casamagari.com/admin">Open Admin → Consultations</a></p>`
+      const r1 = await sendResend(MAGARI_EMAIL, `Consultation: ${serviceLabel}`, internalHtml)
       if (!r1.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r1.error }) }
 
-      const guestHtml = `<p>Hola ${escapeHtml(guestName || 'hola')},</p>
-<p>Hemos recibido tu <strong>solicitud de consulta</strong> para <strong>${escapeHtml(serviceLabel)}</strong>.</p>
-<p><strong>Horario solicitado:</strong><br/>${escapeHtml(slotLabel)}</p>
-<p>Te confirmaremos por correo si hay algún ajuste. Si no ves nuestra respuesta en 24–48 h hábiles, escríbenos a <a href="mailto:${MAGARI_EMAIL}">${MAGARI_EMAIL}</a>.</p>
+      const guestHtml = `<p>Hi ${escapeHtml(guestName || 'there')},</p>
+<p>We’ve received your <strong>consultation request</strong> for <strong>${escapeHtml(serviceLabel)}</strong>.</p>
+<p><strong>Requested time:</strong><br/>${escapeHtml(slotLabel)}</p>
+<p>We’ll confirm by email if anything needs to change. If you don’t hear from us within 24–48 business hours, write us at <a href="mailto:${MAGARI_EMAIL}">${MAGARI_EMAIL}</a>.</p>
 <p>— Magari &amp; Co.</p>`
       const r2 = await sendResend(
         guestEmail,
-        'Confirmación — consulta solicitada (Magari & Co.)',
+        'Confirmation — consultation requested (Magari & Co.)',
         guestHtml
       )
       if (!r2.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r2.error }) }

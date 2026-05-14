@@ -1,6 +1,5 @@
-// Supabase Edge Function: envía un email a magaribyelena@gmail.com cuando se inserta
-// una fila en vendor_applications (o en el futuro, orders).
-// Requiere: RESEND_API_KEY en Secrets. Opcional: MAGARI_EMAIL (default magaribyelena@gmail.com)
+// Supabase Edge Function: emails magaribyelena@gmail.com on INSERT into vendor_applications (or future tables).
+// Requires: RESEND_API_KEY in Secrets. Optional: MAGARI_EMAIL (default magaribyelena@gmail.com)
 
 const MAGARI_EMAIL = Deno.env.get('MAGARI_EMAIL') || 'magaribyelena@gmail.com'
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
@@ -25,31 +24,31 @@ function buildVendorApplicationEmail(record: Record<string, unknown>): { subject
   const payoutMethod = (record.payout_method as string) || 'N/A'
   const payoutEmail = (record.payout_email as string) || 'N/A'
   const submittedAt = record.submitted_at as string
-  const dateStr = submittedAt ? new Date(submittedAt).toLocaleString('es-PR') : new Date().toLocaleString('es-PR')
+  const dateStr = submittedAt ? new Date(submittedAt).toLocaleString('en-US') : new Date().toLocaleString('en-US')
 
   const categoriesStr = Array.isArray(categories) ? categories.join(', ') : 'N/A'
   const formData = (record.form_data as Record<string, unknown>) || {}
   const sampleCount = (formData.sampleImageCount as number) ?? 0
 
-  const subject = `Nueva solicitud de vendor: ${businessName}`
+  const subject = `New vendor application: ${businessName}`
   const html = `
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><title>Nueva solicitud vendor</title></head>
+<head><meta charset="utf-8"><title>New vendor application</title></head>
 <body style="font-family: sans-serif; line-height: 1.5; color: #333;">
-  <h2 style="color: #4a7c59;">Nueva solicitud de vendor – MOMade Marketplace</h2>
-  <p><strong>Nombre:</strong> ${escapeHtml(name)}</p>
-  <p><strong>Negocio:</strong> ${escapeHtml(businessName)}</p>
+  <h2 style="color: #4a7c59;">New vendor application — MOMade Marketplace</h2>
+  <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+  <p><strong>Business:</strong> ${escapeHtml(businessName)}</p>
   <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-  ${phone ? `<p><strong>Teléfono:</strong> ${escapeHtml(phone)}</p>` : ''}
+  ${phone ? `<p><strong>Phone:</strong> ${escapeHtml(phone)}</p>` : ''}
   ${instagram ? `<p><strong>Instagram:</strong> ${escapeHtml(instagram)}</p>` : ''}
-  <p><strong>Categorías:</strong> ${escapeHtml(categoriesStr)}</p>
+  <p><strong>Categories:</strong> ${escapeHtml(categoriesStr)}</p>
   <p><strong>Bio:</strong> ${escapeHtml(bio)}</p>
-  <p><strong>Imágenes de muestra:</strong> ${sampleCount}</p>
-  <p><strong>Pago:</strong> ${escapeHtml(payoutMethod)} – ${escapeHtml(payoutEmail)}</p>
-  <p><strong>Fecha:</strong> ${dateStr}</p>
+  <p><strong>Sample images:</strong> ${sampleCount}</p>
+  <p><strong>Payout:</strong> ${escapeHtml(payoutMethod)} – ${escapeHtml(payoutEmail)}</p>
+  <p><strong>Submitted:</strong> ${dateStr}</p>
   <hr style="margin: 1.5em 0;">
-  <p style="font-size: 0.9em; color: #666;">Notificación automática desde Magari. Revisa la solicitud en el Admin → Vendors.</p>
+  <p style="font-size: 0.9em; color: #666;">Automated notification from Magari. Review the application in Admin → Vendors.</p>
 </body>
 </html>
   `.trim()

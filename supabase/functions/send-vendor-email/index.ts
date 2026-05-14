@@ -1,6 +1,6 @@
-// Envía al vendor un email de aprobación (con credenciales) o de rechazo usando Resend.
-// Requiere: RESEND_API_KEY en Supabase Secrets.
-// El frontend llama a esta función cuando el admin aprueba o rechaza una solicitud.
+// Sends vendor approval (with credentials) or rejection email via Resend.
+// Requires: RESEND_API_KEY in Supabase Secrets.
+// Called from the frontend when an admin approves or rejects an application.
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'Magari <onboarding@resend.dev>'
@@ -52,40 +52,40 @@ async function sendResend(to: string, subject: string, html: string): Promise<{ 
 
 function buildApprovalEmail(p: ApprovalPayload): { subject: string; html: string } {
   const loginUrl = p.loginUrl || 'https://casamagari.com/marketplace'
-  const subject = '¡Aprobada! Tu cuenta de vendor MOMade está lista'
+  const subject = 'Approved — your MOMade vendor account is ready'
   const html = `
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"></head>
 <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
-  <h2 style="color: #4a7c59;">¡Felicidades, ${escapeHtml(p.name)}!</h2>
-  <p>Tu solicitud para vender en el MOMade Marketplace de Magari &amp; Co. ha sido aprobada.</p>
-  <p>Ya puedes acceder a tu tienda y comenzar a añadir productos, logo e información.</p>
-  <p><strong>TUS CREDENCIALES DE ACCESO:</strong></p>
+  <h2 style="color: #4a7c59;">Congratulations, ${escapeHtml(p.name)}!</h2>
+  <p>Your application to sell on the MOMade Marketplace by Magari &amp; Co. has been approved.</p>
+  <p>You can now access your shop and start adding products, your logo, and store information.</p>
+  <p><strong>YOUR LOGIN DETAILS:</strong></p>
   <ul>
     <li>Email: ${escapeHtml(p.email)}</li>
-    <li>Código de acceso: <strong>${escapeHtml(p.accessCode)}</strong></li>
-    <li>Enlace: <a href="${escapeHtml(loginUrl)}">${escapeHtml(loginUrl)}</a></li>
+    <li>Access code: <strong>${escapeHtml(p.accessCode)}</strong></li>
+    <li>Link: <a href="${escapeHtml(loginUrl)}">${escapeHtml(loginUrl)}</a></li>
   </ul>
-  <p>Ve a ese enlace, haz clic en "Vendor Login" e introduce tu email y el código de acceso. Guarda este correo en un lugar seguro.</p>
-  <p>Si pierdes tu código, contáctanos en ${MAGARI_EMAIL}.</p>
-  <p>¡Bienvenida al marketplace!</p>
-  <p>— El equipo de Magari &amp; Co.</p>
+  <p>Go to this link, click &quot;Vendor Login&quot;, and enter your email and access code. Please keep this email in a safe place.</p>
+  <p>If you lose your access code, contact us at ${MAGARI_EMAIL}.</p>
+  <p>Welcome to the marketplace!</p>
+  <p>— The Magari &amp; Co. team</p>
 </body></html>`.trim()
   return { subject, html }
 }
 
 function buildRejectionEmail(p: RejectionPayload): { subject: string; html: string } {
-  const subject = 'Actualización de tu solicitud MOMade Marketplace'
-  const business = p.businessName || 'tu negocio'
+  const subject = 'Update on your MOMade Marketplace application'
+  const business = p.businessName || 'your business'
   const html = `
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"></head>
 <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
-  <p>Hola ${escapeHtml(p.name)},</p>
-  <p>Gracias por tu interés en unirte al MOMade Marketplace de Magari &amp; Co.</p>
-  <p>Después de revisar tu solicitud para ${escapeHtml(business)}, en este momento no podemos aprobar tu cuenta. Si tienes preguntas, contáctanos en ${MAGARI_EMAIL}.</p>
-  <p>Te deseamos mucho éxito con tu emprendimiento.</p>
-  <p>— El equipo de Magari &amp; Co.</p>
+  <p>Hi ${escapeHtml(p.name)},</p>
+  <p>Thank you for your interest in joining the MOMade Marketplace by Magari &amp; Co.</p>
+  <p>After reviewing your application for ${escapeHtml(business)}, we are not able to approve your account at this time. If you have questions, contact us at ${MAGARI_EMAIL}.</p>
+  <p>We wish you all the best with your business.</p>
+  <p>— The Magari &amp; Co. team</p>
 </body></html>`.trim()
   return { subject, html }
 }
