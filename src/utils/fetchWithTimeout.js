@@ -6,7 +6,8 @@ const DEFAULT_MS = 25000
 export async function fetchWithTimeout(url, options = {}, timeoutMs = DEFAULT_MS) {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
-  const { signal: userSignal, ...rest } = options
+  const opts = options && typeof options === 'object' ? options : {}
+  const { signal: userSignal, ...rest } = opts
 
   const onUserAbort = () => controller.abort()
   if (userSignal) {
