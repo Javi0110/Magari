@@ -1,12 +1,66 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Loader2, RefreshCw, Filter, ChevronDown, ChevronUp, Save, Phone } from 'lucide-react'
+import {
+  Loader2,
+  RefreshCw,
+  Filter,
+  ChevronDown,
+  ChevronUp,
+  Save,
+  Phone,
+  Pencil,
+  Trash2,
+} from 'lucide-react'
 import { supabase } from '../../utils/supabase'
 import {
   updateConsultationRequest,
+  deleteConsultationRequest,
   formatTimeRange,
 } from '../../utils/consultationBooking'
 import { CONSULTATION_STATUS_OPTIONS, labelForServiceType } from '../../constants/consultationBooking'
+
+function ConsultationNotesEditor({ rowId, notes, saving, onSave }) {
+  const [draft, setDraft] = useState(notes || '')
+  const [locked, setLocked] = useState(false)
+
+  useEffect(() => {
+    setDraft(notes || '')
+  }, [notes])
+
+  const dirty = draft.trim() !== (notes || '').trim()
+
+  return (
+    <div>
+      <label className="form-label text-xs">Notas internas</label>
+      <textarea
+        className={`input-field text-sm min-h-20 ${locked ? 'bg-neutral-50 text-neutral-700' : ''}`}
+        readOnly={locked}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        placeholder="Seguimiento, llamadas, etc."
+      />
+      {locked ? (
+        <button type="button" className="btn-outline btn-sm mt-2 gap-2" onClick={() => setLocked(false)}>
+          <Pencil className="w-4 h-4" />
+          Editar
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="btn-primary btn-sm mt-2 gap-2"
+          disabled={!dirty || saving}
+          onClick={async () => {
+            const ok = await onSave(rowId, draft)
+            if (ok) setLocked(true)
+          }}
+        >
+          <Save className="w-4 h-4" />
+          Guardar notas
+        </button>
+      )}
+    </div>
+  )
+}
 
 export default function ConsultationsAdminView() {
   const [rows, setRows] = useState([])
@@ -16,6 +70,7 @@ export default function ConsultationsAdminView() {
   const [statusFilter, setStatusFilter] = useState('')
   const [expandedId, setExpandedId] = useState(null)
   const [savingId, setSavingId] = useState(null)
+  const [deletingId, setDeletingId] = useState(null)
 
   const load = useCallback(async () => {
     if (!supabase) {
@@ -62,9 +117,33 @@ export default function ConsultationsAdminView() {
     setSavingId(null)
     if (e) {
       alert(e.message || 'Error al guardar')
-      return
+      return false
     }
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...data } : r)))
+    return true
+  }
+
+  const saveNotes = async (id, notes) => {
+    return saveRow(id, { notes })
+  }
+
+  const deleteRow = async (id) => {
+    if (
+      !window.confirm(
+        '¿Eliminar esta solicitud de consulta? Esta acción no se puede deshacer. El horario volverá a quedar disponible en el calendario.'
+      )
+    ) {
+      return
+    }
+    setDeletingId(id)
+    const { error: e } = await deleteConsultationRequest(id)
+    setDeletingId(null)
+    if (e) {
+      alert(e.message || 'Error al eliminar')
+      return
+    }
+    setRows((prev) => prev.filter((row) => row.id !== id))
+    if (expandedId === id) setExpandedId(null)
   }
 
   if (loading) {
@@ -155,53 +234,45 @@ export default function ConsultationsAdminView() {
                       )}
                       <p className="text-xs text-neutral-400">ID: {r.id}</p>
                     </div>
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="form-label text-xs">Estado</label>
-                        <select
-                          className="input-field text-sm py-2"
-                          value={r.status}
-                          onChange={(e) => saveRow(r.id, { status: e.target.value })}
-                          disabled={savingId === r.id}
-                        >
-                          {CONSULTATION_STATUS_OPTIONS.map((o) => (
-                            <option key={o.value} value={o.value}>
-                              {o.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="form-label text-xs">Último contacto</label>
-                        <button
-                          type="button"
-                          className="btn-outline btn-sm w-full"
-                          disabled={savingId === r.id}
-                          onClick={() => saveRow(r.id, { last_contacted_at: new Date().toISOString(), status: 'contacted' })}
-                        >
-                          Marcar contactado ahora
-                        </button>
-                      </div>
+                    <div className="max-w-md">
+                      <label className="form-label text-xs">Estado</label>
+                      <select
+                        className="input-field text-sm py-2"
+                        value={r.status}
+                        onChange={(e) => saveRow(r.id, { status: e.target.value })}
+                        disabled={savingId === r.id || deletingId === r.id}
+                      >
+                        {CONSULTATION_STATUS_OPTIONS.map((o) => (
+                          <option key={o.value} value={o.value}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                    <div>
-                      <label className="form-label text-xs">Notas internas</label>
-                      <textarea
-                        className="input-field text-sm min-h-20"
-                        defaultValue={r.notes || ''}
-                        id={`notes-${r.id}`}
-                        placeholder="Seguimiento, llamadas, etc."
-                      />
+                    <ConsultationNotesEditor
+                      rowId={r.id}
+                      notes={r.notes}
+                      saving={savingId === r.id}
+                      onSave={saveNotes}
+                    />
+                    <div className="pt-2 border-t border-greige-light/80">
                       <button
                         type="button"
-                        className="btn-primary btn-sm mt-2 gap-2"
-                        disabled={savingId === r.id}
-                        onClick={() => {
-                          const el = document.getElementById(`notes-${r.id}`)
-                          saveRow(r.id, { notes: el?.value || '' })
-                        }}
+                        className="btn-outline btn-sm gap-2 text-red-700 border-red-200 hover:bg-red-50"
+                        disabled={savingId === r.id || deletingId === r.id}
+                        onClick={() => deleteRow(r.id)}
                       >
-                        <Save className="w-4 h-4" />
-                        Guardar notas
+                        {deletingId === r.id ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Eliminando…
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="w-4 h-4" />
+                            Eliminar solicitud
+                          </>
+                        )}
                       </button>
                     </div>
                   </motion.div>

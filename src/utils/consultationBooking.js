@@ -61,6 +61,11 @@ export async function updateConsultationRequest(id, patch) {
   return supabase.from('consultation_requests').update(patch).eq('id', id).select().single()
 }
 
+export async function deleteConsultationRequest(id) {
+  if (!supabase) return { data: null, error: new Error('Supabase not configured') }
+  return supabase.from('consultation_requests').delete().eq('id', id)
+}
+
 export async function fetchAllSlotsForAdmin() {
   if (!supabase) return { data: [], error: new Error('Supabase not configured') }
   return supabase.from('availability_slots').select('*').order('start_time', { ascending: true })
