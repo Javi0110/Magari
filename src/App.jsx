@@ -7,6 +7,8 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import Cart from './components/Cart'
 import MobileBookNowBar from './components/MobileBookNowBar'
+import { useCartStore } from './store/cartStore'
+import { shouldShowMobileBookNowBar } from './utils/mobileBookNowBar'
 import InstagramDmCta from './components/InstagramDmCta'
 import PageBottomCta from './components/PageBottomCta'
 
@@ -178,6 +180,8 @@ function resolvePageMeta(pathname) {
 
 function App() {
   const location = useLocation()
+  const cartOpen = useCartStore((s) => s.isOpen)
+  const showMobileBookBar = shouldShowMobileBookNowBar(location.pathname, cartOpen)
 
   // One-time: inject LocalBusiness structured data for Magari & Co. in Austin, TX
   useEffect(() => {
@@ -306,7 +310,7 @@ function App() {
   }, [location])
 
   return (
-    <div className="App pb-24 md:pb-0">
+    <div className={showMobileBookBar ? 'App pb-24 md:pb-0' : 'App md:pb-0'}>
       <Header />
 
       <Cart />

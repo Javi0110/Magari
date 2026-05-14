@@ -2,10 +2,13 @@ import { useLocation } from 'react-router-dom'
 import { Calendar } from 'lucide-react'
 
 import BookConsultButton from './BookConsultButton'
+import { useCartStore } from '../store/cartStore'
+import { shouldShowMobileBookNowBar } from '../utils/mobileBookNowBar'
 
 export default function MobileBookNowBar() {
   const { pathname } = useLocation()
-  if (pathname.startsWith('/admin')) return null
+  const cartOpen = useCartStore((s) => s.isOpen)
+  if (!shouldShowMobileBookNowBar(pathname, cartOpen)) return null
 
   return (
     <div
