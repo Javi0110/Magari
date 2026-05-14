@@ -30,6 +30,17 @@ function isUniqueViolation(err) {
   return m.includes('duplicate') || m.includes('unique constraint')
 }
 
+/** Stripe Checkout can expose email in a few places depending on timing / API version. */
+function extractSessionEmail(session) {
+  const raw =
+    session.customer_details?.email ||
+    session.customer_email ||
+    session.customer_details?.email_address ||
+    ''
+  const e = String(raw || '').trim().toLowerCase()
+  return e.includes('@') ? e : ''
+}
+
 /** Stripe retrieve expands price.product — metadata lives on Product, not price.product_data */
 function lineItemProductId(line) {
   const price = line.price
@@ -58,7 +69,7 @@ async function sendPaidOrderEmails(session, lineItems) {
     console.warn('[processShopPaidSession] RESEND_API_KEY missing; skip order emails')
     return
   }
-  const customerEmail = (session.customer_details?.email || session.customer_email || '').trim()
+  const customerEmail = extractSessionEmail(session)
   if (!customerEmail) {
     console.warn('[processShopPaidSession] No customer email on session')
     return
@@ -154,36 +165,86 @@ async function getOrCreateRewardsUser(supabase, email) {
   return null
 }
 
+/**
+ * Persist one shop_orders row per paid Stripe session (Rewards "Your orders").
+ * Uses select + insert/update so we are not dependent on PostgREST upsert + partial unique indexes.
+ * Allows total 0 (e.g. 100% rewards discount) so the order still appears in the dashboard.
+ */
 async function upsertShopOrderFromStripe(sessionId, session, supabase) {
-  const email = (session.customer_details?.email || session.customer_email || '').trim().toLowerCase()
-  if (!email) return null
+  const email = extractSessionEmail(session)
+  if (!email) {
+    console.warn('[processShopPaidSession] shop_orders: no customer email on session', sessionId)
+    return null
+  }
   const name = (session.metadata?.customer_name || '').trim() || null
   const total = Number(session.amount_total || 0) / 100
-  if (!Number.isFinite(total) || total <= 0) return null
+  if (!Number.isFinite(total) || total < 0) {
+    console.warn('[processShopPaidSession] shop_orders: invalid amount_total', sessionId, session.amount_total)
+    return null
+  }
 
   const row = {
     stripe_checkout_session_id: sessionId,
     customer_email: email,
     customer_name: name,
-    total,
+    total: Math.max(0, total),
     status: 'paid',
   }
-  const { data, error } = await supabase
+
+  const { data: existing, error: selErr } = await supabase
     .from('shop_orders')
-    .upsert(row, { onConflict: 'stripe_checkout_session_id' })
     .select('id')
+    .eq('stripe_checkout_session_id', sessionId)
     .maybeSingle()
-  if (error) {
-    console.error('[processShopPaidSession] shop_orders upsert', error)
+  if (selErr) {
+    console.error('[processShopPaidSession] shop_orders select', selErr)
+  }
+
+  if (existing?.id) {
+    const { data: updated, error: updErr } = await supabase
+      .from('shop_orders')
+      .update({
+        customer_email: row.customer_email,
+        customer_name: row.customer_name,
+        total: row.total,
+        status: 'paid',
+      })
+      .eq('id', existing.id)
+      .select('id')
+      .maybeSingle()
+    if (updErr) {
+      console.error('[processShopPaidSession] shop_orders update', updErr)
+      return existing.id
+    }
+    return updated?.id ?? existing.id
+  }
+
+  const { data: inserted, error: insErr } = await supabase.from('shop_orders').insert(row).select('id').maybeSingle()
+  if (insErr) {
+    if (isUniqueViolation(insErr)) {
+      const { data: again } = await supabase
+        .from('shop_orders')
+        .select('id')
+        .eq('stripe_checkout_session_id', sessionId)
+        .maybeSingle()
+      return again?.id ?? null
+    }
+    console.error('[processShopPaidSession] shop_orders insert', insErr)
     return null
   }
-  return data?.id ?? null
+  return inserted?.id ?? null
 }
 
 async function ensurePurchaseRewardsAndOrder(sessionId, session, supabase) {
   try {
-    const email = (session.customer_details?.email || session.customer_email || '').trim().toLowerCase()
-    if (!email) return
+    const email = extractSessionEmail(session)
+    if (!email) {
+      console.warn('[processShopPaidSession] no email on paid session; skip shop_orders + rewards', sessionId)
+      return
+    }
+
+    // Always sync shop_orders first so "Your orders" works even when purchase points are 0 or ledger already exists.
+    const orderId = await upsertShopOrderFromStripe(sessionId, session, supabase)
 
     const note = `${PURCHASE_NOTE_PREFIX}${sessionId}`
     const { data: existingLedger, error: ledSelErr } = await supabase
@@ -196,7 +257,6 @@ async function ensurePurchaseRewardsAndOrder(sessionId, session, supabase) {
       console.error('[processShopPaidSession] ledger idempotency select', ledSelErr)
     }
     if (existingLedger?.id) {
-      await upsertShopOrderFromStripe(sessionId, session, supabase)
       return
     }
 
@@ -207,8 +267,6 @@ async function ensurePurchaseRewardsAndOrder(sessionId, session, supabase) {
     }
     const MAX_POINTS_PER_ORDER = 500
     points = Math.min(points, MAX_POINTS_PER_ORDER)
-
-    const orderId = await upsertShopOrderFromStripe(sessionId, session, supabase)
 
     if (points <= 0) return
 

@@ -333,9 +333,10 @@ export default function RewardsDashboardPage() {
                 <h2 className="font-serif text-xl text-neutral-800 mb-3">Your orders</h2>
                 {orders.length === 0 ? (
                   <p className="text-sm text-neutral-600">
-                    Paid Shop Magari checkouts (Stripe) are listed here once the site confirms payment — same email as
-                    at checkout. If something is missing, open your order confirmation email or contact us with the
-                    Stripe receipt.
+                    Paid Shop Magari checkouts (Stripe) show here after the site confirms payment — use the{' '}
+                    <strong>same email</strong> you typed at checkout. If an order is missing, open your confirmation
+                    link once (the URL that ends with <code className="text-xs bg-cream px-1 rounded">session_id=cs_…</code>
+                    ), then refresh this page. Still missing? Email us your Stripe receipt.
                   </p>
                 ) : (
                   <ul className="text-sm text-neutral-700 space-y-2 max-h-60 overflow-y-auto">
