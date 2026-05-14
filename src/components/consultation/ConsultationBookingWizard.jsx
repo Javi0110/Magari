@@ -67,14 +67,20 @@ export default function ConsultationBookingWizard() {
   const loadSlots = useCallback(async () => {
     setSlotsLoading(true)
     setSlotsError(null)
-    const { data, error } = await fetchPublicAvailableSlots()
-    setSlotsLoading(false)
-    if (error) {
-      setSlotsError(error.message || 'Could not load availability.')
+    try {
+      const { data, error } = await fetchPublicAvailableSlots()
+      if (error) {
+        setSlotsError(error.message || 'Could not load availability.')
+        setSlots([])
+        return
+      }
+      setSlots(data || [])
+    } catch (e) {
+      setSlotsError(e?.message || 'Could not load availability. Check your connection and try again.')
       setSlots([])
-      return
+    } finally {
+      setSlotsLoading(false)
     }
-    setSlots(data || [])
   }, [])
 
   useEffect(() => {

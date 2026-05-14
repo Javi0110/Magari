@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Gift, ArrowRight, Star, LogOut } from 'lucide-react'
 import InstagramDmCta from '../components/InstagramDmCta'
 import PageBottomCta from '../components/PageBottomCta'
+import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 
 const TIERS = [
   { id: 'dreamer', label: 'Dreamer', min: 0, max: 199 },
@@ -38,12 +39,20 @@ export default function RewardsDashboardPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/.netlify/functions/rewards-profile', {
+      const res = await fetchWithTimeout('/.netlify/functions/rewards-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmed }),
       })
-      const data = await res.json()
+      const text = await res.text()
+      let data = {}
+      try {
+        data = text ? JSON.parse(text) : {}
+      } catch {
+        throw new Error(
+          'Rewards server returned an invalid response. On local dev, run `netlify dev` (Vite alone does not serve /.netlify/functions).'
+        )
+      }
       if (!res.ok) {
         const msg = data.hint ? `${data.error}. ${data.hint}` : (data.error || 'Could not load rewards right now.')
         throw new Error(msg)
@@ -75,12 +84,18 @@ export default function RewardsDashboardPage() {
     setRedeeming(true)
     setError(null)
     try {
-      const res = await fetch('/.netlify/functions/rewards-redeem', {
+      const res = await fetchWithTimeout('/.netlify/functions/rewards-redeem', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim().toLowerCase(), reward }),
       })
-      const data = await res.json()
+      const text = await res.text()
+      let data = {}
+      try {
+        data = text ? JSON.parse(text) : {}
+      } catch {
+        throw new Error('Could not read redeem response. Try again or use production with Netlify functions enabled.')
+      }
       if (!res.ok) {
         throw new Error(data.error || 'Could not redeem reward.')
       }
