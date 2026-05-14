@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { 
   LogIn, 
@@ -25,6 +25,7 @@ import {
 import { sampleTestimonials } from '../data/sampleData'
 import { useProductsStore } from '../store/productsStore'
 import { supabase } from '../utils/supabase'
+import { getAdminAuthRedirectUrl } from '../utils/siteOrigin'
 import { SHOP_MAGARI_CATEGORIES, SHIPPING_OPTIONS, RETURN_POLICY_OPTIONS } from '../constants/shopCategories'
 import {
   parseFulfillmentModes,
@@ -125,6 +126,12 @@ export default function AdminPage() {
   const [loginInfo, setLoginInfo] = useState('')
   const [oauthBusy, setOauthBusy] = useState(false)
   const [resetBusy, setResetBusy] = useState(false)
+  const [recoveryUi, setRecoveryUi] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [recoveryBusy, setRecoveryBusy] = useState(false)
+  const [recoveryError, setRecoveryError] = useState('')
+  const inPasswordRecovery = useRef(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const { items: notifications, unreadCount, error: notificationsError, fetchForAdmin, markAsRead, markAllAsRead } = useNotificationsStore()
 
@@ -132,10 +139,36 @@ export default function AdminPage() {
     if (isLoggedIn) fetchForAdmin()
   }, [isLoggedIn, fetchForAdmin])
 
-  /** Restore admin session after refresh; keep in sync with Supabase auth. */
+  /** Detect recovery link in URL (hash) before listener runs. */
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const h = window.location.hash
+    if (h.includes('type=recovery') || h.includes('type%3Drecovery')) {
+      inPasswordRecovery.current = true
+      setRecoveryUi(true)
+      setIsLoggedIn(false)
+    }
+  }, [])
+
+  /** Restore admin session; handle password recovery flow. */
   useEffect(() => {
     if (!supabase) return undefined
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        inPasswordRecovery.current = true
+        setRecoveryUi(true)
+        setIsLoggedIn(false)
+        return
+      }
+      if (inPasswordRecovery.current) {
+        if (event === 'USER_UPDATED') {
+          inPasswordRecovery.current = false
+          setRecoveryUi(false)
+          const em = (session?.user?.email || '').trim().toLowerCase()
+          setIsLoggedIn(Boolean(session && em === ADMIN_EMAIL))
+        }
+        return
+      }
       const em = (session?.user?.email || '').trim().toLowerCase()
       setIsLoggedIn(Boolean(session && em === ADMIN_EMAIL))
     })
@@ -203,7 +236,7 @@ export default function AdminPage() {
       return
     }
     setOauthBusy(true)
-    const redirectTo = `${window.location.origin}/admin`
+    const redirectTo = getAdminAuthRedirectUrl() || `${window.location.origin}/admin`
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -239,14 +272,69 @@ export default function AdminPage() {
       return
     }
     setResetBusy(true)
-    const redirectTo = `${window.location.origin}/admin`
+    const redirectTo = getAdminAuthRedirectUrl() || `${window.location.origin}/admin`
     const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, { redirectTo })
     setResetBusy(false)
     if (error) {
       setLoginError(error.message || 'No se pudo enviar el correo.')
       return
     }
-    setLoginInfo(`Revisa la bandeja de ${trimmedEmail} (y spam). Abre el enlace y elige una contraseña nueva; luego vuelve aquí a iniciar sesión. En Supabase → Authentication → URL configuration debe existir: ${redirectTo}`)
+    const isLocal =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    const usedPublic = Boolean((import.meta.env.VITE_PUBLIC_SITE_URL || '').trim())
+    setLoginInfo(
+      [
+        `Revisa la bandeja de ${trimmedEmail} (y spam). El enlace te llevará a: ${redirectTo}`,
+        '',
+        'En Supabase → Authentication → URL configuration:',
+        `• Añade "${redirectTo}" en Redirect URLs.`,
+        '• Site URL debe ser tu dominio real (p. ej. https://casamagari.com), no localhost.',
+        usedPublic || !isLocal
+          ? ''
+          : '• Estás en localhost: en Netlify añade VITE_PUBLIC_SITE_URL=https://casamagari.com y vuelve a pedir el enlace para que el mail use el sitio en vivo.',
+      ]
+        .filter(Boolean)
+        .join('\n')
+    )
+  }
+
+  const handleSaveNewPassword = async (e) => {
+    e.preventDefault()
+    setRecoveryError('')
+    if (newPassword.length < 8) {
+      setRecoveryError('La contraseña debe tener al menos 8 caracteres.')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setRecoveryError('Las contraseñas no coinciden.')
+      return
+    }
+    if (!supabase) {
+      setRecoveryError('Supabase no está configurado.')
+      return
+    }
+    setRecoveryBusy(true)
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    setRecoveryBusy(false)
+    if (error) {
+      setRecoveryError(error.message || 'No se pudo guardar la contraseña.')
+      return
+    }
+    inPasswordRecovery.current = false
+    setRecoveryUi(false)
+    setNewPassword('')
+    setConfirmPassword('')
+    const { data: userData } = await supabase.auth.getUser()
+    const em = (userData?.user?.email || '').trim().toLowerCase()
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`)
+    }
+    if (em === ADMIN_EMAIL) {
+      setIsLoggedIn(true)
+    } else {
+      setLoginError('Contraseña actualizada. Inicia sesión con el email autorizado.')
+    }
   }
 
   if (!isLoggedIn) {
@@ -259,14 +347,57 @@ export default function AdminPage() {
                 <LogIn className="w-8 h-8 text-neutral-500" />
               </div>
               <h1 className="font-serif text-3xl text-neutral-700 mb-2">
-                Admin Login
+                {recoveryUi ? 'Nueva contraseña' : 'Admin Login'}
               </h1>
               <p className="text-neutral-600 text-sm">
-                Solo personal autorizado. Puedes entrar con <strong>contraseña</strong> (la que tengas en Supabase para este
-                email) o con <strong>Google</strong> si la cuenta está vinculada a {ADMIN_EMAIL}.
+                {recoveryUi ? (
+                  <>
+                    Estás restableciendo el acceso. Elige una contraseña nueva (mín. 8 caracteres) y luego podrás usar el
+                    panel.
+                  </>
+                ) : (
+                  <>
+                    Solo personal autorizado. Puedes entrar con <strong>contraseña</strong> (la que tengas en Supabase para
+                    este email) o con <strong>Google</strong> si la cuenta está vinculada a {ADMIN_EMAIL}.
+                  </>
+                )}
               </p>
             </div>
 
+            {recoveryUi ? (
+              <form onSubmit={handleSaveNewPassword} className="space-y-4">
+                {recoveryError && (
+                  <p className="text-red-700 text-sm bg-red-50 p-3 rounded-lg">{recoveryError}</p>
+                )}
+                <div>
+                  <label className="block text-neutral-700 font-medium mb-2">Nueva contraseña *</label>
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    className="input-field"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    minLength={8}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-neutral-700 font-medium mb-2">Confirmar contraseña *</label>
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    className="input-field"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    minLength={8}
+                    required
+                  />
+                </div>
+                <button type="submit" disabled={recoveryBusy} className="w-full btn-primary py-3 disabled:opacity-60">
+                  {recoveryBusy ? 'Guardando…' : 'Guardar contraseña'}
+                </button>
+              </form>
+            ) : (
             <form onSubmit={handleLogin} className="space-y-4">
               {loginError && (
                 <p className="text-red-700 text-sm bg-red-50 p-3 rounded-lg whitespace-pre-line leading-relaxed">{loginError}</p>
@@ -335,6 +466,7 @@ export default function AdminPage() {
                 {resetBusy ? 'Enviando…' : '¿Olvidaste la contraseña? Enviar enlace de restablecimiento'}
               </button>
             </form>
+            )}
 
           </div>
         </div>
