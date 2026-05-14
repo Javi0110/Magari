@@ -280,7 +280,9 @@ export default function RewardsDashboardPage() {
                 </h2>
                 {ledger.length === 0 ? (
                   <p className="text-sm text-neutral-600">
-                    Once you place an order or complete rewards actions, they will appear here.
+                    Points from purchases appear after payment is confirmed (return to the site after Stripe or via
+                    webhook). Use the same email here as in checkout. Creating this rewards account adds signup points
+                    first; shop purchases add a separate &quot;purchase&quot; line.
                   </p>
                 ) : (
                   <ul className="text-sm text-neutral-700 space-y-2 max-h-56 overflow-y-auto">
@@ -316,7 +318,9 @@ export default function RewardsDashboardPage() {
                 <h2 className="font-serif text-xl text-neutral-800 mb-3">Your orders</h2>
                 {orders.length === 0 ? (
                   <p className="text-sm text-neutral-600">
-                    When you place orders with this email, they&apos;ll appear here.
+                    Paid Shop Magari checkouts (Stripe) are listed here once the site confirms payment — same email as
+                    at checkout. If something is missing, open your order confirmation email or contact us with the
+                    Stripe receipt.
                   </p>
                 ) : (
                   <ul className="text-sm text-neutral-700 space-y-2 max-h-60 overflow-y-auto">

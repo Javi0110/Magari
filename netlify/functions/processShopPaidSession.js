@@ -124,10 +124,82 @@ async function sendPaidOrderEmails(session, lineItems) {
   }
 }
 
-async function applyRewardsPoints(sessionId, session, supabase) {
+const PURCHASE_NOTE_PREFIX = 'Stripe session '
+
+/**
+ * Idempotent: one ledger "purchase" row per Stripe session (retries / webhook + success page).
+ * Does NOT overwrite rewards_users.referral_code (avoid destructive upsert on every checkout).
+ */
+async function getOrCreateRewardsUser(supabase, email) {
+  const { data: existing, error: selErr } = await supabase.from('rewards_users').select('*').eq('email', email).maybeSingle()
+  if (selErr) {
+    console.error('[processShopPaidSession] rewards_users select', selErr)
+    return null
+  }
+  if (existing) return existing
+
+  const referralCode = `MG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
+  const { data: inserted, error: insErr } = await supabase
+    .from('rewards_users')
+    .insert({ email, referral_code: referralCode })
+    .select('*')
+    .single()
+  if (!insErr && inserted) return inserted
+
+  if (isUniqueViolation(insErr)) {
+    const { data: again } = await supabase.from('rewards_users').select('*').eq('email', email).maybeSingle()
+    return again || null
+  }
+  console.error('[processShopPaidSession] rewards_users insert', insErr)
+  return null
+}
+
+async function upsertShopOrderFromStripe(sessionId, session, supabase) {
+  const email = (session.customer_details?.email || session.customer_email || '').trim().toLowerCase()
+  if (!email) return null
+  const name = (session.metadata?.customer_name || '').trim() || null
+  const total = Number(session.amount_total || 0) / 100
+  if (!Number.isFinite(total) || total <= 0) return null
+
+  const row = {
+    stripe_checkout_session_id: sessionId,
+    customer_email: email,
+    customer_name: name,
+    total,
+    status: 'paid',
+  }
+  const { data, error } = await supabase
+    .from('shop_orders')
+    .upsert(row, { onConflict: 'stripe_checkout_session_id' })
+    .select('id')
+    .maybeSingle()
+  if (error) {
+    console.error('[processShopPaidSession] shop_orders upsert', error)
+    return null
+  }
+  return data?.id ?? null
+}
+
+async function ensurePurchaseRewardsAndOrder(sessionId, session, supabase) {
   try {
-    const email = (session.customer_details?.email || session.customer_email || '').toLowerCase()
+    const email = (session.customer_details?.email || session.customer_email || '').trim().toLowerCase()
     if (!email) return
+
+    const note = `${PURCHASE_NOTE_PREFIX}${sessionId}`
+    const { data: existingLedger, error: ledSelErr } = await supabase
+      .from('rewards_point_ledger')
+      .select('id')
+      .eq('type', 'purchase')
+      .eq('note', note)
+      .maybeSingle()
+    if (ledSelErr) {
+      console.error('[processShopPaidSession] ledger idempotency select', ledSelErr)
+    }
+    if (existingLedger?.id) {
+      await upsertShopOrderFromStripe(sessionId, session, supabase)
+      return
+    }
+
     const total = Number(session.amount_total || 0) / 100
     let points = Math.floor(total)
     if (!Number.isFinite(points) || points <= 0 || total <= 0 || total > 10000) {
@@ -135,29 +207,33 @@ async function applyRewardsPoints(sessionId, session, supabase) {
     }
     const MAX_POINTS_PER_ORDER = 500
     points = Math.min(points, MAX_POINTS_PER_ORDER)
+
+    const orderId = await upsertShopOrderFromStripe(sessionId, session, supabase)
+
     if (points <= 0) return
 
-    const referralCode = `MG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
-    const { data: rewardsUser, error: userErr } = await supabase
-      .from('rewards_users')
-      .upsert({ email, referral_code: referralCode }, { onConflict: 'email' })
-      .select('*')
-      .single()
-    if (userErr || !rewardsUser) return
+    const rewardsUser = await getOrCreateRewardsUser(supabase, email)
+    if (!rewardsUser) return
+
     const { error: ledgerErr } = await supabase.from('rewards_point_ledger').insert({
       user_id: rewardsUser.id,
       type: 'purchase',
       points,
-      note: `Stripe session ${sessionId}`,
+      order_id: orderId,
+      note,
     })
-    if (!ledgerErr) {
-      await supabase
-        .from('rewards_users')
-        .update({ points: (rewardsUser.points || 0) + points })
-        .eq('id', rewardsUser.id)
+    if (ledgerErr) {
+      if (isUniqueViolation(ledgerErr)) return
+      console.error('[processShopPaidSession] rewards_point_ledger insert', ledgerErr)
+      return
     }
+
+    await supabase
+      .from('rewards_users')
+      .update({ points: (rewardsUser.points || 0) + points, updated_at: new Date().toISOString() })
+      .eq('id', rewardsUser.id)
   } catch (rewardsErr) {
-    console.error('[processShopPaidSession] rewards error', rewardsErr)
+    console.error('[processShopPaidSession] ensurePurchaseRewardsAndOrder', rewardsErr)
   }
 }
 
@@ -198,6 +274,9 @@ async function processShopPaidSession(sessionId) {
   if (session.payment_status !== 'paid') {
     return { ok: true, clearCart: false, paid: false, error: null }
   }
+
+  // Rewards + shop_orders: safe to run on every retry (idempotent); fills dashboard even if stock step already ran.
+  await ensurePurchaseRewardsAndOrder(sessionId, session, supabase)
 
   const { error: insertErr } = await supabase.from('processed_checkout_sessions').insert({ session_id: sessionId })
 
@@ -240,8 +319,6 @@ async function processShopPaidSession(sessionId) {
   } catch (mailErr) {
     console.error('[processShopPaidSession] sendPaidOrderEmails', mailErr)
   }
-
-  await applyRewardsPoints(sessionId, session, supabase)
 
   return { ok: true, clearCart: true, paid: true, alreadyProcessed: false, error: null }
 }
