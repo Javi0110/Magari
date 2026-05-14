@@ -2,10 +2,62 @@ import js from '@eslint/js'
 import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 
+const browserGlobals = {
+  window: 'readonly',
+  document: 'readonly',
+  localStorage: 'readonly',
+  sessionStorage: 'readonly',
+  console: 'readonly',
+  alert: 'readonly',
+  confirm: 'readonly',
+  fetch: 'readonly',
+  URL: 'readonly',
+  URLSearchParams: 'readonly',
+  FormData: 'readonly',
+  Blob: 'readonly',
+  FileReader: 'readonly',
+  AbortController: 'readonly',
+  crypto: 'readonly',
+  setTimeout: 'readonly',
+  clearTimeout: 'readonly',
+  setInterval: 'readonly',
+  clearInterval: 'readonly',
+  requestAnimationFrame: 'readonly',
+  requestIdleCallback: 'readonly',
+  queueMicrotask: 'readonly',
+  performance: 'readonly',
+  navigator: 'readonly',
+  gtag: 'readonly',
+  fbq: 'readonly',
+  HTMLElement: 'readonly',
+  Element: 'readonly',
+  MutationObserver: 'readonly',
+  MessageChannel: 'readonly',
+  self: 'readonly',
+  MediaRecorder: 'readonly',
+  IntersectionObserver: 'readonly',
+  Image: 'readonly',
+  prompt: 'readonly',
+  File: 'readonly',
+}
+
+const nodeCjsGlobals = {
+  console: 'readonly',
+  process: 'readonly',
+  Buffer: 'readonly',
+  fetch: 'readonly',
+  require: 'readonly',
+  module: 'readonly',
+  exports: 'readonly',
+  __dirname: 'readonly',
+  __filename: 'readonly',
+}
+
 export default [
+  { ignores: ['dist/**', 'node_modules/**', 'coverage/**', 'scripts/**'] },
   js.configs.recommended,
   {
-    files: ['**/*.{js,jsx}'],
+    files: ['src/**/*.{js,jsx}'],
     plugins: {
       react,
       'react-hooks': reactHooks,
@@ -16,15 +68,7 @@ export default [
           jsx: true,
         },
       },
-      globals: {
-        window: 'readonly',
-        document: 'readonly',
-        localStorage: 'readonly',
-        console: 'readonly',
-        alert: 'readonly',
-        gtag: 'readonly',
-        fbq: 'readonly',
-      },
+      globals: browserGlobals,
     },
     rules: {
       'react/jsx-uses-react': 'error',
@@ -34,5 +78,11 @@ export default [
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     },
   },
+  {
+    files: ['netlify/functions/**/*.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: nodeCjsGlobals,
+    },
+  },
 ]
-

@@ -1883,8 +1883,10 @@ function ServicesView() {
           const status = req.status || 'new'
           const firstMedia = []
           areas.forEach((area) => {
-            ;(area.entries || []).forEach((entry) => {
-              ;(entry.media || []).forEach((m) => {
+            const areaEntries = area.entries || []
+            areaEntries.forEach((entry) => {
+              const entryMedia = entry.media || []
+              entryMedia.forEach((m) => {
                 if (m.dataUrl && firstMedia.length < 6) {
                   firstMedia.push(m.dataUrl)
                 }

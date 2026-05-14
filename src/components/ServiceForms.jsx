@@ -517,6 +517,10 @@ export const VirtualStylingForm = ({ onClose }) => {
     })
   }
 
+  const handleEntryMediaChange = (areaId, entryId, files) => {
+    handleEntryChange(areaId, entryId, { media: files })
+  }
+
   const buildEntryLabel = (area, entries, entry, index) => {
     const nickname = entry.nickname?.trim()
     if (nickname) return nickname

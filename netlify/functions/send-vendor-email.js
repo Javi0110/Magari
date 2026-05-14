@@ -31,7 +31,7 @@ function buildApprovalHtml({ name, email, accessCode, loginUrl }) {
     <li>Access code: <strong>${escapeHtml(accessCode)}</strong></li>
     <li>Link: <a href="${escapeHtml(url)}">${escapeHtml(url)}</a></li>
   </ul>
-  <p>Go to this link, click on \"Vendor Login\", and enter your email and access code. Please keep this email in a safe place.</p>
+  <p>Go to this link, click on &quot;Vendor Login&quot;, and enter your email and access code. Please keep this email in a safe place.</p>
   <p>If you lose your access code, contact us at ${MAGARI_EMAIL}.</p>
   <p>Welcome to the marketplace!</p>
   <p>— The Magari &amp; Co. team</p>
@@ -72,7 +72,7 @@ async function sendResend(to, subject, html) {
   return { ok: true }
 }
 
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',

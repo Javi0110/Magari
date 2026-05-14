@@ -9,7 +9,7 @@
     "generate:checklist": "node scripts/generate-home-prep-checklist-pdf.mjs",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint .",
+    "lint": "eslint src netlify/functions eslint.config.js",
     "test": "vitest"
   },
   "dependencies": {

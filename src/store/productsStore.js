@@ -224,6 +224,7 @@ const saveToStorage = (products) => {
   try {
     localStorage.setItem('magari-products-storage', JSON.stringify(products))
   } catch {
+    /* ignore quota / private mode */
   }
 }
 
@@ -247,6 +248,7 @@ const loadFromStorage = () => {
       }
     }
   } catch {
+    /* ignore corrupt cache */
   }
   const empty = []
   saveToStorage(empty)

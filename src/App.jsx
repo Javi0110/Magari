@@ -146,6 +146,36 @@ const pageMeta = {
   },
 }
 
+function resolvePageMeta(pathname) {
+  if (pageMeta[pathname]) return pageMeta[pathname]
+  if (pathname.startsWith('/shop/')) {
+    return {
+      title: 'Product — Shop Magari | Magari & Co.',
+      description:
+        'Curated decor and home goods — USA + PR shipping. Earn Magari Rewards points on qualifying purchases.',
+    }
+  }
+  if (pathname.startsWith('/maker/')) {
+    return {
+      title: 'Maker profile — MOMade Marketplace | Magari & Co.',
+      description: 'Shop mom-made goods from this maker on the MOMade Marketplace.',
+    }
+  }
+  if (pathname === '/checkout/success') {
+    return {
+      title: 'Order confirmed — Magari & Co.',
+      description: 'Thank you for your purchase from Shop Magari.',
+    }
+  }
+  if (pathname === '/checkout/cancel') {
+    return {
+      title: 'Checkout cancelled — Magari & Co.',
+      description: 'Checkout was cancelled. Your cart is unchanged.',
+    }
+  }
+  return pageMeta['/']
+}
+
 function App() {
   const location = useLocation()
 
@@ -183,7 +213,7 @@ function App() {
 
   // Update page title, meta tags, and Open Graph on route change
   useEffect(() => {
-    const meta = pageMeta[location.pathname] || pageMeta['/']
+    const meta = resolvePageMeta(location.pathname)
     document.title = meta.title
     
     // Meta description
@@ -262,14 +292,15 @@ function App() {
     // Scroll to top on route change
     window.scrollTo(0, 0)
 
-    // 🔌 INTEGRATION: Track page views
-    if (typeof gtag !== 'undefined') {
-      gtag('config', 'GA_MEASUREMENT_ID', {
+    const gaId = (import.meta.env.VITE_GA_MEASUREMENT_ID || '').trim()
+    if (typeof gtag === 'function' && gaId) {
+      gtag('config', gaId, {
         page_path: location.pathname,
       })
     }
-    
-    if (typeof fbq !== 'undefined') {
+
+    const pixelId = (import.meta.env.VITE_META_PIXEL_ID || '').trim()
+    if (typeof fbq === 'function' && pixelId) {
       fbq('track', 'PageView')
     }
   }, [location])
