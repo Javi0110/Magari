@@ -1,6 +1,10 @@
 -- =============================================================================
 -- PEGA ESTO EN SUPABASE → SQL EDITOR → RUN (una sola vez por proyecto)
 -- Añade columnas que la app espera si aún no existen.
+--
+-- NOTA: Si al guardar productos de vendor ves "The quota has been exceeded",
+-- suele ser por imágenes muy grandes guardadas como texto en la fila. La app
+-- comprime al guardar; revisa también el plan/cuota de Supabase (DB + Storage).
 -- =============================================================================
 
 -- Shop Magari (admin): fulfillment modes (JSON array o texto legacy)

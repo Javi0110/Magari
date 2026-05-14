@@ -11,6 +11,7 @@ import { useNotificationsStore } from '../store/notificationsStore'
 import { useCartStore } from '../store/cartStore'
 import { normalizeMarketplaceProductForCart } from '../utils/fulfillment'
 import { isLikelySupabaseProductId, rowToVendorProduct, vendorProductToDbRow } from '../utils/marketplaceProductDb'
+import { compressImageForUpload } from '../utils/imageCompress'
 import InstagramDmCta from '../components/InstagramDmCta'
 import PageBottomCta from '../components/PageBottomCta'
 
@@ -2290,13 +2291,13 @@ function VendorProductForm({ product, type, vendorSlug, vendorNumericId, onMarke
       if (img.isExisting) {
         urls.push(img.url)
       } else if (img.file) {
-        // Convert file to base64 data URL
+        const file = await compressImageForUpload(img.file)
         const reader = new FileReader()
-        const promise = new Promise((resolve) => {
+        const dataUrl = await new Promise((resolve, reject) => {
           reader.onloadend = () => resolve(reader.result)
-          reader.readAsDataURL(img.file)
+          reader.onerror = () => reject(reader.error)
+          reader.readAsDataURL(file)
         })
-        const dataUrl = await promise
         urls.push(dataUrl)
       }
     }
@@ -2406,9 +2407,14 @@ function VendorProductForm({ product, type, vendorSlug, vendorNumericId, onMarke
         return
       } catch (err) {
         console.error(err)
-        alert(
-          `No se pudo guardar en Supabase: ${err.message || err}. Ejecuta el SQL del archivo supabase/APPLY_IN_DASHBOARD_ONE_FILE.sql en el SQL Editor y vuelve a intentar.`
-        )
+        const msg = String(err?.message || err || '')
+        let hint =
+          'Si el error menciona columnas o permisos, ejecuta supabase/APPLY_IN_DASHBOARD_ONE_FILE.sql en el SQL Editor de Supabase.'
+        if (/quota/i.test(msg)) {
+          hint =
+            'Las fotos en base64 ocupan mucho en la base de datos. Ya reducimos tamaño al guardar; prueba con menos imágenes o fotos más pequeñas. En Supabase revisa cuota de base de datos/archivos del plan, o usa URLs de imágenes (campo separado por comas) en lugar de subir muchos archivos grandes.'
+        }
+        alert(`No se pudo guardar en Supabase: ${msg}\n\n${hint}`)
         return
       }
     }
@@ -2557,7 +2563,8 @@ function VendorProductForm({ product, type, vendorSlug, vendorNumericId, onMarke
                   Arrastra y suelta imágenes aquí o haz clic para seleccionar
                 </p>
                 <p className="text-xs text-neutral-400 mb-4">
-                  Formatos: JPG, PNG, WEBP. Máx 10MB por imagen.
+                  JPG, PNG o WEBP. Se optimizan automáticamente al guardar (máx. ~1600px) para no superar la cuota de
+                  Supabase. Evita muchas fotos enormes en un solo producto.
                 </p>
                 <input
                   type="file"
