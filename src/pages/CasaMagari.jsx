@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Sparkles, Home, Palette, Users, Hammer, Mail } from 'lucide-react'
+import { Sparkles, Palette, Users, Hammer } from 'lucide-react'
 import { supabase } from '../utils/supabase'
 import InstagramDmCta from '../components/InstagramDmCta'
 import PageBottomCta from '../components/PageBottomCta'

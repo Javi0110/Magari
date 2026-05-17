@@ -3,7 +3,7 @@
 // En Netlify: Environment variables → STRIPE_SECRET_KEY (sk_test_... o sk_live_...)
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '')
-const { createClient } = require('@supabase/supabase-js')
+const { createServiceSupabase, SERVICE_KEY_HINT } = require('./shared/supabaseServer')
 const { validateAllDeliveryChecks, checkDeliveryWithinRadius } = require('./deliveryRadiusUtils')
 
 exports.handler = async (event) => {
@@ -150,21 +150,19 @@ exports.handler = async (event) => {
     // Optional rewards coupon
     let discounts = []
     if (rewardCode) {
-      const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-      const serviceKey =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SECRET_KEY ||
-        process.env.SUPABASE_ANON_KEY
-
-      if (!supabaseUrl || !serviceKey) {
+      const sb = createServiceSupabase()
+      if (sb.error) {
         return {
           statusCode: 500,
           headers,
-          body: JSON.stringify({ error: 'Rewards server configuration missing.' }),
+          body: JSON.stringify({
+            error: 'Rewards server configuration missing.',
+            hint: sb.hint || SERVICE_KEY_HINT,
+          }),
         }
       }
 
-      const supabase = createClient(supabaseUrl, serviceKey)
+      const supabase = sb.client
       const { data: couponRow, error: couponErr } = await supabase
         .from('rewards_coupons')
         .select('*')

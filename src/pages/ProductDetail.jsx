@@ -114,7 +114,7 @@ export default function ProductDetailPage() {
     try {
       setSubmitting(true)
       if (supabase) {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('product_reviews')
           .insert(payload)
           .select('*')

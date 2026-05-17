@@ -1,6 +1,6 @@
 # Build y publicación para Netlify (Vite + React)
 [build]
-  command = "npm run build"
+  command = "npm run check"
   publish = "dist"
 
 # Evita "Page not found" al refrescar en rutas como /admin, /marketplace

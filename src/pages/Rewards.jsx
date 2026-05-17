@@ -1,18 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Gift, Star, Users, ArrowRight } from 'lucide-react'
 import InstagramDmCta from '../components/InstagramDmCta'
 import PageBottomCta from '../components/PageBottomCta'
 
 export default function RewardsPage() {
-  const [email, setEmail] = useState('')
   const [searchParams] = useSearchParams()
   const refCode = searchParams.get('ref')
-
-  useEffect(() => {
-    const stored = localStorage.getItem('magari-rewards-email')
-    if (stored) setEmail(stored)
-  }, [])
 
   useEffect(() => {
     if (refCode) {

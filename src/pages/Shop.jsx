@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect, useLayoutEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { 
-  Filter, X, ShoppingCart, Heart, Eye, ChevronDown, ChevronUp, 
-  ChevronLeft, ChevronRight, Search, Star, Share2, Mail, Instagram, Loader2
+import {
+  Filter, X, ShoppingCart, Heart, Eye, ChevronDown, ChevronUp,
+  Search, Loader2,
 } from 'lucide-react'
 import { useProductsStore, fetchShopProducts, fromDb } from '../store/productsStore'
 import { useCartStore } from '../store/cartStore'
@@ -33,8 +33,6 @@ export default function ShopPage() {
   const [showNewsletter, setShowNewsletter] = useState(true)
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterStatus, setNewsletterStatus] = useState(null)
-  const [abandonedEmail, setAbandonedEmail] = useState('')
-  const [abandonedStatus, setAbandonedStatus] = useState(null)
   const [rescueProducts, setRescueProducts] = useState([])
   
   const { getAllProducts, initProducts, loading, error, catalogFetchPending } = useProductsStore()
@@ -217,12 +215,6 @@ export default function ShopPage() {
   const handleAddToCart = (product) => {
     addItem(product)
     openCart()
-  }
-
-  const handleBuyNow = (product) => {
-    addItem(product)
-    openCart()
-    // 🔌 INTEGRATION: Redirect to checkout
   }
 
   const toggleWishlist = (product, e) => {

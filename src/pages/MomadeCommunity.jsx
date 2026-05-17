@@ -23,16 +23,15 @@ export default function MomadeCommunityPage() {
       }
       setLoading(true)
       let { data, error } = await supabase
-        .from('vendors')
-        .select('id, business_name, name, profile_bio, profile_location, profile_instagram, profile_avatar_url, slug')
-        .eq('status', 'active')
+        .from('vendors_public')
+        .select('id, business_name, name, profile_bio, profile_location, profile_instagram, profile_avatar_url')
+        .eq('published', true)
         .order('created_at', { ascending: false })
         .limit(8)
-      if (error && error.code === '42703') {
+      if (error && (error.code === '42703' || error.code === '42P01')) {
         const fb = await supabase
-          .from('vendors')
-          .select('id, business_name, name')
-          .eq('status', 'active')
+          .from('vendors_public')
+          .select('id, business_name, name, profile_bio, profile_location, profile_instagram, profile_avatar_url')
           .order('created_at', { ascending: false })
           .limit(8)
         data = fb.data

@@ -34,7 +34,8 @@ function isRecoverableSelectListError(error) {
 
 function omitFulfillmentFromPayload(payload) {
   if (!payload || typeof payload !== 'object') return payload
-  const { fulfillment: _f, ...rest } = payload
+  const rest = { ...payload }
+  delete rest.fulfillment
   return rest
 }
 

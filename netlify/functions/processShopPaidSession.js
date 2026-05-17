@@ -4,24 +4,11 @@
  */
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '')
-const { createClient } = require('@supabase/supabase-js')
+const { createServiceSupabase } = require('./shared/supabaseServer')
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Magari & Co. <hello@casamagari.com>'
 const MAGARI_ORDER_EMAIL = 'magaribyelena@gmail.com'
-
-function createSupabase() {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-  const supabaseKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_SECRET_KEY ||
-    process.env.SUPABASE_ANON_KEY ||
-    process.env.VITE_SUPABASE_ANON_KEY
-  if (!supabaseUrl || !supabaseKey) {
-    return { error: 'Supabase not configured for server' }
-  }
-  return { client: createClient(supabaseUrl, supabaseKey) }
-}
 
 function isUniqueViolation(err) {
   if (!err) return false
@@ -313,7 +300,7 @@ async function processShopPaidSession(sessionId) {
     return { ok: false, clearCart: false, error: 'Stripe not configured', httpStatus: 500 }
   }
 
-  const sb = createSupabase()
+  const sb = createServiceSupabase()
   if (sb.error) {
     return { ok: false, clearCart: false, error: sb.error, httpStatus: 500 }
   }

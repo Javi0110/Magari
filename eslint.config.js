@@ -37,6 +37,7 @@ const browserGlobals = {
   MediaRecorder: 'readonly',
   IntersectionObserver: 'readonly',
   Image: 'readonly',
+  createImageBitmap: 'readonly',
   prompt: 'readonly',
   File: 'readonly',
 }

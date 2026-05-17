@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation, Navigate, Link } from 'react-router-dom'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 
 // Layout Components
@@ -22,15 +22,24 @@ import ServicesPage from './pages/Services'
 import RealEstatePage from './pages/RealEstate'
 import ContactPage from './pages/Contact'
 import ContactBookingSuccessPage from './pages/ContactBookingSuccess'
-import MarketplacePage from './pages/Marketplace'
 import MomadeCommunityPage from './pages/MomadeCommunity'
 import BecomeVendorPage from './pages/BecomeVendor'
 import VendorProfilePage from './pages/VendorProfile'
 import AboutPage from './pages/About'
-import AdminPage from './pages/Admin'
 import CasaMagariPage from './pages/CasaMagari'
 import CheckoutSuccessPage from './pages/CheckoutSuccess'
 import CheckoutCancelPage from './pages/CheckoutCancel'
+
+const MarketplacePage = lazy(() => import('./pages/Marketplace'))
+const AdminPage = lazy(() => import('./pages/Admin'))
+
+function RouteLoading() {
+  return (
+    <div className="min-h-[40vh] flex items-center justify-center text-neutral-500 text-sm" aria-live="polite">
+      Loading…
+    </div>
+  )
+}
 
 // SEO Meta Tags by Route
 const pageMeta = {
@@ -336,16 +345,44 @@ function App() {
           <Route path="/marketplace" element={<Navigate to="/momade" replace />} />
           <Route path="/momade-market" element={<Navigate to="/momade" replace />} />
           <Route path="/momade" element={<MomadeCommunityPage />} />
-          <Route path="/momade/shop" element={<MarketplacePage />} />
-          <Route path="/momade/become-a-vendor" element={<MarketplacePage />} />
-          <Route path="/momade/vendor-login" element={<MarketplacePage />} />
+          <Route
+            path="/momade/shop"
+            element={
+              <Suspense fallback={<RouteLoading />}>
+                <MarketplacePage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/momade/become-a-vendor"
+            element={
+              <Suspense fallback={<RouteLoading />}>
+                <MarketplacePage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/momade/vendor-login"
+            element={
+              <Suspense fallback={<RouteLoading />}>
+                <MarketplacePage />
+              </Suspense>
+            }
+          />
           <Route path="/become-a-vendor" element={<BecomeVendorPage />} />
           <Route path="/maker/:slug" element={<VendorProfilePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/contact/success" element={<ContactBookingSuccessPage />} />
           <Route path="/book" element={<Navigate to="/contact#book" replace />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route
+            path="/admin"
+            element={
+              <Suspense fallback={<RouteLoading />}>
+                <AdminPage />
+              </Suspense>
+            }
+          />
           <Route path="/casa-magari" element={<CasaMagariPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
           <Route path="/checkout/cancel" element={<CheckoutCancelPage />} />

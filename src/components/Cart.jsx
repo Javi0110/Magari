@@ -17,7 +17,7 @@ const SHIPPING_EXPEDITED = 13.65
 const DELIVERY_FLAT = 10
 
 export default function Cart() {
-  const { items, isOpen, closeCart, updateQuantity, removeItem, getTotal, clearCart } = useCartStore()
+  const { items, isOpen, closeCart, updateQuantity, removeItem, getTotal } = useCartStore()
   const [checkingOut, setCheckingOut] = useState(false)
   const [promoCode, setPromoCode] = useState('')
   const [appliedPromo, setAppliedPromo] = useState(null)

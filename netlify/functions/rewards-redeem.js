@@ -1,4 +1,4 @@
-const { createClient } = require('@supabase/supabase-js')
+const { createServiceSupabase, SERVICE_KEY_HINT } = require('./shared/supabaseServer')
 
 exports.handler = async (event) => {
   const headers = {
@@ -15,21 +15,14 @@ exports.handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) }
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-  const serviceKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_SECRET_KEY ||
-    process.env.SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !serviceKey) {
-    const hint =
-      'Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Netlify → Site settings → Environment variables (get the service_role key in Supabase → Project settings → API). Redeploy.'
+  const sb = createServiceSupabase()
+  if (sb.error) {
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({
-        error: 'Supabase server keys are not configured',
-        hint,
+        error: sb.error,
+        hint: sb.hint || SERVICE_KEY_HINT,
       }),
     }
   }
@@ -53,7 +46,7 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid reward option' }) }
     }
 
-    const supabase = createClient(supabaseUrl, serviceKey)
+    const supabase = sb.client
 
     const { data: user, error: userErr } = await supabase
       .from('rewards_users')
