@@ -43,23 +43,32 @@ export function DashboardView() {
       return
     }
     const load = async () => {
-      const [ordersRes, vendorsRes, productsRes, applicationsRes] = await Promise.all([
-        supabase.from('orders').select('id, total'),
+      const [shopRes, momadeRes, vendorsRes, productsRes, applicationsRes] = await Promise.all([
+        supabase.from('shop_orders').select('id, total, customer_name, status, created_at'),
+        supabase.from('orders').select('id, total, customer_name, status, created_at'),
         supabase.from('vendors').select('*', { count: 'exact', head: true }).eq('status', 'active'),
         supabase.from('products').select('*', { count: 'exact', head: true }),
-        supabase.from('vendor_applications').select('*', { count: 'exact', head: true }).eq('status', 'pending')
+        supabase.from('vendor_applications').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       ])
-      const orders = ordersRes.data || []
-      const revenue = orders.reduce((sum, o) => sum + Number(o.total || 0), 0)
-      const { data: recent } = await supabase.from('orders').select('id, customer_name, total, status, created_at').order('created_at', { ascending: false }).limit(5)
+      const shopOrders = shopRes.data || []
+      const momadeOrders = momadeRes.data || []
+      const revenue =
+        shopOrders.reduce((sum, o) => sum + Number(o.total || 0), 0) +
+        momadeOrders.reduce((sum, o) => sum + Number(o.total || 0), 0)
+      const recent = [
+        ...shopOrders.map((o) => ({ ...o, _channel: 'shop' })),
+        ...momadeOrders.map((o) => ({ ...o, _channel: 'momade' })),
+      ]
+        .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+        .slice(0, 5)
       setStats({
         revenue,
-        ordersCount: orders.length,
+        ordersCount: shopOrders.length + momadeOrders.length,
         vendorsCount: vendorsRes.count ?? 0,
         productsCount: productsRes.count ?? 0,
-        pendingApplications: applicationsRes.count ?? 0
+        pendingApplications: applicationsRes.count ?? 0,
       })
-      setRecentOrders(recent || [])
+      setRecentOrders(recent)
       setLoading(false)
     }
     load()
@@ -96,11 +105,15 @@ export function DashboardView() {
           <h3 className="font-serif text-xl text-neutral-700 mb-4">Recent Orders</h3>
           <div className="space-y-3">
             {recentOrders.length === 0 && <p className="text-neutral-500 text-sm">No hay pedidos aún.</p>}
-            {recentOrders.map(order => (
-              <div key={order.id} className="flex items-center justify-between py-2 border-b border-neutral-200 last:border-0">
+            {recentOrders.map((order) => (
+              <div key={`${order._channel}-${order.id}`} className="flex items-center justify-between py-2 border-b border-neutral-200 last:border-0">
                 <div>
-                  <p className="font-medium text-neutral-700">Order #{order.id}</p>
-                  <p className="text-sm text-neutral-500">{order.customer_name} · ${Number(order.total).toFixed(2)}</p>
+                  <p className="font-medium text-neutral-700">
+                    {order._channel === 'shop' ? 'Shop' : 'MOMade'} #{order.id}
+                  </p>
+                  <p className="text-sm text-neutral-500">
+                    {order.customer_name || '—'} · ${Number(order.total).toFixed(2)}
+                  </p>
                 </div>
                 <span className="badge bg-taupe/20 text-taupe-dark">{order.status}</span>
               </div>
@@ -826,11 +839,15 @@ function ProductForm({ product, onClose }) {
   )
 }
 
-// Orders View
+// Orders View — Shop Magari (shop_orders) + MOMade marketplace (orders)
 export function OrdersView() {
-  const [orders, setOrders] = useState([])
-  const [orderItems, setOrderItems] = useState({})
+  const [channel, setChannel] = useState('shop')
+  const [shopOrders, setShopOrders] = useState([])
+  const [momadeOrders, setMomadeOrders] = useState([])
+  const [shopItems, setShopItems] = useState({})
+  const [momadeItems, setMomadeItems] = useState({})
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
 
   useEffect(() => {
     if (!supabase) {
@@ -838,15 +855,35 @@ export function OrdersView() {
       return
     }
     const load = async () => {
-      const { data: ordersData } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
-      setOrders(ordersData || [])
-      const { data: itemsData } = await supabase.from('order_items').select('*')
-      const byOrder = {}
-      ;(itemsData || []).forEach(item => {
-        if (!byOrder[item.order_id]) byOrder[item.order_id] = []
-        byOrder[item.order_id].push(item)
+      setLoadError('')
+      const [shopRes, momadeRes, shopItemsRes, momadeItemsRes] = await Promise.all([
+        supabase.from('shop_orders').select('*').order('created_at', { ascending: false }),
+        supabase.from('orders').select('*').order('created_at', { ascending: false }),
+        supabase.from('shop_order_items').select('*'),
+        supabase.from('order_items').select('*'),
+      ])
+      if (shopRes.error) {
+        console.error(shopRes.error)
+        setLoadError(
+          shopRes.error.message?.includes('permission') || shopRes.error.code === '42501'
+            ? 'No se pueden leer pedidos del Shop. Inicia sesión como admin y ejecuta la migración 20260521120000_shop_orders_admin_select.sql en Supabase.'
+            : shopRes.error.message
+        )
+      }
+      setShopOrders(shopRes.data || [])
+      setMomadeOrders(momadeRes.data || [])
+      const shopByOrder = {}
+      ;(shopItemsRes.data || []).forEach((item) => {
+        if (!shopByOrder[item.order_id]) shopByOrder[item.order_id] = []
+        shopByOrder[item.order_id].push(item)
       })
-      setOrderItems(byOrder)
+      setShopItems(shopByOrder)
+      const momadeByOrder = {}
+      ;(momadeItemsRes.data || []).forEach((item) => {
+        if (!momadeByOrder[item.order_id]) momadeByOrder[item.order_id] = []
+        momadeByOrder[item.order_id].push(item)
+      })
+      setMomadeItems(momadeByOrder)
       setLoading(false)
     }
     load()
@@ -854,29 +891,87 @@ export function OrdersView() {
 
   if (loading) return <div className="card p-6"><p className="text-neutral-600">Cargando pedidos…</p></div>
 
+  const tabs = [
+    { id: 'shop', label: 'Shop Magari', count: shopOrders.length },
+    { id: 'momade', label: 'MOMade', count: momadeOrders.length },
+    { id: 'all', label: 'Todos', count: shopOrders.length + momadeOrders.length },
+  ]
+
+  const list =
+    channel === 'shop'
+      ? shopOrders.map((o) => ({ ...o, _channel: 'shop' }))
+      : channel === 'momade'
+        ? momadeOrders.map((o) => ({ ...o, _channel: 'momade' }))
+        : [
+            ...shopOrders.map((o) => ({ ...o, _channel: 'shop' })),
+            ...momadeOrders.map((o) => ({ ...o, _channel: 'momade' })),
+          ].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+
+  const itemsFor = (order) =>
+    order._channel === 'shop' ? shopItems[order.id] || [] : momadeItems[order.id] || []
+
   return (
     <div>
-      <h2 className="font-serif text-2xl text-neutral-700 mb-6">Pedidos</h2>
-      {orders.length === 0 && (
-        <p className="text-neutral-600">Aún no hay pedidos.</p>
+      <h2 className="font-serif text-2xl text-neutral-700 mb-4">Pedidos</h2>
+      <p className="text-sm text-neutral-500 mb-4">
+        Las compras del Shop Magari (Stripe) se guardan en <code className="text-xs bg-neutral-100 px-1 rounded">shop_orders</code>.
+      </p>
+      {loadError && (
+        <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-sm">
+          {loadError}
+        </div>
       )}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setChannel(t.id)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              channel === t.id ? 'bg-sage text-white' : 'bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50'
+            }`}
+          >
+            {t.label} ({t.count})
+          </button>
+        ))}
+      </div>
+      {list.length === 0 && <p className="text-neutral-600">Aún no hay pedidos en esta vista.</p>}
       <div className="space-y-4">
-        {orders.map(order => (
-          <div key={order.id} className="card p-4 border border-neutral-200">
-            <div className="flex justify-between items-start mb-2">
+        {list.map((order) => (
+          <div key={`${order._channel}-${order.id}`} className="card p-4 border border-neutral-200">
+            <div className="flex justify-between items-start mb-2 gap-3">
               <div>
-                <p className="font-medium text-neutral-800">Pedido #{order.id}</p>
-                <p className="text-sm text-neutral-500">{order.customer_name} · {order.customer_email}</p>
-                {order.shipping_address && <p className="text-xs text-neutral-500">{order.shipping_address}</p>}
+                <p className="font-medium text-neutral-800">
+                  <span className="badge bg-sage/15 text-sage-dark mr-2 text-xs">
+                    {order._channel === 'shop' ? 'Shop' : 'MOMade'}
+                  </span>
+                  Pedido #{order.id}
+                </p>
+                <p className="text-sm text-neutral-500">
+                  {order.customer_name || '—'} · {order.customer_email || '—'}
+                </p>
+                {order.shipping_address && (
+                  <p className="text-xs text-neutral-500">{order.shipping_address}</p>
+                )}
+                {order._channel === 'shop' && order.stripe_checkout_session_id && (
+                  <p className="text-xs text-neutral-400 mt-1 font-mono">
+                    Stripe: {order.stripe_checkout_session_id}
+                  </p>
+                )}
               </div>
-              <div className="text-right">
+              <div className="text-right shrink-0">
                 <p className="font-semibold text-neutral-700">${Number(order.total).toFixed(2)}</p>
                 <span className="badge bg-neutral-200 text-neutral-700">{order.status}</span>
               </div>
             </div>
             <ul className="text-sm text-neutral-600 border-t border-neutral-100 pt-2 mt-2">
-              {(orderItems[order.id] || []).map(item => (
-                <li key={item.id}>· {item.product_title} × {item.quantity} — ${Number(item.price).toFixed(2)}</li>
+              {itemsFor(order).length === 0 && order._channel === 'shop' && (
+                <li className="text-neutral-400 italic">Líneas no guardadas en BD (solo resumen del pedido).</li>
+              )}
+              {itemsFor(order).map((item) => (
+                <li key={item.id}>
+                  · {item.product_title} × {item.quantity} — ${Number(item.price).toFixed(2)}
+                </li>
               ))}
             </ul>
             <p className="text-xs text-neutral-400 mt-2">
