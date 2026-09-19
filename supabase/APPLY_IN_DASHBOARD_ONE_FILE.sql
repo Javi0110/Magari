@@ -22,37 +22,57 @@ alter table public.products
 -- HARDENING SHOP_PRODUCTS (evita timeouts y asegura lectura pública para Shop)
 -- -----------------------------------------------------------------------------
 
--- Index para order by created_at desc (usado por la tienda/admin)
-create index if not exists idx_shop_products_created_at_desc
-  on public.shop_products (created_at desc);
-
--- RLS de lectura pública simple (rápida y predecible)
-alter table public.shop_products enable row level security;
-drop policy if exists "Allow public read shop_products" on public.shop_products;
-create policy "Allow public read shop_products"
-  on public.shop_products
-  for select
-  to anon, authenticated
-  using (true);
-
--- -----------------------------------------------------------------------------
--- RPC catálogo Shop (si la app sigue con timeout 57014, el cliente llama esto)
--- -----------------------------------------------------------------------------
-
-create or replace function public.get_shop_products_catalog(p_limit integer default 200)
-returns setof public.shop_products
+create or replace function public.is_magari_admin()
+returns boolean
 language sql
 stable
 security definer
 set search_path = public
 as $$
-  select *
-  from public.shop_products
-  order by id desc
-  limit least(coalesce(nullif(p_limit, 0), 200), 500);
+  select lower(coalesce(auth.jwt() ->> 'email', '')) = 'magaribyelena@gmail.com';
 $$;
 
-alter function public.get_shop_products_catalog(integer) set statement_timeout = '60s';
+revoke all on function public.is_magari_admin() from public;
+grant execute on function public.is_magari_admin() to anon, authenticated;
+
+create index if not exists idx_shop_products_created_at_desc
+  on public.shop_products (created_at desc);
+
+create index if not exists idx_shop_products_active_id_desc
+  on public.shop_products (id desc)
+  where is_active = true;
+
+alter table public.shop_products enable row level security;
+drop policy if exists "Allow public read shop_products" on public.shop_products;
+drop policy if exists "shop_products_public_read_active" on public.shop_products;
+drop policy if exists "shop_products_admin_select" on public.shop_products;
+
+create policy "shop_products_public_read_active"
+  on public.shop_products
+  for select
+  to anon, authenticated
+  using (is_active = true);
+
+create policy "shop_products_admin_select"
+  on public.shop_products
+  for select
+  to authenticated
+  using (public.is_magari_admin());
+
+create or replace function public.get_shop_products_catalog(p_limit integer default 48)
+returns setof public.shop_products
+language sql
+stable
+security definer
+set search_path = public
+set statement_timeout = '60s'
+as $$
+  select *
+  from public.shop_products
+  where is_active = true
+  order by id desc
+  limit least(greatest(coalesce(p_limit, 48), 1), 100);
+$$;
 
 grant execute on function public.get_shop_products_catalog(integer) to anon, authenticated;
 

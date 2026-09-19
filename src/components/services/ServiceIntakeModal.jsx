@@ -2,8 +2,10 @@ import { useState, useMemo, useEffect } from 'react'
 import { X, Loader2, Send } from 'lucide-react'
 import { getIntakeConfig } from '../../constants/serviceIntakeConfigs'
 import { submitServiceIntake } from '../../utils/submitServiceIntake'
+import { PreferredContactPicker } from '../WhatsAppCta'
+import WhatsAppCta from '../WhatsAppCta'
 
-const initialContact = { fullName: '', email: '', phone: '', cityZip: '' }
+const initialContact = { fullName: '', email: '', phone: '', cityZip: '', preferredContact: 'email' }
 
 export default function ServiceIntakeModal({ open, onClose, intakeKey, packageName, headlineOverride }) {
   const config = useMemo(() => (intakeKey ? getIntakeConfig(intakeKey) : null), [intakeKey])
@@ -34,9 +36,15 @@ export default function ServiceIntakeModal({ open, onClose, intakeKey, packageNa
 
   const validate = () => {
     if (!contact.fullName?.trim()) return 'Name is required.'
-    if (!contact.email?.trim()) return 'Email is required.'
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email.trim())) return 'Enter a valid email.'
-    if (!contact.phone?.trim()) return 'Phone is required.'
+    if (contact.preferredContact === 'email') {
+      if (!contact.email?.trim()) return 'Email is required.'
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email.trim())) return 'Enter a valid email.'
+    } else if (!contact.phone?.trim()) {
+      return 'A WhatsApp number is required.'
+    }
+    if (contact.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email.trim())) {
+      return 'Enter a valid email.'
+    }
     for (const f of config.fields) {
       if (!f.required) continue
       const v = answers[f.name]
@@ -65,6 +73,7 @@ export default function ServiceIntakeModal({ open, onClose, intakeKey, packageNa
         email: contact.email.trim(),
         phone: contact.phone.trim(),
         cityZip: contact.cityZip?.trim(),
+        preferredContact: contact.preferredContact,
       },
     })
     setStatus('idle')
@@ -102,7 +111,17 @@ export default function ServiceIntakeModal({ open, onClose, intakeKey, packageNa
               <p className="text-sm text-neutral-600 mb-4">
                 We received your request. Reference: <span className="font-mono text-xs bg-neutral-100 px-2 py-0.5 rounded">{doneRef}</span>
               </p>
-              <p className="text-xs text-neutral-500 mb-6">We&apos;ll follow up within 24–48 business hours.</p>
+              <p className="text-xs text-neutral-500 mb-6">We&apos;ll follow up within 24–48 business hours on your preferred channel.</p>
+              {contact.preferredContact === 'whatsapp' && (
+                <div className="mb-6">
+                  <WhatsAppCta
+                    className="btn-outline inline-flex items-center gap-2"
+                    message={`Hi Elena — I just sent a Magari inquiry (ref ${doneRef}).`}
+                  >
+                    Open WhatsApp
+                  </WhatsAppCta>
+                </div>
+              )}
               {emailNote && (
                 <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-4">
                   Your request was saved. Email confirmation may have failed: {emailNote}
@@ -122,12 +141,21 @@ export default function ServiceIntakeModal({ open, onClose, intakeKey, packageNa
                   <label className="form-label text-xs">Full name *</label>
                   <input className="input-field text-sm" value={contact.fullName} onChange={(e) => setContact((c) => ({ ...c, fullName: e.target.value }))} autoComplete="name" required />
                 </div>
+                <PreferredContactPicker
+                  idPrefix="intake"
+                  value={contact.preferredContact}
+                  onChange={(preferredContact) => setContact((c) => ({ ...c, preferredContact }))}
+                />
                 <div>
-                  <label className="form-label text-xs">Email *</label>
-                  <input className="input-field text-sm" type="email" value={contact.email} onChange={(e) => setContact((c) => ({ ...c, email: e.target.value }))} autoComplete="email" required />
+                  <label className="form-label text-xs">
+                    Email {contact.preferredContact === 'email' ? '*' : '(optional)'}
+                  </label>
+                  <input className="input-field text-sm" type="email" value={contact.email} onChange={(e) => setContact((c) => ({ ...c, email: e.target.value }))} autoComplete="email" required={contact.preferredContact === 'email'} />
                 </div>
                 <div>
-                  <label className="form-label text-xs">Phone *</label>
+                  <label className="form-label text-xs">
+                    Phone / WhatsApp *
+                  </label>
                   <input className="input-field text-sm" type="tel" value={contact.phone} onChange={(e) => setContact((c) => ({ ...c, phone: e.target.value }))} autoComplete="tel" required />
                 </div>
                 <div>

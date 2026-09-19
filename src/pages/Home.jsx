@@ -5,8 +5,6 @@ import {
   Palette,
   Sofa,
   Home,
-  Store,
-  Sparkles,
   Quote,
   CheckCircle2,
   ShoppingBag,
@@ -27,7 +25,7 @@ const serviceCards = [
   {
     title: 'Interior Design',
     text: 'Design that feels warm, timeless, and functional — made for real life.',
-    href: '/services#interior-design',
+    href: '/services/interior-design',
     icon: Palette,
     cta: 'Explore Design',
     bullets: ['Full-room transformations', 'Custom styling + sourcing', 'Layout & space planning'],
@@ -35,7 +33,7 @@ const serviceCards = [
   {
     title: 'Home Staging',
     text: 'Sell faster and for more by making your home feel irresistible to buyers.',
-    href: '/services#home-staging',
+    href: '/services/home-staging',
     icon: Sofa,
     cta: 'Explore Staging',
     bullets: ['Walkthrough consultations', 'Listing prep + styling', 'Photo-ready spaces'],
@@ -293,50 +291,24 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 7–8. Secondary: Shop + MOMade — after services path + lead magnet; not in hero */}
+      {/* Secondary: Shop Magari */}
       <section className="bg-gradient-to-b from-cream to-white border-t border-greige-light/60 py-14 md:py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-xs uppercase tracking-[0.22em] text-neutral-500 text-center mb-10 md:mb-12">
-            Shop &amp; MOMade — when you&apos;re ready (after your plan or consult)
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-xs uppercase tracking-[0.22em] text-neutral-500 mb-6">
+            Shop Magari — when you&apos;re ready
           </p>
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <div className="border-b border-greige-light/60 pb-10 lg:border-b-0 lg:pb-0 lg:pr-8 lg:border-r border-greige-light/50">
-              <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-3">Shop Magari</h2>
-              <p className="text-neutral-600 text-sm leading-relaxed mb-6 max-w-md">
-                Curated home finds, handmade pieces, and favorites that feel like Magari.
-              </p>
-              <Link to="/shop" className="btn-outline">
-                <ShoppingBag className="w-4 h-4" />
-                Shop Magari
-              </Link>
-              <div className="flex gap-3 mt-8 justify-start opacity-85">
-                <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-sage-muted/35 border border-greige-light/80" />
-                <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-earth/20 border border-greige-light/80 -mt-2" />
-                <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-taupe-light/50 border border-greige-light/80" />
-              </div>
-            </div>
-            <div className="pt-2 lg:pt-0 lg:pl-2">
-              <h2 className="font-serif text-2xl md:text-3xl text-neutral-700 mb-3 lg:text-right">MOMade Marketplace</h2>
-              <p className="text-neutral-600 text-sm leading-relaxed mb-6 max-w-md lg:ml-auto lg:text-right">
-                A marketplace made by moms, for moms. Supporting small businesses and beautiful handmade finds.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 lg:justify-end">
-                <Link to="/momade" className="btn-outline">
-                  Explore MOMade
-                  <Store className="w-4 h-4" />
-                </Link>
-                <Link to="/become-a-vendor" className="btn-secondary">
-                  Become a Vendor
-                </Link>
-              </div>
-              <div className="flex gap-3 mt-8 justify-center lg:justify-end opacity-85">
-                <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-taupe-light/60 border border-greige-light/80" />
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-sage/15 border border-sage-muted flex items-center justify-center">
-                  <Sparkles className="w-7 h-7 text-sage" />
-                </div>
-                <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-greige-light/80 border border-greige-light/80 -mt-2" />
-              </div>
-            </div>
+          <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-4">Shop Magari</h2>
+          <p className="text-neutral-600 text-base leading-relaxed mb-8 max-w-xl mx-auto">
+            Curated home finds, handmade pieces, and favorites that feel like Magari.
+          </p>
+          <Link to="/shop" className="btn-primary inline-flex items-center gap-2">
+            <ShoppingBag className="w-4 h-4" />
+            Shop Magari
+          </Link>
+          <div className="flex gap-3 mt-10 justify-center opacity-85">
+            <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-sage-muted/35 border border-greige-light/80" />
+            <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-earth/20 border border-greige-light/80 -mt-2" />
+            <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl bg-taupe-light/50 border border-greige-light/80" />
           </div>
         </div>
       </section>

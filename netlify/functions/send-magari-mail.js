@@ -180,15 +180,18 @@ exports.handler = async (event) => {
     }
 
     if (kind === 'consultation_booked') {
-      const { guestName, guestEmail, serviceLabel, slotLabel, requestId } = body
+      const { guestName, guestEmail, guestPhone, preferredContact, serviceLabel, slotLabel, requestId } = body
       if (!guestEmail || !serviceLabel || !slotLabel) {
         return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'Missing fields' }) }
       }
+      const channel = preferredContact === 'whatsapp' ? 'WhatsApp' : 'Email'
       const internalHtml = `<p><strong>New consultation request</strong></p>
 <ul>
 <li>ID: ${escapeHtml(requestId || '—')}</li>
 <li>Name: ${escapeHtml(guestName || '—')}</li>
+<li>Follow up via: ${escapeHtml(channel)}</li>
 <li>Email: ${escapeHtml(guestEmail)}</li>
+<li>Phone: ${escapeHtml(guestPhone || '—')}</li>
 <li>Service: ${escapeHtml(serviceLabel)}</li>
 <li>Time: ${escapeHtml(slotLabel)}</li>
 </ul>
@@ -196,17 +199,22 @@ exports.handler = async (event) => {
       const r1 = await sendResend(MAGARI_EMAIL, `Consultation: ${serviceLabel}`, internalHtml)
       if (!r1.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r1.error }) }
 
-      const guestHtml = `<p>Hi ${escapeHtml(guestName || 'there')},</p>
+      const skipGuestMail =
+        preferredContact === 'whatsapp' ||
+        String(guestEmail).toLowerCase() === String(MAGARI_EMAIL).toLowerCase()
+      if (!skipGuestMail) {
+        const guestHtml = `<p>Hi ${escapeHtml(guestName || 'there')},</p>
 <p>We’ve received your <strong>consultation request</strong> for <strong>${escapeHtml(serviceLabel)}</strong>.</p>
 <p><strong>Requested time:</strong><br/>${escapeHtml(slotLabel)}</p>
-<p>We’ll confirm by email if anything needs to change. If you don’t hear from us within 24–48 business hours, write us at <a href="mailto:${MAGARI_EMAIL}">${MAGARI_EMAIL}</a>.</p>
+<p>We’ll confirm by email if anything needs to change. If you don’t hear from us within 24–48 business hours, write us at <a href="mailto:${MAGARI_EMAIL}">${MAGARI_EMAIL}</a> or WhatsApp us from the contact page.</p>
 <p>— Magari &amp; Co.</p>`
-      const r2 = await sendResend(
-        guestEmail,
-        'Confirmation — consultation requested (Magari & Co.)',
-        guestHtml
-      )
-      if (!r2.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r2.error }) }
+        const r2 = await sendResend(
+          guestEmail,
+          'Confirmation — consultation requested (Magari & Co.)',
+          guestHtml
+        )
+        if (!r2.ok) return { statusCode: 500, headers: cors, body: JSON.stringify({ error: r2.error }) }
+      }
       return { statusCode: 200, headers: cors, body: JSON.stringify({ ok: true }) }
     }
 

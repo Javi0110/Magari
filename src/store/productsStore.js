@@ -115,7 +115,21 @@ const SHOP_PRODUCT_SELECT_MINIMAL = [
   'is_active',
   'created_at',
 ].join(', ')
-const SHOP_PRODUCTS_FETCH_LIMIT = 500
+const SHOP_PRODUCTS_FETCH_LIMIT = 48
+
+/** Lean columns for storefront grid (skips heavy optional fields). */
+const SHOP_PRODUCT_SELECT_LEAN = [
+  'id',
+  'slug',
+  'title',
+  'price',
+  'category',
+  'images',
+  'badge',
+  'stock',
+  'is_active',
+  'created_at',
+].join(', ')
 
 const sortProductsByCreatedAtDesc = (rows) =>
   [...rows].sort(
@@ -135,42 +149,16 @@ function isRpcCatalogMissingError(error) {
 }
 
 /**
- * RPC primero: en DB usa ORDER BY id (PK) y statement_timeout más alto (ver migración).
- * PostgREST solo como respaldo; reintentos solo con ORDER BY id para no encadenar timeouts por created_at.
+ * RPC primero (security definer + higher timeout in DB).
+ * Then lean PostgREST selects with shrinking limits to beat statement timeouts.
  */
-async function runShopProductsSelect(selectList) {
-  const attempts = [
-    (q) => q.order('id', { ascending: false }).limit(SHOP_PRODUCTS_FETCH_LIMIT),
-    (q) => q.order('id', { ascending: false }).limit(200),
-    (q) => q.order('id', { ascending: false }).limit(100),
-  ]
-
-  let result
-  for (const finish of attempts) {
-    const base = supabase.from('shop_products').select(selectList)
-    result = await finish(base)
-    if (!result.error) return result
-    if (!isStatementTimeoutError(result.error)) return result
-  }
-  return result
-}
-
-async function fetchShopProductsViaRpc() {
-  const limits = [SHOP_PRODUCTS_FETCH_LIMIT, 200, 100]
-  let last
-  for (const p_limit of limits) {
-    const r = await supabase.rpc('get_shop_products_catalog', { p_limit })
-    last = r
-    if (!r.error && Array.isArray(r.data)) return r
-    if (isRpcCatalogMissingError(r.error)) {
-      return r
-    }
-  }
-  return last
-}
-
-async function fetchShopProductsPrimaryRpc() {
-  return supabase.rpc('get_shop_products_catalog', { p_limit: SHOP_PRODUCTS_FETCH_LIMIT })
+async function runShopProductsSelect(selectList, limit) {
+  return supabase
+    .from('shop_products')
+    .select(selectList)
+    .eq('is_active', true)
+    .order('id', { ascending: false })
+    .limit(limit)
 }
 
 export const fetchShopProducts = async () => {
@@ -178,38 +166,39 @@ export const fetchShopProducts = async () => {
     return { data: null, error: new Error(SUPABASE_REQUIRED_MSG) }
   }
 
-  const rpcFirst = await fetchShopProductsPrimaryRpc()
-  if (!rpcFirst.error && Array.isArray(rpcFirst.data)) {
-    return { ...rpcFirst, data: sortProductsByCreatedAtDesc(rpcFirst.data) }
-  }
-  if (rpcFirst.error && !isRpcCatalogMissingError(rpcFirst.error) && !isStatementTimeoutError(rpcFirst.error)) {
-    return rpcFirst
+  const rpcLimits = [SHOP_PRODUCTS_FETCH_LIMIT, 24, 12]
+  let lastRpc = null
+  for (const p_limit of rpcLimits) {
+    lastRpc = await supabase.rpc('get_shop_products_catalog', { p_limit })
+    if (!lastRpc.error && Array.isArray(lastRpc.data)) {
+      return { ...lastRpc, data: sortProductsByCreatedAtDesc(lastRpc.data) }
+    }
+    if (isRpcCatalogMissingError(lastRpc.error)) break
+    if (!isStatementTimeoutError(lastRpc.error) && lastRpc.error) {
+      // Non-timeout RPC error — still try PostgREST fallbacks below
+      break
+    }
   }
 
-  const selectVariants = [SHOP_PRODUCT_SELECT, SHOP_PRODUCT_SELECT_MINIMAL, '*']
+  const selectVariants = [
+    SHOP_PRODUCT_SELECT_LEAN,
+    SHOP_PRODUCT_SELECT_MINIMAL,
+    SHOP_PRODUCT_SELECT,
+  ]
+  const limits = [24, 12, 8]
 
-  let result = rpcFirst
+  let result = lastRpc
   for (const selectList of selectVariants) {
-    result = await runShopProductsSelect(selectList)
-    if (!result.error) {
-      return { ...result, data: sortProductsByCreatedAtDesc(result.data) }
-    }
-    if (isRecoverableSelectListError(result.error) || isStatementTimeoutError(result.error)) {
-      continue
-    }
-    break
-  }
-
-  if (result?.error && isStatementTimeoutError(result.error)) {
-    const rpcFallback = await fetchShopProductsViaRpc()
-    if (!rpcFallback.error && Array.isArray(rpcFallback.data)) {
-      return { ...rpcFallback, data: sortProductsByCreatedAtDesc(rpcFallback.data) }
+    for (const limit of limits) {
+      result = await runShopProductsSelect(selectList, limit)
+      if (!result.error) {
+        return { ...result, data: sortProductsByCreatedAtDesc(result.data) }
+      }
+      if (isRecoverableSelectListError(result.error)) break
+      if (!isStatementTimeoutError(result.error)) return result
     }
   }
 
-  if (!result.error && Array.isArray(result.data)) {
-    return { ...result, data: sortProductsByCreatedAtDesc(result.data) }
-  }
   return result
 }
 function toDb(product) {

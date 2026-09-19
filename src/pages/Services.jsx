@@ -22,7 +22,7 @@ const addOnBullets = [
   'Photo-day styling support',
 ]
 
-function ServicePillarCard({ icon: Icon, iconClass, title, children, ctaLabel, onCta }) {
+function ServicePillarCard({ icon: Icon, iconClass, title, children, ctaLabel, onCta, learnMoreTo }) {
   return (
     <motion.article
       {...fade}
@@ -33,9 +33,16 @@ function ServicePillarCard({ icon: Icon, iconClass, title, children, ctaLabel, o
       </div>
       <h2 className="font-serif text-2xl md:text-3xl text-neutral-800 mb-3">{title}</h2>
       <div className="text-neutral-600 text-sm leading-relaxed space-y-3 flex-1 mb-5">{children}</div>
-      <button type="button" onClick={onCta} className="btn-primary w-full mt-auto py-3 text-sm">
-        {ctaLabel}
-      </button>
+      <div className="mt-auto space-y-2">
+        {learnMoreTo && (
+          <Link to={learnMoreTo} className="btn-outline w-full text-center py-3 text-sm block">
+            Learn more
+          </Link>
+        )}
+        <button type="button" onClick={onCta} className="btn-primary w-full py-3 text-sm">
+          {ctaLabel}
+        </button>
+      </div>
     </motion.article>
   )
 }
@@ -97,6 +104,7 @@ export default function ServicesPage() {
                 iconClass="bg-taupe/20 text-taupe-dark"
                 title="Virtual Design"
                 ctaLabel="Request Virtual Design"
+                learnMoreTo="/services/virtual-design"
                 onCta={() => openIntake('virtual-design')}
               >
                 <p>
@@ -114,6 +122,7 @@ export default function ServicesPage() {
                 iconClass="bg-sage-muted/45 text-sage-dark"
                 title="Interior Design"
                 ctaLabel="Inquire — Interior Design"
+                learnMoreTo="/services/interior-design"
                 onCta={() => openIntake('interior-design')}
               >
                 <p>
@@ -129,6 +138,7 @@ export default function ServicesPage() {
                 iconClass="bg-earth/15 text-earth-dark"
                 title="Home Staging"
                 ctaLabel="Inquire — Home Staging"
+                learnMoreTo="/services/home-staging"
                 onCta={() => openIntake('home-staging')}
               >
                 <p>
@@ -145,7 +155,10 @@ export default function ServicesPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fade} className="text-center max-w-2xl mx-auto mb-8 md:mb-10">
             <h2 className="font-serif text-3xl md:text-4xl text-neutral-700 mb-2">Packages + pricing</h2>
-            <p className="text-sm text-neutral-600">Each button opens a short intake form for that package.</p>
+            <p className="text-sm text-neutral-600 mb-3">Each button opens a short intake form for that package.</p>
+            <Link to="/services/packages" className="text-sm text-sage font-medium hover:underline">
+              Full packages overview →
+            </Link>
           </motion.div>
           <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
             {SERVICE_PACKAGES.map((pkg, i) => (

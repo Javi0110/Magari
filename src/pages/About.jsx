@@ -93,7 +93,7 @@ export default function AboutPage() {
             <p>
               On the real estate side I hang my license with eXp Realty as Elena Fadhel, Realtor<sup>®</sup> @ eXp
               Realty — separate from the Magari studio, always labeled. Today the studio does interiors and staging; Shop
-              Magari and MOMade layer in when clients are ready for goods, not before the plan is clear.
+              Magari layers in when clients are ready for goods, not before the plan is clear.
             </p>
 
             <p className="font-serif text-xl md:text-2xl text-neutral-700 italic">
@@ -125,7 +125,7 @@ export default function AboutPage() {
             {
               icon: <Users className="w-8 h-8" />,
               title: 'Lift while we climb',
-              description: 'MOMade spotlights other mom makers — shelf space and storytelling, not gatekeeping.',
+              description: 'We celebrate makers and small brands — shelf space and storytelling, not gatekeeping.',
             },
             {
               icon: <Target className="w-8 h-8" />,
@@ -170,7 +170,7 @@ export default function AboutPage() {
               { year: 'Before Magari', event: 'Art school habits: sketchbooks, clay tests, late-night “what if” floor plans.' },
               { year: 'Early Magari', event: 'First mugs sold off the kitchen table; friends asked for room help — staging showed up naturally.' },
               { year: 'Studio', event: 'Formal packages: consults, listing prep, installs — still one visual voice.' },
-              { year: 'MOMade', event: 'Marketplace launch so mom makers share a cart, not just a hashtag.' },
+              { year: 'Shop Magari', event: 'Curated home finds and handmade pieces under the Magari shop.' },
               { year: 'Casa (someday)', event: 'Brick space: stay, shop, workshop — still fundraising and floor-planning.' },
             ].map((milestone, index) => (
               <div key={index} className="flex gap-6">

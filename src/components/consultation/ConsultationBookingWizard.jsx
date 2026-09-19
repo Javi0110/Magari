@@ -14,6 +14,8 @@ import {
   formatTimeRange,
 } from '../../utils/consultationBooking'
 import { notifyConsultationBooked } from '../../utils/emailService'
+import { PreferredContactPicker } from '../WhatsAppCta'
+import { STUDIO_EMAIL, formatPreferredContactLine } from '../../constants/siteContact'
 
 const steps = [
   { id: 1, title: 'Service' },
@@ -60,6 +62,7 @@ export default function ConsultationBookingWizard() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [preferredContact, setPreferredContact] = useState('email')
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState('')
@@ -118,24 +121,29 @@ export default function ConsultationBookingWizard() {
 
   const canNext1 = !!serviceType
   const canNext2 = !!selectedSlot
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
   const canSubmit =
     fullName.trim().length > 1 &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
     selectedSlot &&
-    serviceType
+    serviceType &&
+    (preferredContact === 'whatsapp' ? phone.trim().length >= 7 : emailOk)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setFormError('')
     if (!canSubmit) return
     setSubmitting(true)
+    const guestEmail = email.trim() || STUDIO_EMAIL
+    const composed = [formatPreferredContactLine(preferredContact, phone.trim()), message.trim()]
+      .filter(Boolean)
+      .join('\n\n')
     const { data, error } = await submitConsultationRequest({
       slotId: selectedSlot.id,
       fullName: fullName.trim(),
-      email: email.trim(),
+      email: guestEmail,
       phone: phone.trim(),
       serviceType,
-      message: message.trim(),
+      message: composed,
     })
     setSubmitting(false)
     if (error) {
@@ -161,10 +169,13 @@ export default function ConsultationBookingWizard() {
       serviceLabel: labelForServiceType(serviceType),
       slotLabel: formatTimeRange(selectedSlot),
       requestId: resolvedId,
+      preferredContact,
     }
     notifyConsultationBooked({
       guestName: fullName.trim(),
-      guestEmail: email.trim(),
+      guestEmail: guestEmail,
+      guestPhone: phone.trim(),
+      preferredContact,
       serviceLabel: summary.serviceLabel,
       slotLabel: summary.slotLabel,
       requestId: resolvedId,
@@ -180,10 +191,10 @@ export default function ConsultationBookingWizard() {
           <Calendar className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="font-serif text-2xl md:text-3xl text-neutral-800 tracking-tight">Request a consultation</h2>
+          <h2 className="font-serif text-2xl md:text-3xl text-neutral-800 tracking-tight">Choose a date</h2>
           <p className="text-sm text-neutral-500 mt-1 flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden />
-            Times shown in <span className="font-medium text-neutral-600">{BOOKING_TIMEZONE_LABEL}</span>
+            Open slots in <span className="font-medium text-neutral-600">{BOOKING_TIMEZONE_LABEL}</span>
           </p>
         </div>
       </div>
@@ -253,10 +264,10 @@ export default function ConsultationBookingWizard() {
             ) : grouped.length === 0 ? (
               <p className="text-sm text-neutral-600 bg-cream border border-greige-light rounded-xl p-4">
                 No open slots right now. Email{' '}
-                <a href="mailto:magaribyelena@gmail.com" className="text-sage-dark font-medium underline">
-                  magaribyelena@gmail.com
+                <a href={`mailto:${STUDIO_EMAIL}`} className="text-sage-dark font-medium underline">
+                  {STUDIO_EMAIL}
                 </a>{' '}
-                and we&apos;ll follow up.
+                or use WhatsApp from the contact card and we&apos;ll follow up.
               </p>
             ) : (
               <>
@@ -375,26 +386,32 @@ export default function ConsultationBookingWizard() {
                 autoComplete="name"
               />
             </div>
+            <PreferredContactPicker value={preferredContact} onChange={setPreferredContact} idPrefix="book" />
             <div>
-              <label className="form-label">Email *</label>
+              <label className="form-label">
+                Email {preferredContact === 'email' ? '*' : <span className="font-normal text-neutral-400">(optional)</span>}
+              </label>
               <input
                 type="email"
                 className="input-field"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
+                required={preferredContact === 'email'}
                 autoComplete="email"
               />
             </div>
             <div>
-              <label className="form-label">Phone</label>
+              <label className="form-label">
+                Phone / WhatsApp {preferredContact === 'whatsapp' ? '*' : ''}
+              </label>
               <input
                 type="tel"
                 className="input-field"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 autoComplete="tel"
-                placeholder="Optional"
+                required={preferredContact === 'whatsapp'}
+                placeholder={preferredContact === 'whatsapp' ? 'Number we can message' : 'Optional'}
               />
             </div>
             <div>

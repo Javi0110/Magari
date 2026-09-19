@@ -53,8 +53,7 @@ export default function CasaMagariPage() {
               Casa Magari — the stay we&apos;re sketching in slow motion.
             </h1>
             <p className="text-lg text-neutral-600 mb-3">
-              One physical house: studio work, Magari shop shelves, and MOMade makers in rotation — not three
-              disconnected brands.
+              One physical house: studio work and Magari shop shelves under one roof — not disconnected brands.
             </p>
             <p className="text-neutral-600 text-sm md:text-base">
               Goal: sleep there like an Airbnb guest, touch the textiles, scan a tag, buy the mug on the way out.
@@ -118,8 +117,8 @@ export default function CasaMagariPage() {
               </h2>
             </div>
             <p className="text-neutral-600 text-sm md:text-base mb-3">
-              Every room in Casa Magari will be a living gallery for mom-made and local work. Ceramics from
-              MOMade makers, textiles from local artists, original art and prints, styled like a home—not a showroom.
+              Every room in Casa Magari will be a living gallery for mom-made and local work. Ceramics,
+              textiles from local artists, original art and prints, styled like a home—not a showroom.
             </p>
             <p className="text-neutral-600 text-sm md:text-base">
               Guests will be able to scan a code in each room to learn about the maker behind the piece and shop

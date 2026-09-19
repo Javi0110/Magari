@@ -223,9 +223,21 @@ export default function ConsultationsAdminView() {
                       <p>
                         <span className="font-medium">Horario:</span> {slot ? formatTimeRange(slot) : '—'}
                       </p>
-                      <p className="flex items-center gap-2">
+                      <p className="flex items-center gap-2 flex-wrap">
                         <Phone className="w-3.5 h-3.5" />
                         {r.phone || '—'}
+                        {r.phone && String(r.phone).replace(/\D/g, '').length >= 10 && (
+                          <a
+                            href={`https://wa.me/${String(r.phone).replace(/\D/g, '')}?text=${encodeURIComponent(
+                              `Hi ${r.full_name || ''} — following up on your Magari consultation request.`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sage-dark underline text-xs"
+                          >
+                            WhatsApp this guest
+                          </a>
+                        )}
                       </p>
                       {r.message && (
                         <p>

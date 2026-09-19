@@ -87,6 +87,8 @@ export const sendLeadMagnetChecklistEmail = async ({
 export async function notifyConsultationBooked({
   guestName,
   guestEmail,
+  guestPhone,
+  preferredContact,
   serviceLabel,
   slotLabel,
   requestId,
@@ -95,6 +97,8 @@ export async function notifyConsultationBooked({
     kind: 'consultation_booked',
     guestName,
     guestEmail,
+    guestPhone: guestPhone || '',
+    preferredContact: preferredContact || 'email',
     serviceLabel,
     slotLabel,
     requestId,

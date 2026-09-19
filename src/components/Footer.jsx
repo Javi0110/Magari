@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { Instagram, Mail, MapPin } from 'lucide-react'
+import { Instagram, Mail, MapPin, MessageCircle } from 'lucide-react'
+import { isWhatsAppConfigured, whatsappHref } from '../constants/siteContact'
 import { useState } from 'react'
 import BookConsultButton from './BookConsultButton'
 
@@ -23,7 +24,7 @@ export default function Footer() {
             <h3 className="font-serif text-2xl text-neutral-700 font-medium mb-3">Magari &amp; Co.</h3>
             <ul className="text-neutral-600 text-sm leading-relaxed mb-4 space-y-2 list-disc list-inside marker:text-sage">
               <li>Interior design + home staging studio.</li>
-              <li>Shop Magari + MOMade when you want curated goods.</li>
+              <li>Shop Magari for curated goods.</li>
               <li>
                 Buying / selling: Elena Fadhel, Realtor<sup>®</sup> @ eXp Realty — separate from Magari &amp; Co.
               </li>
@@ -58,11 +59,6 @@ export default function Footer() {
               <li>
                 <Link to="/shop" className="text-neutral-600 hover:text-sage transition-colors">
                   Shop Magari
-                </Link>
-              </li>
-              <li>
-                <Link to="/momade" className="text-neutral-600 hover:text-sage transition-colors">
-                  MOMade Marketplace
                 </Link>
               </li>
               <li>
@@ -110,6 +106,17 @@ export default function Footer() {
               >
                 <Mail className="w-5 h-5" />
               </a>
+              {isWhatsAppConfigured() && (
+                <a
+                  href={whatsappHref('Hi Elena — I found Magari & Co. and would like to connect.')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-neutral-500 hover:text-sage transition-colors"
+                  aria-label="WhatsApp"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                </a>
+              )}
               <span className="text-neutral-500 inline-flex items-center" aria-label="Location">
                 <MapPin className="w-5 h-5" />
               </span>
@@ -130,9 +137,6 @@ export default function Footer() {
             </Link>
             <Link to="/shop" className="hover:text-sage transition-colors">
               Shop
-            </Link>
-            <Link to="/momade" className="hover:text-sage transition-colors">
-              MOMade
             </Link>
             <Link to="/contact" className="hover:text-sage transition-colors">
               Contact

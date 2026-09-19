@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { sendServiceRequestEmail, isEmailRelayConfigured } from './emailService'
 import { getIntakeConfig } from '../constants/serviceIntakeConfigs'
+import { STUDIO_EMAIL, formatPreferredContactLine } from '../constants/siteContact'
 
 function buildIntakeSummary(fields, answers) {
   if (!Array.isArray(fields)) return []
@@ -45,8 +46,11 @@ export async function submitServiceIntake({ intakeKey, packageName, answers, con
     intakeKey,
     packageName: packageName || null,
     intakeTitle: intakeKey === 'package' && packageName ? `${packageName} — inquiry` : config.title,
-    answers: { ...answers },
-    intakeSummary,
+    answers: { ...answers, preferredContact: contact.preferredContact || 'email' },
+    intakeSummary: [
+      { label: 'Preferred contact', value: formatPreferredContactLine(contact.preferredContact || 'email', contact.phone) },
+      ...intakeSummary,
+    ],
   }
 
   const row = {
@@ -54,7 +58,7 @@ export async function submitServiceIntake({ intakeKey, packageName, answers, con
     reference,
     contact: {
       fullName: contact.fullName?.trim(),
-      email: contact.email?.trim(),
+      email: contact.email?.trim() || STUDIO_EMAIL,
       phone: (contact.phone || '').trim(),
       cityZip: (contact.cityZip || '').trim() || undefined,
     },

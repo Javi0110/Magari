@@ -1,31 +1,29 @@
 import { Link } from 'react-router-dom'
-import { ShoppingCart, Menu, X, LogIn, User } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { ShoppingCart, Menu, X, User, ChevronDown } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
 import { useCartStore } from '../store/cartStore'
 import { motion, AnimatePresence } from 'framer-motion'
 import BookConsultButton from './BookConsultButton'
 
+/** Services submenu — studio offerings already on the site */
+const servicesLinks = [
+  { name: 'All Services', href: '/services' },
+  { name: 'Interior Design', href: '/services/interior-design' },
+  { name: 'Virtual Design', href: '/services/virtual-design' },
+  { name: 'Home Staging', href: '/services/home-staging' },
+  { name: 'Packages & Pricing', href: '/services/packages' },
+  { name: 'Real Estate', href: '/real-estate' },
+]
+
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [loginDropdownOpen, setLoginDropdownOpen] = useState(false)
-  const [userRole, setUserRole] = useState(null) // 'admin' | 'vendor' | 'customer' | null
+  const [servicesOpen, setServicesOpen] = useState(false)
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(true)
+  const [userRole, setUserRole] = useState(null)
+  const servicesRef = useRef(null)
   const { openCart, getItemCount } = useCartStore()
   const itemCount = getItemCount()
-
-  /** Core studio pages — single line, no wrap */
-  const primaryNavigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Services', href: '/services' },
-    { name: 'Real Estate', href: '/real-estate' },
-    { name: 'About', href: '/about' },
-    { name: 'Contact', href: '/contact' },
-  ]
-
-  /** E-commerce / marketplace — visually secondary */
-  const secondaryNavigation = [
-    { name: 'Shop Magari', href: '/shop' },
-    { name: 'MOMade Marketplace', href: '/momade', isIcon: true },
-  ]
 
   useEffect(() => {
     try {
@@ -47,18 +45,32 @@ export default function Header() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!servicesOpen) return
+    const onDoc = (e) => {
+      if (servicesRef.current && !servicesRef.current.contains(e.target)) {
+        setServicesOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [servicesOpen])
+
+  const closeMobile = () => {
+    setMobileMenuOpen(false)
+    setMobileServicesOpen(true)
+  }
+
   return (
     <header className="sticky top-0 z-50 bg-cream/98 backdrop-blur-md border-b border-greige-light/40">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-3 lg:gap-4 h-28 md:h-36 min-h-[7rem] md:min-h-[9rem]">
-          {/* Logo - Replace /logo.png with your actual logo file */}
-          <Link to="/" className="flex shrink-0 items-center">
-            <img 
-              src="/logo.png" 
-              alt="Magari & Co" 
-              className="h-24 md:h-32"
+        <div className="flex items-center justify-between gap-3 lg:gap-4 h-16 md:h-20">
+          <Link to="/" className="flex shrink-0 items-center" onClick={closeMobile}>
+            <img
+              src="/logo.png"
+              alt="Magari & Co"
+              className="h-14 md:h-16"
               onError={(e) => {
-                // Fallback to text if image not found
                 e.target.style.display = 'none'
                 e.target.nextSibling.style.display = 'flex'
               }}
@@ -73,61 +85,71 @@ export default function Header() {
             </div>
           </Link>
 
-          {/* Desktop: primary nav (center) + secondary shops (subtle, one row) */}
-          <div className="hidden lg:flex flex-1 min-w-0 items-center justify-center gap-4 xl:gap-6 2xl:gap-8 px-2">
-            <nav
-              aria-label="Main"
-              className="flex items-center gap-x-4 xl:gap-x-6 flex-nowrap whitespace-nowrap overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          {/* Desktop: Shop · Services · Magari Rewards */}
+          <div className="hidden lg:flex flex-1 min-w-0 items-center justify-center gap-8 xl:gap-10 px-2">
+            <Link
+              to="/shop"
+              className="shrink-0 text-sm xl:text-base font-semibold tracking-wide text-sage-dark hover:text-sage transition-colors"
             >
-              {primaryNavigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="shrink-0 text-sm xl:text-base text-stone hover:text-sage transition-colors font-medium tracking-wide"
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </nav>
-            <span className="hidden md:inline-block shrink-0 w-px h-5 bg-greige-light" aria-hidden />
-            <nav
-              aria-label="Shop and marketplace"
-              className="flex items-center gap-x-3 xl:gap-x-4 flex-nowrap shrink-0"
+              Shop
+            </Link>
+
+            <div className="relative" ref={servicesRef}>
+              <button
+                type="button"
+                onClick={() => setServicesOpen((o) => !o)}
+                className="inline-flex items-center gap-1 shrink-0 text-sm xl:text-base text-stone hover:text-sage transition-colors font-medium tracking-wide"
+                aria-expanded={servicesOpen}
+                aria-haspopup="true"
+              >
+                Services
+                <ChevronDown className={`w-4 h-4 transition-transform ${servicesOpen ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {servicesOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-56 py-2 bg-white border border-greige-light rounded-2xl shadow-lg shadow-black/5 z-50"
+                  >
+                    {servicesLinks.map((item) => (
+                      <Link
+                        key={item.href}
+                        to={item.href}
+                        onClick={() => setServicesOpen(false)}
+                        className="block px-4 py-2.5 text-sm text-neutral-700 hover:bg-cream hover:text-sage transition-colors"
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <Link
+              to="/rewards/dashboard"
+              className="shrink-0 text-sm xl:text-base text-stone hover:text-sage transition-colors font-medium tracking-wide"
             >
-              {secondaryNavigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  title={item.name}
-                  className={
-                    item.isIcon
-                      ? 'flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs xl:text-sm text-neutral-500 hover:text-sage transition-colors font-medium'
-                      : 'shrink-0 whitespace-nowrap text-xs xl:text-sm text-neutral-500 hover:text-sage transition-colors font-medium'
-                  }
-                  aria-label={item.isIcon ? 'MOMade Marketplace' : item.name}
-                >
-                  {item.isIcon ? (
-                    <>
-                      <img
-                        src="/momade-logo.png"
-                        alt=""
-                        className="h-8 w-auto object-contain opacity-80 xl:h-9"
-                        onError={(e) => {
-                          e.target.style.display = 'none'
-                        }}
-                      />
-                      <span>MOMade</span>
-                    </>
-                  ) : (
-                    item.name
-                  )}
-                </Link>
-              ))}
-            </nav>
+              Magari Rewards
+            </Link>
           </div>
 
-          {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-3 xl:gap-4 shrink-0 relative">
+            <Link
+              to="/about"
+              className="text-xs text-neutral-500 hover:text-sage transition-colors tracking-wide"
+            >
+              About
+            </Link>
+            <Link
+              to="/contact"
+              className="text-xs text-neutral-500 hover:text-sage transition-colors tracking-wide"
+            >
+              Contact
+            </Link>
             <BookConsultButton
               variant="modal"
               className="btn-primary btn-sm btn-pill shrink-0 font-semibold shadow-sm"
@@ -148,25 +170,11 @@ export default function Header() {
                 <div className="fixed inset-0 z-40" onClick={() => setLoginDropdownOpen(false)} aria-hidden="true" />
                 <div className="absolute right-0 top-full mt-2 w-56 py-2 bg-white border border-greige-light rounded-2xl shadow-lg shadow-black/5 z-50">
                   <Link
-                    to="/rewards/dashboard"
-                    onClick={() => setLoginDropdownOpen(false)}
-                    className="block px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
-                  >
-                    Magari Rewards Program
-                  </Link>
-                  <Link
                     to="/admin"
                     onClick={() => setLoginDropdownOpen(false)}
                     className="block px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
                   >
                     Admin login
-                  </Link>
-                  <Link
-                    to="/momade/vendor-login"
-                    onClick={() => setLoginDropdownOpen(false)}
-                    className="block px-4 py-2 text-sm text-neutral-700 hover:bg-cream transition-colors"
-                  >
-                    Vendor login
                   </Link>
                   {userRole && (
                     <button
@@ -186,7 +194,6 @@ export default function Header() {
             )}
           </div>
 
-          {/* Cart & Mobile Menu */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               onClick={openCart}
@@ -198,7 +205,7 @@ export default function Header() {
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 bg-sage text-sage-dark text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                  className="absolute -top-1 -right-1 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
                   style={{ backgroundColor: '#B8C5BA', color: '#4A5A4E' }}
                 >
                   {itemCount}
@@ -206,7 +213,6 @@ export default function Header() {
               )}
             </button>
 
-            {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-2 text-stone"
@@ -218,88 +224,91 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* Mobile Navigation */}
+      {/* Mobile: Shop · Services · Magari Rewards — About & Contact at bottom */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden border-t border-neutral-200 bg-cream"
+            className="lg:hidden border-t border-neutral-200 bg-cream overflow-hidden"
           >
             <div className="px-4 py-4 space-y-1">
-              <BookConsultButton
-                variant="modal"
-                onClick={() => setMobileMenuOpen(false)}
-                className="btn-primary btn-block rounded-2xl font-semibold mb-3"
+              <Link
+                to="/shop"
+                onClick={closeMobile}
+                className="block py-3 px-3 rounded-xl bg-sage/15 text-sage-dark font-semibold text-base tracking-wide"
               >
-                Book a Consultation
-              </BookConsultButton>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 pt-2 pb-1">Menu</p>
-              {primaryNavigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2.5 text-stone hover:text-sage transition-colors font-medium"
-                >
-                  {item.name}
-                </Link>
-              ))}
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 pt-4 pb-1 border-t border-greige-light/80 mt-2">
-                Shop &amp; marketplace
-              </p>
-              {secondaryNavigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2 py-2.5 text-neutral-600 hover:text-sage transition-colors text-sm font-medium"
-                >
-                  {item.isIcon ? (
-                    <>
-                      <img
-                        src="/momade-logo.png"
-                        alt=""
-                        className="h-9 w-auto object-contain opacity-90"
-                        onError={(e) => {
-                          e.target.style.display = 'none'
-                        }}
-                      />
-                      <span>{item.name}</span>
-                    </>
-                  ) : (
-                    item.name
-                  )}
-                </Link>
-              ))}
-              <div className="border-t border-greige-light pt-3 mt-3 space-y-1">
-                <p className="text-xs text-neutral-500 mb-1">Account</p>
-                <Link
-                  to="/rewards/dashboard"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium text-sm"
-                >
-                  <User className="w-4 h-4" /> Magari Rewards Program
-                </Link>
-                {userRole === 'admin' && (
-                  <Link
-                    to="/admin"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium text-sm"
+                Shop
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => setMobileServicesOpen((o) => !o)}
+                className="w-full flex items-center justify-between py-3 px-3 text-stone font-medium text-base"
+                aria-expanded={mobileServicesOpen}
+              >
+                Services
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileServicesOpen ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {mobileServicesOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden pl-2 space-y-0.5"
                   >
-                    <LogIn className="w-4 h-4" /> Admin
-                  </Link>
+                    {servicesLinks.map((item) => (
+                      <Link
+                        key={item.href}
+                        to={item.href}
+                        onClick={closeMobile}
+                        className="block py-2.5 px-3 text-sm text-neutral-600 hover:text-sage"
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </motion.div>
                 )}
-                {userRole === 'vendor' && (
-                  <Link
-                    to="/momade/vendor-login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 py-2 text-stone hover:text-sage font-medium text-sm"
-                  >
-                    <LogIn className="w-4 h-4" /> Vendor (Marketplace)
-                  </Link>
-                )}
+              </AnimatePresence>
+
+              <Link
+                to="/rewards/dashboard"
+                onClick={closeMobile}
+                className="block py-3 px-3 text-stone font-medium text-base hover:text-sage transition-colors"
+              >
+                Magari Rewards
+              </Link>
+
+              {userRole === 'admin' && (
+                <Link
+                  to="/admin"
+                  onClick={closeMobile}
+                  className="block py-2 px-3 text-stone hover:text-sage font-medium text-sm"
+                >
+                  Admin
+                </Link>
+              )}
+
+              <div className="border-t border-greige-light/80 mt-4 pt-4 flex items-center justify-center gap-6">
+                <Link
+                  to="/about"
+                  onClick={closeMobile}
+                  className="text-xs uppercase tracking-[0.18em] text-neutral-400 hover:text-sage transition-colors"
+                >
+                  About
+                </Link>
+                <span className="text-neutral-300" aria-hidden>
+                  ·
+                </span>
+                <Link
+                  to="/contact"
+                  onClick={closeMobile}
+                  className="text-xs uppercase tracking-[0.18em] text-neutral-400 hover:text-sage transition-colors"
+                >
+                  Contact
+                </Link>
               </div>
             </div>
           </motion.div>
@@ -308,4 +317,3 @@ export default function Header() {
     </header>
   )
 }
-

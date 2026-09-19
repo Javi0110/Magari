@@ -19,18 +19,15 @@ import ProductDetailPage from './pages/ProductDetail'
 import RewardsPage from './pages/Rewards'
 import RewardsDashboardPage from './pages/RewardsDashboard'
 import ServicesPage from './pages/Services'
+import ServiceDetailPage from './pages/ServiceDetail'
 import RealEstatePage from './pages/RealEstate'
 import ContactPage from './pages/Contact'
 import ContactBookingSuccessPage from './pages/ContactBookingSuccess'
-import MomadeCommunityPage from './pages/MomadeCommunity'
-import BecomeVendorPage from './pages/BecomeVendor'
-import VendorProfilePage from './pages/VendorProfile'
 import AboutPage from './pages/About'
 import CasaMagariPage from './pages/CasaMagari'
 import CheckoutSuccessPage from './pages/CheckoutSuccess'
 import CheckoutCancelPage from './pages/CheckoutCancel'
 
-const MarketplacePage = lazy(() => import('./pages/Marketplace'))
 const AdminPage = lazy(() => import('./pages/Admin'))
 
 function RouteLoading() {
@@ -46,7 +43,7 @@ const pageMeta = {
   '/': {
     title: 'Magari & Co. — Design & Staging | Realtor® @ eXp Realty (Elena Fadhel) | casamagari.com',
     description:
-      'Interior design + staging in Austin (and remote) through Magari & Co. Licensed buying/selling with Elena Fadhel, Realtor® @ eXp Realty — not offered by Magari & Co. Shop + MOMade when you are ready.',
+      'Interior design + staging in Austin (and remote) through Magari & Co. Licensed buying/selling with Elena Fadhel, Realtor® @ eXp Realty — not offered by Magari & Co. Shop Magari when you are ready.',
   },
   '/services': {
     title: 'Services & Packages — Magari & Co.',
@@ -120,7 +117,7 @@ const pageMeta = {
   '/about': {
     title: 'About Elena & Magari & Co.',
     description:
-      'Founder Elena Fadhel: interior design and staging studio, Realtor® @ eXp Realty, mission “From a dream to your reality.” Shop Magari and MOMade when you are ready.',
+      'Founder Elena Fadhel: interior design and staging studio, Realtor® @ eXp Realty, mission “From a dream to your reality.” Shop Magari when you are ready.',
   },
   '/contact': {
     title: 'Contact & Book — Magari & Co.',
@@ -204,7 +201,7 @@ function App() {
       '@type': 'LocalBusiness',
       name: 'Magari & Co.',
       description:
-        'Magari & Co. is an Austin-area interior design and home staging studio (not a brokerage; no real estate license). Shop Magari and MOMade extend the brand online. Licensed real estate is offered separately through eXp Realty by Elena Fadhel, Realtor® @ eXp Realty — not by Magari & Co.',
+        'Magari & Co. is an Austin-area interior design and home staging studio (not a brokerage; no real estate license). Shop Magari extends the brand online. Licensed real estate is offered separately through eXp Realty by Elena Fadhel, Realtor® @ eXp Realty — not by Magari & Co.',
       url: 'https://casamagari.com',
       image: 'https://casamagari.com/og-image.jpg',
       address: {
@@ -328,6 +325,7 @@ function App() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<HomePage />} />
           <Route path="/services" element={<ServicesPage />} />
+          <Route path="/services/:slug" element={<ServiceDetailPage />} />
           <Route path="/real-estate" element={<RealEstatePage />} />
           <Route path="/portfolio" element={<Navigate to="/" replace />} />
           <Route path="/shop" element={<ShopPage />} />
@@ -335,42 +333,21 @@ function App() {
           <Route path="/rewards" element={<RewardsPage />} />
           <Route path="/rewards/dashboard" element={<RewardsDashboardPage />} />
           <Route path="/design-services" element={<Navigate to="/services" replace />} />
-          <Route path="/home-staging-austin" element={<Navigate to="/services" replace />} />
-          <Route path="/interior-design-austin" element={<Navigate to="/services" replace />} />
-          <Route path="/virtual-styling" element={<Navigate to="/services" replace />} />
+          <Route path="/home-staging-austin" element={<Navigate to="/services/home-staging" replace />} />
+          <Route path="/interior-design-austin" element={<Navigate to="/services/interior-design" replace />} />
+          <Route path="/virtual-styling" element={<Navigate to="/services/virtual-design" replace />} />
           <Route path="/airbnb-design" element={<Navigate to="/services" replace />} />
           <Route path="/staging-for-realtors" element={<Navigate to="/real-estate" replace />} />
 
-          {/* MOMade: community landing + marketplace (shop/vendor routes unchanged) */}
-          <Route path="/marketplace" element={<Navigate to="/momade" replace />} />
-          <Route path="/momade-market" element={<Navigate to="/momade" replace />} />
-          <Route path="/momade" element={<MomadeCommunityPage />} />
-          <Route
-            path="/momade/shop"
-            element={
-              <Suspense fallback={<RouteLoading />}>
-                <MarketplacePage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/momade/become-a-vendor"
-            element={
-              <Suspense fallback={<RouteLoading />}>
-                <MarketplacePage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/momade/vendor-login"
-            element={
-              <Suspense fallback={<RouteLoading />}>
-                <MarketplacePage />
-              </Suspense>
-            }
-          />
-          <Route path="/become-a-vendor" element={<BecomeVendorPage />} />
-          <Route path="/maker/:slug" element={<VendorProfilePage />} />
+          {/* MOMade marketplace temporarily disabled — redirect to Shop Magari */}
+          <Route path="/marketplace" element={<Navigate to="/shop" replace />} />
+          <Route path="/momade-market" element={<Navigate to="/shop" replace />} />
+          <Route path="/momade" element={<Navigate to="/shop" replace />} />
+          <Route path="/momade/shop" element={<Navigate to="/shop" replace />} />
+          <Route path="/momade/become-a-vendor" element={<Navigate to="/shop" replace />} />
+          <Route path="/momade/vendor-login" element={<Navigate to="/shop" replace />} />
+          <Route path="/become-a-vendor" element={<Navigate to="/shop" replace />} />
+          <Route path="/maker/:slug" element={<Navigate to="/shop" replace />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/contact/success" element={<ContactBookingSuccessPage />} />

@@ -4,6 +4,8 @@ import { motion } from 'framer-motion'
 import { Mail, Instagram, MapPin, Send, ChevronDown } from 'lucide-react'
 import { sendContactFormEmail } from '../utils/emailService'
 import InstagramDmCta from '../components/InstagramDmCta'
+import WhatsAppCta, { PreferredContactPicker } from '../components/WhatsAppCta'
+import { STUDIO_EMAIL, formatPreferredContactLine, isWhatsAppConfigured } from '../constants/siteContact'
 import PageBottomCta from '../components/PageBottomCta'
 import ConsultationBookingWizard from '../components/consultation/ConsultationBookingWizard'
 
@@ -45,6 +47,7 @@ export default function ContactPage() {
     phone: '',
     serviceNeeded: '',
     message: '',
+    preferredContact: 'email',
   })
   const [submitted, setSubmitted] = useState(false)
 
@@ -85,13 +88,21 @@ export default function ContactPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (formData.preferredContact === 'whatsapp' && !formData.phone.trim()) {
+      return
+    }
+    if (formData.preferredContact === 'email' && !formData.email.trim()) {
+      return
+    }
     const subject = subjectForService(formData.serviceNeeded)
     const payload = {
       name: formData.name.trim(),
-      email: formData.email.trim(),
+      email: formData.email.trim() || STUDIO_EMAIL,
       subject,
       message: [
+        formatPreferredContactLine(formData.preferredContact, formData.phone.trim()),
         formData.phone.trim() ? `Phone: ${formData.phone.trim()}` : null,
+        formData.email.trim() ? `Reply email: ${formData.email.trim()}` : null,
         '',
         composedMessage,
       ]
@@ -107,7 +118,7 @@ export default function ContactPage() {
 
     setSubmitted(true)
     setTimeout(() => {
-      setFormData({ name: '', email: '', phone: '', serviceNeeded: '', message: '' })
+      setFormData({ name: '', email: '', phone: '', serviceNeeded: '', message: '', preferredContact: 'email' })
       setSubmitted(false)
     }, 3500)
   }
@@ -131,8 +142,9 @@ export default function ContactPage() {
           </div>
           <div className="flex flex-wrap gap-2 justify-center mt-3">
             <a href="#book" className="btn-primary btn-sm">
-              Request a consultation
+              Pick a date
             </a>
+            <WhatsAppCta />
           </div>
         </div>
 
@@ -151,11 +163,24 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="font-medium text-neutral-800 mb-1">Email</p>
-                    <a href="mailto:magaribyelena@gmail.com" className="text-sage-dark hover:underline">
-                      magaribyelena@gmail.com
+                    <a href={`mailto:${STUDIO_EMAIL}`} className="text-sage-dark hover:underline">
+                      {STUDIO_EMAIL}
                     </a>
                   </div>
                 </div>
+                {isWhatsAppConfigured() && (
+                  <div className="flex items-start gap-4">
+                    <div className="w-11 h-11 rounded-xl bg-sage/10 flex items-center justify-center text-sage shrink-0">
+                      <span className="text-lg leading-none" aria-hidden>
+                        💬
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-neutral-800 mb-1">WhatsApp</p>
+                      <WhatsAppCta className="text-sage-dark hover:underline inline-flex items-center gap-1.5" />
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-start gap-4">
                   <div className="w-11 h-11 rounded-xl bg-earth/10 flex items-center justify-center text-earth shrink-0">
                     <Instagram className="w-5 h-5" />
@@ -189,7 +214,7 @@ export default function ContactPage() {
               <h3 className="font-serif text-xl text-neutral-800 mb-3">What happens after you inquire</h3>
               <ol className="list-decimal list-inside space-y-3 text-sm text-neutral-600 leading-relaxed">
                 <li>We read your note within 24–48 business hours (often faster).</li>
-                <li>If it is a fit, we send a short reply with next steps — sometimes a calendar link, sometimes a clarifying question.</li>
+                <li>Pick a time on the calendar, or write via email / WhatsApp — we reply on the channel you choose.</li>
                 <li>Real estate vs design: we label which lane we are in so you always know who is licensed for what.</li>
               </ol>
               <p className="text-xs text-neutral-500 mt-4">
@@ -224,7 +249,7 @@ export default function ContactPage() {
               onToggle={(e) => setGeneralOpen(e.target.open)}
             >
               <summary className="cursor-pointer list-none px-6 py-4 flex items-center justify-between gap-2 font-medium text-neutral-800 hover:bg-cream/50">
-                <span>General message (email only, no time slot)</span>
+                <span>General message (no time slot)</span>
                 <ChevronDown
                   className={`w-5 h-5 text-neutral-500 transition-transform shrink-0 ${generalOpen ? 'rotate-180' : ''}`}
                 />
@@ -255,11 +280,18 @@ export default function ContactPage() {
                         autoComplete="name"
                       />
                     </div>
+                    <PreferredContactPicker
+                      idPrefix="general"
+                      value={formData.preferredContact}
+                      onChange={(preferredContact) => setFormData({ ...formData, preferredContact })}
+                    />
                     <div>
-                      <label className="block text-neutral-700 font-medium mb-2 text-sm">Email *</label>
+                      <label className="block text-neutral-700 font-medium mb-2 text-sm">
+                        Email {formData.preferredContact === 'email' ? '*' : '(optional)'}
+                      </label>
                       <input
                         type="email"
-                        required
+                        required={formData.preferredContact === 'email'}
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className="input-field"
@@ -268,13 +300,16 @@ export default function ContactPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-neutral-700 font-medium mb-2 text-sm">Phone</label>
+                      <label className="block text-neutral-700 font-medium mb-2 text-sm">
+                        Phone / WhatsApp {formData.preferredContact === 'whatsapp' ? '*' : '(optional)'}
+                      </label>
                       <input
                         type="tel"
+                        required={formData.preferredContact === 'whatsapp'}
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         className="input-field"
-                        placeholder="Optional"
+                        placeholder={formData.preferredContact === 'whatsapp' ? 'Number we can message' : 'Optional'}
                         autoComplete="tel"
                       />
                     </div>

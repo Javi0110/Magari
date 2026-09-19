@@ -2,11 +2,16 @@ import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Check, Calendar } from 'lucide-react'
 import { BOOKING_TIMEZONE_LABEL } from '../constants/consultationBooking'
+import WhatsAppCta from '../components/WhatsAppCta'
 
 export default function ContactBookingSuccessPage() {
   const location = useLocation()
   const state = location.state || {}
-  const { serviceLabel, slotLabel } = state
+  const { serviceLabel, slotLabel, preferredContact } = state
+  const waNote =
+    preferredContact === 'whatsapp'
+      ? 'We will follow up on WhatsApp. You can also start the thread now.'
+      : 'You will get a confirmation email shortly (check spam).'
 
   return (
     <div className="min-h-screen bg-cream py-16 md:py-24 px-4">
@@ -20,7 +25,7 @@ export default function ContactBookingSuccessPage() {
         </div>
         <h1 className="font-serif text-3xl text-neutral-800 mb-3">You&apos;re on the calendar</h1>
         <p className="text-neutral-600 text-sm mb-6">
-          We received your consultation request. You&apos;ll get a confirmation email shortly (check spam). Times are in{' '}
+          We received your consultation request. {waNote} Times are in{' '}
           <span className="font-medium text-neutral-700">{BOOKING_TIMEZONE_LABEL}</span>.
         </p>
         {(serviceLabel || slotLabel) && (
@@ -44,9 +49,18 @@ export default function ContactBookingSuccessPage() {
           <Link to="/" className="btn-outline">
             Home
           </Link>
-          <Link to="/contact" className="btn-primary">
-            Back to Contact
-          </Link>
+          {preferredContact === 'whatsapp' ? (
+            <WhatsAppCta
+              className="btn-primary inline-flex items-center justify-center gap-2"
+              message={`Hi Elena — I just requested a consultation${serviceLabel ? ` for ${serviceLabel}` : ''}${slotLabel ? ` (${slotLabel})` : ''}.`}
+            >
+              Continue on WhatsApp
+            </WhatsAppCta>
+          ) : (
+            <Link to="/contact" className="btn-primary">
+              Back to Contact
+            </Link>
+          )}
         </div>
       </motion.div>
     </div>

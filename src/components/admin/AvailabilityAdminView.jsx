@@ -202,6 +202,10 @@ export default function AvailabilityAdminView() {
 
   return (
     <div className="space-y-8">
+      <p className="text-sm text-neutral-600">
+        This is your booking calendar (Central Time). Add open windows the same way you would block time in Google
+        Calendar — clients pick a date for each service on the Contact page.
+      </p>
       {error && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">{error}</div>}
 
       {settings && (
