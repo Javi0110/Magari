@@ -2,7 +2,7 @@ const {
   checkDeliveryWithinRadius,
   validateAllDeliveryChecks,
   MAX_DELIVERY_MILES,
-} = require('./deliveryRadiusUtils')
+} = require('./shared/deliveryRadiusUtils')
 
 exports.handler = async (event) => {
   const headers = {

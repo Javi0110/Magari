@@ -4,7 +4,7 @@
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '')
 const { createServiceSupabase, SERVICE_KEY_HINT } = require('./shared/supabaseServer')
-const { validateAllDeliveryChecks, checkDeliveryWithinRadius } = require('./deliveryRadiusUtils')
+const { validateAllDeliveryChecks, checkDeliveryWithinRadius } = require('./shared/deliveryRadiusUtils')
 
 exports.handler = async (event) => {
   const headers = {

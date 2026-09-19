@@ -6,7 +6,7 @@
  */
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '')
-const { processShopPaidSession } = require('./processShopPaidSession')
+const { processShopPaidSession } = require('./shared/processShopPaidSession')
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {

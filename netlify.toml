@@ -1,4 +1,5 @@
 # Build y publicación para Netlify (Vite + React)
+# Shared CJS helpers live in netlify/functions/shared/ — not packaged as HTTP functions.
 [build]
   command = "npm run check"
   publish = "dist"

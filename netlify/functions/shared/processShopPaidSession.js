@@ -4,7 +4,7 @@
  */
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '')
-const { createServiceSupabase } = require('./shared/supabaseServer')
+const { createServiceSupabase } = require('./supabaseServer')
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Magari & Co. <hello@casamagari.com>'

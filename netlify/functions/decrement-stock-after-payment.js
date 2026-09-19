@@ -1,7 +1,7 @@
 // After Stripe checkout success: retrieve session, decrement stock once, emails, rewards.
 // Requires: STRIPE_SECRET_KEY, Supabase envs (see processShopPaidSession.js)
 
-const { processShopPaidSession } = require('./processShopPaidSession')
+const { processShopPaidSession } = require('./shared/processShopPaidSession')
 
 exports.handler = async (event) => {
   const headers = {
